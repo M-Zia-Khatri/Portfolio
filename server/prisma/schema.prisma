@@ -1,0 +1,20 @@
+enum SkillMode {
+  code
+  terminal
+}
+
+model Skill {
+  id         String    @id @default(cuid())
+  name       String
+  icon       String
+  file_name  String
+  lang       String    @unique
+  color      String
+  mode       SkillMode
+  code       Json?
+  commands   Json?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@map("skills")
+}
