@@ -2,28 +2,48 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdateSkillRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
+        $skillId = $this->route('skill')?->id;
+
         return [
-            //
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'icon' => ['sometimes', 'required', 'string', 'max:255'],
+            'file_name' => ['sometimes', 'required', 'string', 'max:255'],
+            'lang' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('skills', 'lang')->ignore($skillId)],
+            'color' => ['sometimes', 'required', 'string', 'max:255'],
+            'mode' => ['sometimes', 'required', Rule::in(['code', 'terminal'])],
+            'code' => ['nullable', 'array', 'required_if:mode,code', 'prohibited_if:mode,terminal'],
+            'code.*' => ['string'],
+            'commands' => ['nullable', 'array', 'required_if:mode,terminal', 'prohibited_if:mode,code'],
+            'commands.*.kind' => ['required_with:commands', Rule::in(['command', 'output', 'comment', 'blank'])],
+            'commands.*.text' => ['nullable', 'string'],
         ];
     }
+
+    protected function failedValidation(Validator $validator): void
+    {
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'message' => 'Validation failed.',
+            'data' => null,
+            'meta' => ['errors' => $validator->errors()],
+        ], 422));
+    }
+
 }

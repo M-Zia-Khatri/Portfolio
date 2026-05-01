@@ -11,8 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('skills', function (Blueprint $table) {
+        Schema::create('skills', function (Blueprint $table): void {
             $table->id();
+            $table->string('name');
+            $table->string('icon');
+            $table->string('file_name');
+            $table->string('lang')->unique();
+            $table->string('color');
+            $table->enum('mode', ['code', 'terminal']);
+            $table->json('code')->nullable();
+            $table->json('commands')->nullable();
             $table->timestamps();
         });
     }

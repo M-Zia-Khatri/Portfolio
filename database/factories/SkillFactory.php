@@ -18,7 +18,23 @@ class SkillFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => fake()->word(),
+            'icon' => fake()->word(),
+            'file_name' => fake()->word().'.svg',
+            'lang' => fake()->unique()->lexify('lang_????'),
+            'color' => fake()->hexColor(),
+            'mode' => 'code',
+            'code' => ['echo "Hello";'],
+            'commands' => null,
         ];
+    }
+
+    public function terminalMode(): static
+    {
+        return $this->state(fn (): array => [
+            'mode' => 'terminal',
+            'code' => null,
+            'commands' => [['kind' => 'command', 'text' => 'npm run dev']],
+        ]);
     }
 }
