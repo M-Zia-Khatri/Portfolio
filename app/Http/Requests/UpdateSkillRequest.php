@@ -2,28 +2,33 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateSkillRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, array<int, mixed>|string>
      */
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required', 'string', 'max:255'],
+            'icon' => ['required', 'string', 'max:255'],
+            'file_name' => ['required', 'string', 'max:255'],
+            'lang' => ['required', 'string', 'max:255', Rule::unique('skills', 'lang')->ignore($this->route('skill'))],
+            'color' => ['required', 'string', 'max:255'],
+            'mode' => ['required', Rule::in(['code', 'terminal'])],
+            'code' => ['nullable', 'array', 'required_if:mode,code', 'prohibited_if:mode,terminal'],
+            'code.*' => ['required', 'string'],
+            'commands' => ['nullable', 'array', 'required_if:mode,terminal', 'prohibited_if:mode,code'],
+            'commands.*.kind' => ['required_with:commands', Rule::in(['command', 'output', 'comment', 'blank'])],
+            'commands.*.text' => ['nullable', 'string'],
         ];
     }
 }

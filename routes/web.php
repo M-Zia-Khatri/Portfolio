@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AdminAuthController;
+use App\Http\Controllers\SkillController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,4 +23,6 @@ Route::middleware(['auth', 'require-admin'])->group(function (): void {
     })->name('dashboard');
 
     Route::post('/auth/logout', [AdminAuthController::class, 'logout'])->name('auth.logout');
+
+    Route::resource('skills', SkillController::class)->except('show');
 });
