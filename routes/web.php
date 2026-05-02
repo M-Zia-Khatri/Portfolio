@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AdminAuthController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\SkillController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -10,6 +11,8 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/login', fn () => redirect()->route('auth.login.create'))->name('login');
+
+Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/auth/login', [AdminAuthController::class, 'createLogin'])->name('auth.login.create');
@@ -27,4 +30,7 @@ Route::middleware(['auth', 'require-admin'])->group(function (): void {
     Route::post('/auth/logout', [AdminAuthController::class, 'logout'])->name('auth.logout');
 
     Route::resource('skills', SkillController::class)->except('show');
+
+    Route::get('/admin/contact', [ContactController::class, 'index'])->name('admin.contact.index');
+    Route::delete('/admin/contact/{id}', [ContactController::class, 'destroy'])->name('admin.contact.destroy');
 });

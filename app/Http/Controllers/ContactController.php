@@ -2,65 +2,46 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contact;
 use App\Http\Requests\StoreContactRequest;
-use App\Http\Requests\UpdateContactRequest;
+use App\Jobs\SendContactEmailJob;
+use App\Models\ContactMessage;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ContactController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function submit(StoreContactRequest $request): RedirectResponse
     {
-        //
+        $contactMessage = ContactMessage::query()->create($request->validated());
+
+        SendContactEmailJob::dispatch($contactMessage);
+
+        return back()->with('success', 'Your message has been sent successfully.');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function index(): Response
     {
-        //
+        $contacts = ContactMessage::query()
+            ->latest('created_at')
+            ->paginate(20)
+            ->withQueryString();
+
+        return Inertia::render('admin/contact/index', [
+            'contacts' => $contacts->items(),
+            'meta' => [
+                'current_page' => $contacts->currentPage(),
+                'last_page' => $contacts->lastPage(),
+                'per_page' => $contacts->perPage(),
+                'total' => $contacts->total(),
+            ],
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreContactRequest $request)
+    public function destroy(string $id): RedirectResponse
     {
-        //
-    }
+        ContactMessage::query()->whereKey($id)->firstOrFail()->delete();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Contact $contact)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Contact $contact)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateContactRequest $request, Contact $contact)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Contact $contact)
-    {
-        //
+        return back()->with('success', 'Contact message deleted successfully.');
     }
 }
