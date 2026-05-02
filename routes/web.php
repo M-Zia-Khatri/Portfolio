@@ -9,6 +9,8 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+Route::get('/login', fn () => redirect()->route('auth.login.create'))->name('login');
+
 Route::middleware('guest')->group(function (): void {
     Route::get('/auth/login', [AdminAuthController::class, 'createLogin'])->name('auth.login.create');
     Route::post('/auth/login', [AdminAuthController::class, 'login'])->middleware('throttle:5,1')->name('auth.login');

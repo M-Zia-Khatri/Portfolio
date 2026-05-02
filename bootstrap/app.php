@@ -20,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias(['require-admin' => RequireAdmin::class]);
+
+        $middleware->redirectGuestsTo(fn () => route('auth.login.create'));
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
