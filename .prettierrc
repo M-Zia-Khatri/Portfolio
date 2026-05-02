@@ -6,6 +6,7 @@
     "printWidth": 150,
     "plugins": [
         "prettier-plugin-organize-imports",
+        "prettier-plugin-blade",
         "prettier-plugin-tailwindcss"
     ],
     "tailwindFunctions": [
@@ -18,6 +19,12 @@
             "files": "**/*.yml",
             "options": {
                 "tabWidth": 2
+            }
+        },
+        {
+            "files": "*.blade.php",
+            "options": {
+                "parser": "blade"
             }
         }
     ]
