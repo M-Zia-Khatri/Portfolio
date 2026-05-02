@@ -25,7 +25,7 @@ class StoreSkillRequest extends FormRequest
             'color' => ['required', 'string', 'max:255'],
             'mode' => ['required', Rule::in(['code', 'terminal'])],
             'code' => ['nullable', 'array', 'required_if:mode,code', 'prohibited_if:mode,terminal'],
-            'code.*' => ['required', 'string'],
+            'code.*' => ['string'],
             'commands' => ['nullable', 'array', 'required_if:mode,terminal', 'prohibited_if:mode,code'],
             'commands.*.kind' => ['required_with:commands', Rule::in(['command', 'output', 'comment', 'blank'])],
             'commands.*.text' => ['nullable', 'string'],

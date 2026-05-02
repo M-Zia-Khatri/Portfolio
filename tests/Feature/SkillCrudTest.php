@@ -47,7 +47,7 @@ it('stores a code skill with conditional validation', function () {
         'lang' => 'php',
         'color' => '#ff2d20',
         'mode' => 'code',
-        'code' => ['Route::get(...);'],
+        'code' => ['Route::get(...);', ''],
     ])->assertRedirect(route('skills.index'));
 
     expect(Skill::query()->where('lang', 'php')->exists())->toBeTrue();
