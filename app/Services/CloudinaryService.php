@@ -2,29 +2,18 @@
 
 namespace App\Services;
 
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
-use RuntimeException;
 
 class CloudinaryService
 {
     public function uploadToCloudinary(UploadedFile $file): string
     {
-        $cloudName = (string) config('services.cloudinary.cloud_name');
-        $uploadPreset = (string) config('services.cloudinary.upload_preset');
+        $result = Cloudinary::upload($file->getRealPath(), [
+            'folder' => config('services.cloudinary.folder', 'portfolio'),
+        ]);
 
-        $response = Http::asMultipart()
-            ->attach('file', file_get_contents($file->getRealPath()) ?: '', $file->getClientOriginalName())
-            ->post("https://api.cloudinary.com/v1_1/{$cloudName}/image/upload", [
-                'upload_preset' => $uploadPreset,
-                'folder' => config('services.cloudinary.folder', 'portfolio'),
-            ]);
-
-        if (! $response->successful() || ! is_string($response->json('secure_url'))) {
-            throw new RuntimeException('Cloudinary upload failed.');
-        }
-
-        return $response->json('secure_url');
+        return (string) $result->getSecurePath();
     }
 
     public function deleteFromCloudinary(?string $url): void
@@ -39,15 +28,7 @@ class CloudinaryService
             return;
         }
 
-        $cloudName = (string) config('services.cloudinary.cloud_name');
-        $apiKey = (string) config('services.cloudinary.api_key');
-        $apiSecret = (string) config('services.cloudinary.api_secret');
-
-        Http::asForm()
-            ->withBasicAuth($apiKey, $apiSecret)
-            ->post("https://api.cloudinary.com/v1_1/{$cloudName}/image/destroy", [
-                'public_id' => $publicId,
-            ]);
+        Cloudinary::destroy($publicId);
     }
 
     private function extractPublicIdFromUrl(string $url): ?string
