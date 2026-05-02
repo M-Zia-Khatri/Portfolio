@@ -21,6 +21,7 @@ class ContactMessageFactory extends Factory
             'full_name' => fake()->name(),
             'email' => fake()->safeEmail(),
             'message' => fake()->paragraph(),
+            'image_url' => fake()->optional()->imageUrl(),
             'is_read' => false,
         ];
     }

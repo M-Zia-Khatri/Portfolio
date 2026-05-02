@@ -5,17 +5,29 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreContactRequest;
 use App\Jobs\SendContactEmailJob;
 use App\Models\ContactMessage;
+use App\Services\CloudinaryService;
 use Illuminate\Http\RedirectResponse;
+use Throwable;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ContactController extends Controller
 {
-    public function submit(StoreContactRequest $request): RedirectResponse
+    public function submit(StoreContactRequest $request, CloudinaryService $cloudinaryService): RedirectResponse
     {
-        $contactMessage = ContactMessage::query()->create($request->validated());
+        $validatedData = $request->validated();
+        $imageUrl = $validatedData['image_url'] ?? null;
 
-        SendContactEmailJob::dispatch($contactMessage);
+        try {
+            $contactMessage = ContactMessage::query()->create($validatedData);
+            SendContactEmailJob::dispatch($contactMessage);
+        } catch (Throwable $exception) {
+            if (is_string($imageUrl) && $imageUrl !== '') {
+                $cloudinaryService->deleteFromCloudinary($imageUrl);
+            }
+
+            throw $exception;
+        }
 
         return back()->with('success', 'Your message has been sent successfully.');
     }
@@ -38,9 +50,15 @@ class ContactController extends Controller
         ]);
     }
 
-    public function destroy(string $id): RedirectResponse
+    public function destroy(string $id, CloudinaryService $cloudinaryService): RedirectResponse
     {
-        ContactMessage::query()->whereKey($id)->firstOrFail()->delete();
+        $contactMessage = ContactMessage::query()->whereKey($id)->firstOrFail();
+
+        if (is_string($contactMessage->image_url) && $contactMessage->image_url !== '') {
+            $cloudinaryService->deleteFromCloudinary($contactMessage->image_url);
+        }
+
+        $contactMessage->delete();
 
         return back()->with('success', 'Contact message deleted successfully.');
     }

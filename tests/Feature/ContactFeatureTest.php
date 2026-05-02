@@ -3,6 +3,7 @@
 use App\Jobs\SendContactEmailJob;
 use App\Models\Admin;
 use App\Models\ContactMessage;
+use App\Services\CloudinaryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Queue;
@@ -41,6 +42,42 @@ it('stores contact messages and dispatches a queued email job', function (): voi
     expect($contactMessage->is_read)->toBeFalse();
 
     Queue::assertPushed(SendContactEmailJob::class);
+});
+
+
+it('stores contact image url when provided', function (): void {
+    Queue::fake();
+
+    $imageUrl = 'https://res.cloudinary.com/demo/image/upload/v1711111111/contacts/photo.jpg';
+
+    $this->post(route('contact.submit'), [
+        'full_name' => 'Jane Doe',
+        'email' => 'jane@example.com',
+        'message' => 'This message includes an uploaded image URL.',
+        'image_url' => $imageUrl,
+    ])->assertRedirect();
+
+    $contactMessage = ContactMessage::query()->first();
+
+    expect($contactMessage)->not->toBeNull();
+    expect($contactMessage->image_url)->toBe($imageUrl);
+});
+
+it('deletes uploaded cloudinary image when validation fails', function (): void {
+    $imageUrl = 'https://res.cloudinary.com/demo/image/upload/v1711111111/contacts/invalid.jpg';
+
+    $cloudinaryService = \Mockery::mock(CloudinaryService::class);
+    $cloudinaryService->shouldReceive('deleteFromCloudinary')->once()->with($imageUrl);
+    $this->app->instance(CloudinaryService::class, $cloudinaryService);
+
+    $this->from(route('welcome'))->post(route('contact.submit'), [
+        'full_name' => '',
+        'email' => 'jane@example.com',
+        'message' => 'short',
+        'image_url' => $imageUrl,
+    ])->assertRedirect(route('welcome'));
+
+    expect(ContactMessage::query()->count())->toBe(0);
 });
 
 it('requires authentication for admin contact routes', function (): void {
