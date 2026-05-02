@@ -20,6 +20,7 @@ class StoreContactRequest extends FormRequest
             'full_name' => ['required', 'string', 'min:2'],
             'email' => ['required', 'email'],
             'message' => ['required', 'string', 'min:10'],
+            'image_url' => ['nullable', 'url'],
         ];
     }
 

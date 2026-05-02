@@ -5,19 +5,47 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreContactRequest;
 use App\Jobs\SendContactEmailJob;
 use App\Models\ContactMessage;
+use App\Services\CloudinaryService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 class ContactController extends Controller
 {
+    public function __construct(private readonly CloudinaryService $cloudinaryService) {}
+
     public function submit(StoreContactRequest $request): RedirectResponse
     {
-        $contactMessage = ContactMessage::query()->create($request->validated());
+        $imageUrl = $request->input('image_url');
 
-        SendContactEmailJob::dispatch($contactMessage);
+        try {
+            $validator = Validator::make($request->all(), $request->rules());
 
-        return back()->with('success', 'Your message has been sent successfully.');
+            if ($validator->fails()) {
+                if (is_string($imageUrl) && $imageUrl !== '') {
+                    $this->cloudinaryService->deleteFromCloudinary($imageUrl);
+                }
+
+                throw ValidationException::withMessages($validator->errors()->toArray());
+            }
+
+            $validatedData = $validator->validated();
+
+            $contactMessage = ContactMessage::query()->create($validatedData);
+
+            SendContactEmailJob::dispatch($contactMessage);
+
+            return back()->with('success', 'Your message has been sent successfully.');
+        } catch (Throwable $exception) {
+            if (is_string($imageUrl) && $imageUrl !== '') {
+                $this->cloudinaryService->deleteFromCloudinary($imageUrl);
+            }
+
+            throw $exception;
+        }
     }
 
     public function index(): Response

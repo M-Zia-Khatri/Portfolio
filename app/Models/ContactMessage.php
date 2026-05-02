@@ -16,6 +16,7 @@ class ContactMessage extends Model
         'full_name',
         'email',
         'message',
+        'image_url',
         'is_read',
     ];
 
