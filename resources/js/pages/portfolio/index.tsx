@@ -1,0 +1,8 @@
+import { Head, Link, router, usePage } from '@inertiajs/react';
+
+type PortfolioItem = { id: string; siteName: string; siteRole: string; siteUrl: string; siteImageUrl: string; useTech: string[]; description: string };
+
+export default function PortfolioIndex({ portfolioItems }: { portfolioItems: PortfolioItem[] }) {
+  const flash = usePage().props.flash as { success?: string };
+  return <div className="mx-auto max-w-6xl p-6"><Head title="Portfolio" /><div className="mb-4 flex items-center justify-between"><h1 className="text-2xl font-semibold">Portfolio</h1><Link href={route('portfolio.create')} className="rounded bg-black px-4 py-2 text-white">Create</Link></div>{flash?.success && <p className="mb-4 rounded bg-green-100 p-2 text-green-700">{flash.success}</p>}<div className="space-y-4">{portfolioItems.map((item) => <div key={item.id} className="rounded border p-4"><div className="grid gap-4 md:grid-cols-[180px_1fr]"><img src={item.siteImageUrl} alt={item.siteName} className="h-40 w-full rounded object-cover" /><div><h2 className="text-xl font-semibold">{item.siteName}</h2><p className="text-sm text-gray-600">{item.siteRole}</p><a className="text-blue-600" href={item.siteUrl} target="_blank" rel="noreferrer">{item.siteUrl}</a><p className="mt-2 text-sm">{item.description}</p><div className="mt-2 flex flex-wrap gap-2">{item.useTech.map((tech) => <span key={tech} className="rounded bg-gray-100 px-2 py-1 text-xs">{tech}</span>)}</div><div className="mt-3 space-x-3"><Link className="text-blue-600" href={route('portfolio.edit', item.id)}>Edit</Link><button className="text-red-600" onClick={() => router.delete(route('portfolio.destroy', item.id))}>Delete</button></div></div></div></div>)}</div></div>;
+}

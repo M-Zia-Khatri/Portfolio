@@ -2,65 +2,101 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Portfolio;
 use App\Http\Requests\StorePortfolioRequest;
 use App\Http\Requests\UpdatePortfolioRequest;
+use App\Models\PortfolioItem;
+use App\Services\CloudinaryService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
+use Throwable;
 
 class PortfolioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct(private CloudinaryService $cloudinaryService) {}
+
+    public function index(): Response
     {
-        //
+        $portfolioItems = PortfolioItem::query()->latest('created_at')->get()->map(fn (PortfolioItem $item): array => [
+            'id' => $item->id,
+            'siteName' => $item->site_name,
+            'siteRole' => $item->site_role,
+            'siteUrl' => $item->site_url,
+            'siteImageUrl' => $item->site_image_url,
+            'useTech' => $item->use_tech,
+            'description' => $item->description,
+        ]);
+
+        return Inertia::render('portfolio/index', ['portfolioItems' => $portfolioItems]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): Response
     {
-        //
+        return Inertia::render('portfolio/create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePortfolioRequest $request)
+    public function store(StorePortfolioRequest $request): RedirectResponse
     {
-        //
+        $validated = $request->validated();
+        $imageUrl = $this->cloudinaryService->uploadToCloudinary($request->file('site_image'));
+
+        try {
+            DB::transaction(function () use ($validated, $imageUrl): void {
+                PortfolioItem::query()->create([
+                    ...$validated,
+                    'site_image_url' => $imageUrl,
+                ]);
+            });
+        } catch (Throwable $exception) {
+            $this->cloudinaryService->deleteFromCloudinary($imageUrl);
+
+            throw $exception;
+        }
+
+        return to_route('portfolio.index')->with('success', 'Portfolio item created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Portfolio $portfolio)
+    public function edit(PortfolioItem $portfolio): Response
     {
-        //
+        return Inertia::render('portfolio/edit', [
+            'portfolioItem' => [
+                'id' => $portfolio->id,
+                'siteName' => $portfolio->site_name,
+                'siteRole' => $portfolio->site_role,
+                'siteUrl' => $portfolio->site_url,
+                'siteImageUrl' => $portfolio->site_image_url,
+                'useTech' => $portfolio->use_tech,
+                'description' => $portfolio->description,
+            ],
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Portfolio $portfolio)
+    public function update(UpdatePortfolioRequest $request, PortfolioItem $portfolio): RedirectResponse
     {
-        //
+        $validated = $request->validated();
+        $oldImageUrl = $portfolio->site_image_url;
+
+        if ($request->hasFile('site_image')) {
+            $newImageUrl = $this->cloudinaryService->uploadToCloudinary($request->file('site_image'));
+            $validated['site_image_url'] = $newImageUrl;
+        }
+
+        $portfolio->update($validated);
+
+        if (isset($newImageUrl) && $newImageUrl !== $oldImageUrl) {
+            $this->cloudinaryService->deleteFromCloudinary($oldImageUrl);
+        }
+
+        return to_route('portfolio.index')->with('success', 'Portfolio item updated successfully.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePortfolioRequest $request, Portfolio $portfolio)
+    public function destroy(PortfolioItem $portfolio): RedirectResponse
     {
-        //
-    }
+        $imageUrl = $portfolio->site_image_url;
+        $portfolio->delete();
+        $this->cloudinaryService->deleteFromCloudinary($imageUrl);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Portfolio $portfolio)
-    {
-        //
+        return to_route('portfolio.index')->with('success', 'Portfolio item deleted successfully.');
     }
 }

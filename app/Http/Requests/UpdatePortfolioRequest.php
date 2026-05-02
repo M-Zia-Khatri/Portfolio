@@ -2,28 +2,28 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePortfolioRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, array<int, mixed>|string>
      */
     public function rules(): array
     {
         return [
-            //
+            'site_name' => ['sometimes', 'required', 'string', 'max:255'],
+            'site_role' => ['sometimes', 'required', 'string', 'max:255'],
+            'site_url' => ['sometimes', 'required', 'url', 'max:2048'],
+            'site_image' => ['sometimes', 'required', 'file', 'image', 'max:5120'],
+            'use_tech' => ['sometimes', 'required', 'array', 'min:1'],
+            'use_tech.*' => ['required_with:use_tech', 'string', 'max:255'],
+            'description' => ['sometimes', 'required', 'string'],
         ];
     }
 }
