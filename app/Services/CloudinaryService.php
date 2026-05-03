@@ -4,11 +4,14 @@ namespace App\Services;
 
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\UploadedFile;
+use RuntimeException;
 
 class CloudinaryService
 {
     public function uploadToCloudinary(UploadedFile $file): string
     {
+        $this->ensureCloudinaryConfigurationIsComplete();
+
         $result = Cloudinary::upload($file->getRealPath(), [
             'folder' => config('services.cloudinary.folder', 'portfolio'),
         ]);
@@ -21,6 +24,8 @@ class CloudinaryService
         if (! is_string($url) || $url === '') {
             return;
         }
+
+        $this->ensureCloudinaryConfigurationIsComplete();
 
         $publicId = $this->extractPublicIdFromUrl($url);
 
@@ -61,5 +66,30 @@ class CloudinaryService
         $publicIdParts[] = pathinfo($fileName, PATHINFO_FILENAME);
 
         return implode('/', $publicIdParts);
+    }
+
+    private function ensureCloudinaryConfigurationIsComplete(): void
+    {
+        $cloudUrl = config('cloudinary.cloud_url');
+
+        if (is_string($cloudUrl) && $cloudUrl !== '') {
+            return;
+        }
+
+        $missingVariables = [];
+
+        foreach (['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'] as $variable) {
+            $value = env($variable);
+
+            if (! is_string($value) || $value === '') {
+                $missingVariables[] = $variable;
+            }
+        }
+
+        if ($missingVariables === []) {
+            $missingVariables[] = 'CLOUDINARY_URL';
+        }
+
+        throw new RuntimeException('Cloudinary is not configured. Missing: '.implode(', ', $missingVariables));
     }
 }
