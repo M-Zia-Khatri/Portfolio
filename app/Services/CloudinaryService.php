@@ -70,26 +70,31 @@ class CloudinaryService
 
     private function ensureCloudinaryConfigurationIsComplete(): void
     {
-        $cloudUrl = config('cloudinary.cloud_url');
-
-        if (is_string($cloudUrl) && $cloudUrl !== '') {
-            return;
-        }
+        $cloudName = env('CLOUDINARY_CLOUD_NAME');
+        $apiKey = env('CLOUDINARY_API_KEY');
+        $apiSecret = env('CLOUDINARY_API_SECRET');
+        $cloudinaryUrl = env('CLOUDINARY_URL');
 
         $missingVariables = [];
 
-        foreach (['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'] as $variable) {
-            $value = env($variable);
-
-            if (! is_string($value) || $value === '') {
-                $missingVariables[] = $variable;
-            }
+        if (! is_string($cloudName) || $cloudName === '') {
+            $missingVariables[] = 'CLOUDINARY_CLOUD_NAME';
         }
 
-        if ($missingVariables === []) {
+        if (! is_string($apiKey) || $apiKey === '') {
+            $missingVariables[] = 'CLOUDINARY_API_KEY';
+        }
+
+        if (! is_string($apiSecret) || $apiSecret === '') {
+            $missingVariables[] = 'CLOUDINARY_API_SECRET';
+        }
+
+        if (! is_string($cloudinaryUrl) || $cloudinaryUrl === '') {
             $missingVariables[] = 'CLOUDINARY_URL';
         }
 
-        throw new RuntimeException('Cloudinary is not configured. Missing: '.implode(', ', $missingVariables));
+        if ($missingVariables !== []) {
+            throw new RuntimeException('Cloudinary is not configured. Missing: '.implode(', ', $missingVariables));
+        }
     }
 }
