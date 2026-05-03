@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Cloudinary\Cloudinary;
 use Illuminate\Http\UploadedFile;
 use RuntimeException;
 
@@ -10,13 +10,13 @@ class CloudinaryService
 {
     public function uploadToCloudinary(UploadedFile $file): string
     {
-        $this->ensureCloudinaryConfigurationIsComplete();
+        $cloudinary = $this->makeCloudinaryClient();
 
-        $result = Cloudinary::upload($file->getRealPath(), [
+        $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
             'folder' => config('services.cloudinary.folder', 'portfolio'),
         ]);
 
-        return (string) $result->getSecurePath();
+        return (string) ($result['secure_url'] ?? '');
     }
 
     public function deleteFromCloudinary(?string $url): void
@@ -25,15 +25,14 @@ class CloudinaryService
             return;
         }
 
-        $this->ensureCloudinaryConfigurationIsComplete();
-
         $publicId = $this->extractPublicIdFromUrl($url);
 
         if ($publicId === null) {
             return;
         }
 
-        Cloudinary::destroy($publicId);
+        $cloudinary = $this->makeCloudinaryClient();
+        $cloudinary->uploadApi()->destroy($publicId);
     }
 
     private function extractPublicIdFromUrl(string $url): ?string
@@ -68,33 +67,39 @@ class CloudinaryService
         return implode('/', $publicIdParts);
     }
 
-    private function ensureCloudinaryConfigurationIsComplete(): void
+    private function makeCloudinaryClient(): Cloudinary
     {
-        $cloudName = env('CLOUDINARY_CLOUD_NAME');
-        $apiKey = env('CLOUDINARY_API_KEY');
-        $apiSecret = env('CLOUDINARY_API_SECRET');
-        $cloudinaryUrl = env('CLOUDINARY_URL');
+        $cloudName = (string) env('CLOUDINARY_CLOUD_NAME', '');
+        $apiKey = (string) env('CLOUDINARY_API_KEY', '');
+        $apiSecret = (string) env('CLOUDINARY_API_SECRET', '');
 
         $missingVariables = [];
 
-        if (! is_string($cloudName) || $cloudName === '') {
+        if ($cloudName === '') {
             $missingVariables[] = 'CLOUDINARY_CLOUD_NAME';
         }
 
-        if (! is_string($apiKey) || $apiKey === '') {
+        if ($apiKey === '') {
             $missingVariables[] = 'CLOUDINARY_API_KEY';
         }
 
-        if (! is_string($apiSecret) || $apiSecret === '') {
+        if ($apiSecret === '') {
             $missingVariables[] = 'CLOUDINARY_API_SECRET';
-        }
-
-        if (! is_string($cloudinaryUrl) || $cloudinaryUrl === '') {
-            $missingVariables[] = 'CLOUDINARY_URL';
         }
 
         if ($missingVariables !== []) {
             throw new RuntimeException('Cloudinary is not configured. Missing: '.implode(', ', $missingVariables));
         }
+
+        return new Cloudinary([
+            'cloud' => [
+                'cloud_name' => $cloudName,
+                'api_key' => $apiKey,
+                'api_secret' => $apiSecret,
+            ],
+            'url' => [
+                'secure' => true,
+            ],
+        ]);
     }
 }
