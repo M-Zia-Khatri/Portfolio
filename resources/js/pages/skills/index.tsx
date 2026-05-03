@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 
-type Skill = { id: number; name: string; icon: string; file_name: string; lang: string; color: string; mode: 'code' | 'terminal' };
+type Skill = { id: number; name: string; icon: string; fileName: string; lang: string; color: string; mode: 'code' | 'terminal' };
 
 export default function SkillsIndex({ skills, filters }: { skills: Skill[]; filters: { mode?: string } }) {
   const flash = usePage().props.flash as { success?: string };

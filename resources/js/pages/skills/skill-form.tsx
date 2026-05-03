@@ -19,7 +19,7 @@ export default function SkillForm({
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-3">
-      {['name', 'icon', 'file_name', 'lang', 'color'].map((field) => (
+      {['name', 'icon', 'fileName', 'lang', 'color'].map((field) => (
         <input
           key={field}
           className="w-full rounded border p-2"

@@ -13,7 +13,12 @@ class ContactController extends Controller
 {
     public function submit(StoreContactRequest $request): RedirectResponse
     {
-        $contactMessage = ContactMessage::query()->create($request->validated());
+        $validated = $request->validated();
+        $contactMessage = ContactMessage::query()->create([
+            'full_name' => $validated['fullName'],
+            'email' => $validated['email'],
+            'message' => $validated['message'],
+        ]);
 
         SendContactEmailJob::dispatch($contactMessage);
 
@@ -28,11 +33,18 @@ class ContactController extends Controller
             ->withQueryString();
 
         return Inertia::render('admin/contact/index', [
-            'contacts' => $contacts->items(),
+            'contacts' => collect($contacts->items())->map(fn (ContactMessage $contact): array => [
+                'id' => (string) $contact->id,
+                'fullName' => $contact->full_name,
+                'email' => $contact->email,
+                'message' => $contact->message,
+                'isRead' => $contact->is_read,
+                'createdAt' => $contact->created_at?->toISOString(),
+            ])->all(),
             'meta' => [
-                'current_page' => $contacts->currentPage(),
-                'last_page' => $contacts->lastPage(),
-                'per_page' => $contacts->perPage(),
+                'currentPage' => $contacts->currentPage(),
+                'lastPage' => $contacts->lastPage(),
+                'perPage' => $contacts->perPage(),
                 'total' => $contacts->total(),
             ],
         ]);

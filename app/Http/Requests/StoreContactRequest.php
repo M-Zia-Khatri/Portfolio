@@ -17,7 +17,7 @@ class StoreContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'full_name' => ['required', 'string', 'min:2'],
+            'fullName' => ['required', 'string', 'min:2'],
             'email' => ['required', 'email'],
             'message' => ['required', 'string', 'min:10'],
         ];
@@ -26,7 +26,7 @@ class StoreContactRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'full_name' => trim((string) $this->input('full_name')),
+            'fullName' => trim((string) $this->input('fullName', $this->input('full_name'))),
             'email' => strtolower(trim((string) $this->input('email'))),
             'message' => trim((string) $this->input('message')),
         ]);

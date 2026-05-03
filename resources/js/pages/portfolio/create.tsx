@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import PortfolioForm from './form';
 
 export default function CreatePortfolio() {
-  const form = useForm({ site_name: '', site_role: '', site_url: '', site_image: null as File | null, use_tech: [] as string[], description: '' });
+  const form = useForm({ siteName: '', siteRole: '', siteUrl: '', siteImage: null as File | null, useTech: [] as string[], description: '' });
 
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();

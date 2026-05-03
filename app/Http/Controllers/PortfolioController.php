@@ -39,12 +39,19 @@ class PortfolioController extends Controller
     public function store(StorePortfolioRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $uploadedImageUrl = $this->cloudinaryService->uploadToCloudinary($request->file('site_image'));
+        $mappedData = [
+            'site_name' => $validated['siteName'],
+            'site_role' => $validated['siteRole'],
+            'site_url' => $validated['siteUrl'],
+            'use_tech' => $validated['useTech'],
+            'description' => $validated['description'],
+        ];
+        $uploadedImageUrl = $this->cloudinaryService->uploadToCloudinary($request->file('siteImage'));
 
         try {
-            DB::transaction(function () use ($validated, $uploadedImageUrl): void {
+            DB::transaction(function () use ($mappedData, $uploadedImageUrl): void {
                 PortfolioItem::query()->create([
-                    ...$validated,
+                    ...$mappedData,
                     'site_image_url' => $uploadedImageUrl,
                 ]);
             });
@@ -75,17 +82,23 @@ class PortfolioController extends Controller
     public function update(UpdatePortfolioRequest $request, PortfolioItem $portfolio): RedirectResponse
     {
         $validated = $request->validated();
+        $mappedData = [];
+        foreach (['siteName' => 'site_name', 'siteRole' => 'site_role', 'siteUrl' => 'site_url', 'useTech' => 'use_tech', 'description' => 'description'] as $camel => $snake) {
+            if (array_key_exists($camel, $validated)) {
+                $mappedData[$snake] = $validated[$camel];
+            }
+        }
         $oldImageUrl = $portfolio->site_image_url;
         $newImageUrl = null;
 
-        if ($request->hasFile('site_image')) {
-            $newImageUrl = $this->cloudinaryService->uploadToCloudinary($request->file('site_image'));
-            $validated['site_image_url'] = $newImageUrl;
+        if ($request->hasFile('siteImage')) {
+            $newImageUrl = $this->cloudinaryService->uploadToCloudinary($request->file('siteImage'));
+            $mappedData['site_image_url'] = $newImageUrl;
         }
 
         try {
-            DB::transaction(function () use ($portfolio, $validated): void {
-                $portfolio->update($validated);
+            DB::transaction(function () use ($portfolio, $mappedData): void {
+                $portfolio->update($mappedData);
             });
         } catch (Throwable $exception) {
             if (is_string($newImageUrl) && $newImageUrl !== '') {

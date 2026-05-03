@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import SkillForm from './skill-form';
 
 export default function SkillsCreate() {
-  const form = useForm({ name: '', icon: '', file_name: '', lang: '', color: '', mode: 'code', code: [''], commands: null });
+  const form = useForm({ name: '', icon: '', fileName: '', lang: '', color: '', mode: 'code', code: [''], commands: null });
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     form.post(route('skills.store'));

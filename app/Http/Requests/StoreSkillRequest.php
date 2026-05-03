@@ -20,7 +20,7 @@ class StoreSkillRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'icon' => ['required', 'string', 'max:255'],
-            'file_name' => ['required', 'string', 'max:255'],
+            'fileName' => ['required', 'string', 'max:255'],
             'lang' => ['required', 'string', 'max:255', 'unique:skills,lang'],
             'color' => ['required', 'string', 'max:255'],
             'mode' => ['required', Rule::in(['code', 'terminal'])],
@@ -43,5 +43,12 @@ class StoreSkillRequest extends FormRequest
             'commands.required_if' => 'Commands are required when mode is terminal.',
             'commands.prohibited_if' => 'Commands must be empty when mode is code.',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'fileName' => $this->input('fileName', $this->input('file_name')),
+        ]);
     }
 }

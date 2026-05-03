@@ -17,13 +17,24 @@ class UpdatePortfolioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'site_name' => ['sometimes', 'required', 'string', 'max:255'],
-            'site_role' => ['sometimes', 'required', 'string', 'max:255'],
-            'site_url' => ['sometimes', 'required', 'url', 'max:2048'],
-            'site_image' => ['sometimes', 'required', 'file', 'image', 'max:5120'],
-            'use_tech' => ['sometimes', 'required', 'array', 'min:1'],
-            'use_tech.*' => ['required_with:use_tech', 'string', 'max:255'],
+            'siteName' => ['sometimes', 'required', 'string', 'max:255'],
+            'siteRole' => ['sometimes', 'required', 'string', 'max:255'],
+            'siteUrl' => ['sometimes', 'required', 'url', 'max:2048'],
+            'siteImage' => ['sometimes', 'required', 'file', 'image', 'max:5120'],
+            'useTech' => ['sometimes', 'required', 'array', 'min:1'],
+            'useTech.*' => ['required_with:useTech', 'string', 'max:255'],
             'description' => ['sometimes', 'required', 'string'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'siteName' => $this->input('siteName', $this->input('site_name')),
+            'siteRole' => $this->input('siteRole', $this->input('site_role')),
+            'siteUrl' => $this->input('siteUrl', $this->input('site_url')),
+            'siteImage' => $this->file('siteImage', $this->file('site_image')),
+            'useTech' => $this->input('useTech', $this->input('use_tech')),
+        ]);
     }
 }

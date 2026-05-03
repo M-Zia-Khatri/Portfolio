@@ -5,7 +5,7 @@ import PortfolioForm from './form';
 type PortfolioItem = { id: string; siteName: string; siteRole: string; siteUrl: string; siteImageUrl: string; useTech: string[]; description: string };
 
 export default function EditPortfolio({ portfolioItem }: { portfolioItem: PortfolioItem }) {
-  const form = useForm({ site_name: portfolioItem.siteName, site_role: portfolioItem.siteRole, site_url: portfolioItem.siteUrl, site_image: null as File | null, use_tech: portfolioItem.useTech, description: portfolioItem.description });
+  const form = useForm({ siteName: portfolioItem.siteName, siteRole: portfolioItem.siteRole, siteUrl: portfolioItem.siteUrl, siteImage: null as File | null, useTech: portfolioItem.useTech, description: portfolioItem.description });
 
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();

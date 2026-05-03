@@ -20,7 +20,7 @@ class UpdateSkillRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'icon' => ['required', 'string', 'max:255'],
-            'file_name' => ['required', 'string', 'max:255'],
+            'fileName' => ['required', 'string', 'max:255'],
             'lang' => ['required', 'string', 'max:255', Rule::unique('skills', 'lang')->ignore($this->route('skill'))],
             'color' => ['required', 'string', 'max:255'],
             'mode' => ['required', Rule::in(['code', 'terminal'])],
@@ -30,5 +30,12 @@ class UpdateSkillRequest extends FormRequest
             'commands.*.kind' => ['required_with:commands', Rule::in(['command', 'output', 'comment', 'blank'])],
             'commands.*.text' => ['nullable', 'string'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'fileName' => $this->input('fileName', $this->input('file_name')),
+        ]);
     }
 }

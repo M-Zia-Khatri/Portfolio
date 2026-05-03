@@ -10,7 +10,7 @@ type WelcomePageProps = SharedData & {
 };
 
 type ContactFormData = {
-  full_name: string;
+  fullName: string;
   email: string;
   message: string;
 };
@@ -19,7 +19,7 @@ export default function Welcome() {
   const { flash } = usePage<WelcomePageProps>().props;
 
   const { data, setData, post, processing, errors, reset } = useForm<ContactFormData>({
-    full_name: '',
+    fullName: '',
     email: '',
     message: '',
   });
@@ -52,18 +52,18 @@ export default function Welcome() {
 
           <form onSubmit={submit} className="space-y-5">
             <div>
-              <label htmlFor="full_name" className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label htmlFor="fullName" className="mb-1.5 block text-sm font-medium text-gray-700">
                 Full name
               </label>
               <input
-                id="full_name"
+                id="fullName"
                 type="text"
-                value={data.full_name}
-                onChange={(event) => setData('full_name', event.target.value)}
+                value={data.fullName}
+                onChange={(event) => setData('fullName', event.target.value)}
                 autoComplete="name"
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-gray-500 focus:outline-none focus:ring-0"
               />
-              {errors.full_name ? <p className="mt-1 text-sm text-red-600">{errors.full_name}</p> : null}
+              {errors.fullName ? <p className="mt-1 text-sm text-red-600">{errors.fullName}</p> : null}
             </div>
 
             <div>

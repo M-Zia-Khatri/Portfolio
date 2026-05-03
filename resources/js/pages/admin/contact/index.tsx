@@ -2,17 +2,17 @@ import { Head, Link } from '@inertiajs/react';
 
 type Contact = {
   id: string;
-  full_name: string;
+  fullName: string;
   email: string;
   message: string;
-  is_read: boolean;
-  created_at: string;
+  isRead: boolean;
+  createdAt: string;
 };
 
 type PaginationMeta = {
-  current_page: number;
-  last_page: number;
-  per_page: number;
+  currentPage: number;
+  lastPage: number;
+  perPage: number;
   total: number;
 };
 
@@ -47,10 +47,10 @@ export default function ContactIndex({ contacts, meta }: Props) {
             ) : (
               contacts.map((contact) => (
                 <tr key={contact.id} className="border-t align-top">
-                  <td className="p-3">{contact.full_name}</td>
+                  <td className="p-3">{contact.fullName}</td>
                   <td className="p-3">{contact.email}</td>
                   <td className="p-3 max-w-xl whitespace-pre-wrap">{contact.message}</td>
-                  <td className="p-3">{new Date(contact.created_at).toLocaleString()}</td>
+                  <td className="p-3">{new Date(contact.createdAt).toLocaleString()}</td>
                 </tr>
               ))
             )}
@@ -60,11 +60,11 @@ export default function ContactIndex({ contacts, meta }: Props) {
 
       <div className="flex items-center justify-between text-sm">
         <p>
-          Showing page {meta.current_page} of {meta.last_page} ({meta.total} total)
+          Showing page {meta.currentPage} of {meta.lastPage} ({meta.total} total)
         </p>
         <div className="flex gap-2">
-          {meta.current_page > 1 ? <Link href={`?page=${meta.current_page - 1}`}>Previous</Link> : null}
-          {meta.current_page < meta.last_page ? <Link href={`?page=${meta.current_page + 1}`}>Next</Link> : null}
+          {meta.currentPage > 1 ? <Link href={`?page=${meta.currentPage - 1}`}>Previous</Link> : null}
+          {meta.currentPage < meta.lastPage ? <Link href={`?page=${meta.currentPage + 1}`}>Next</Link> : null}
         </div>
       </div>
     </div>

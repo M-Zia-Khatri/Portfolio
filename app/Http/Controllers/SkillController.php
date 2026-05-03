@@ -38,7 +38,10 @@ class SkillController extends Controller
 
     public function store(StoreSkillRequest $request): RedirectResponse
     {
-        Skill::query()->create($request->validated());
+        $validated = $request->validated();
+        $validated['file_name'] = $validated['fileName'];
+        unset($validated['fileName']);
+        Skill::query()->create($validated);
 
         return to_route('skills.index')->with('success', 'Skill created successfully.');
     }
@@ -52,7 +55,10 @@ class SkillController extends Controller
 
     public function update(UpdateSkillRequest $request, Skill $skill): RedirectResponse
     {
-        $skill->update($request->validated());
+        $validated = $request->validated();
+        $validated['file_name'] = $validated['fileName'];
+        unset($validated['fileName']);
+        $skill->update($validated);
 
         return to_route('skills.index')->with('success', 'Skill updated successfully.');
     }
