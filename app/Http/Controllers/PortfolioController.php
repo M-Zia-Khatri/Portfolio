@@ -39,17 +39,17 @@ class PortfolioController extends Controller
     public function store(StorePortfolioRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $imageUrl = $this->cloudinaryService->uploadToCloudinary($request->file('site_image'));
+        $uploadedImageUrl = $this->cloudinaryService->uploadToCloudinary($request->file('site_image'));
 
         try {
-            DB::transaction(function () use ($validated, $imageUrl): void {
+            DB::transaction(function () use ($validated, $uploadedImageUrl): void {
                 PortfolioItem::query()->create([
                     ...$validated,
-                    'site_image_url' => $imageUrl,
+                    'site_image_url' => $uploadedImageUrl,
                 ]);
             });
         } catch (Throwable $exception) {
-            $this->cloudinaryService->deleteFromCloudinary($imageUrl);
+            $this->cloudinaryService->deleteFromCloudinary($uploadedImageUrl);
 
             throw $exception;
         }
@@ -76,15 +76,26 @@ class PortfolioController extends Controller
     {
         $validated = $request->validated();
         $oldImageUrl = $portfolio->site_image_url;
+        $newImageUrl = null;
 
         if ($request->hasFile('site_image')) {
             $newImageUrl = $this->cloudinaryService->uploadToCloudinary($request->file('site_image'));
             $validated['site_image_url'] = $newImageUrl;
         }
 
-        $portfolio->update($validated);
+        try {
+            DB::transaction(function () use ($portfolio, $validated): void {
+                $portfolio->update($validated);
+            });
+        } catch (Throwable $exception) {
+            if (is_string($newImageUrl) && $newImageUrl !== '') {
+                $this->cloudinaryService->deleteFromCloudinary($newImageUrl);
+            }
 
-        if (isset($newImageUrl) && $newImageUrl !== $oldImageUrl) {
+            throw $exception;
+        }
+
+        if (is_string($newImageUrl) && $newImageUrl !== '' && $newImageUrl !== $oldImageUrl) {
             $this->cloudinaryService->deleteFromCloudinary($oldImageUrl);
         }
 
@@ -94,7 +105,11 @@ class PortfolioController extends Controller
     public function destroy(PortfolioItem $portfolio): RedirectResponse
     {
         $imageUrl = $portfolio->site_image_url;
-        $portfolio->delete();
+
+        DB::transaction(function () use ($portfolio): void {
+            $portfolio->delete();
+        });
+
         $this->cloudinaryService->deleteFromCloudinary($imageUrl);
 
         return to_route('portfolio.index')->with('success', 'Portfolio item deleted successfully.');

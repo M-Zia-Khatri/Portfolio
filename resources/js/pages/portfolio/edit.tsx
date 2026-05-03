@@ -10,14 +10,14 @@ export default function EditPortfolio({ portfolioItem }: { portfolioItem: Portfo
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    form
-      .transform((data) => ({
-        ...data,
-        _method: 'put',
-      }))
-      .post(route('portfolio.update', portfolioItem.id), {
-        forceFormData: true,
-      });
+    form.transform((data) => ({
+      ...data,
+      _method: 'put',
+    }));
+
+    form.post(route('portfolio.update', portfolioItem.id), {
+      forceFormData: true,
+    });
   };
 
   return <div className="mx-auto max-w-3xl p-6"><Head title="Edit Portfolio" /><h1 className="mb-4 text-2xl font-semibold">Edit Portfolio Item</h1><PortfolioForm form={form} submitLabel="Update" onSubmit={onSubmit} /></div>;
