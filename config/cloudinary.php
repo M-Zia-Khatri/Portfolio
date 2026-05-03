@@ -7,6 +7,20 @@
  * file that was distributed with this source code.
  */
 
+$cloudName = env('CLOUDINARY_CLOUD_NAME');
+$apiKey = env('CLOUDINARY_API_KEY', env('CLOUDINARY_KEY'));
+$apiSecret = env('CLOUDINARY_API_SECRET', env('CLOUDINARY_SECRET'));
+
+$cloudUrl = env('CLOUDINARY_URL');
+
+if (! is_string($cloudUrl) || $cloudUrl === '') {
+    $cloudUrl = is_string($cloudName) && $cloudName !== ''
+        && is_string($apiKey) && $apiKey !== ''
+        && is_string($apiSecret) && $apiSecret !== ''
+        ? 'cloudinary://'.$apiKey.':'.$apiSecret.'@'.$cloudName
+        : null;
+}
+
 return [
 
     /*
@@ -31,7 +45,7 @@ return [
     |
     |
     */
-    'cloud_url' => env('CLOUDINARY_URL', 'cloudinary://'.env('CLOUDINARY_KEY').':'.env('CLOUDINARY_SECRET').'@'.env('CLOUDINARY_CLOUD_NAME')),
+    'cloud_url' => $cloudUrl,
 
     /**
      * Upload Preset From Cloudinary Dashboard
@@ -41,10 +55,10 @@ return [
     /**
      * Route to get cloud_image_url from Blade Upload Widget
      */
-    'upload_route' => env('CLOUDINARY_UPLOAD_ROUTE'),
+    'upload_route' => env('CLOUDINARY_UPLOAD_ROUTE', '/cloudinary/upload'),
 
     /**
      * Controller action to get cloud_image_url from Blade Upload Widget
      */
-    'upload_action' => env('CLOUDINARY_UPLOAD_ACTION'),
+    'upload_action' => env('CLOUDINARY_UPLOAD_ACTION', 'CloudinaryLabs\\CloudinaryLaravel\\Controller\\UploadWidgetController@process'),
 ];

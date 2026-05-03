@@ -4,11 +4,14 @@ namespace App\Services;
 
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\UploadedFile;
+use RuntimeException;
 
 class CloudinaryService
 {
     public function uploadToCloudinary(UploadedFile $file): string
     {
+        $this->ensureCloudinaryIsConfigured();
+
         $result = Cloudinary::upload($file->getRealPath(), [
             'folder' => config('services.cloudinary.folder', 'portfolio'),
         ]);
@@ -28,7 +31,21 @@ class CloudinaryService
             return;
         }
 
+        $this->ensureCloudinaryIsConfigured();
+
         Cloudinary::destroy($publicId);
+    }
+
+
+    private function ensureCloudinaryIsConfigured(): void
+    {
+        $cloudUrl = config('cloudinary.cloud_url');
+
+        if (is_string($cloudUrl) && $cloudUrl !== '') {
+            return;
+        }
+
+        throw new RuntimeException('Cloudinary is not configured. Set CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.');
     }
 
     private function extractPublicIdFromUrl(string $url): ?string
