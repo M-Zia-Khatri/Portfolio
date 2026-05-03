@@ -3,6 +3,8 @@
 use App\Services\CloudinaryService;
 use Illuminate\Http\UploadedFile;
 
+uses(Tests\TestCase::class);
+
 it('throws a descriptive exception when cloudinary config is missing', function () {
     config()->set('cloudinary.cloud_url', 'cloudinary://:@');
 
@@ -13,6 +15,6 @@ it('throws a descriptive exception when cloudinary config is missing', function 
 
     $service = new CloudinaryService;
 
-    expect(fn () => $service->uploadToCloudinary(UploadedFile::fake()->image('portfolio.jpg')))
+    expect(fn () => $service->uploadToCloudinary(UploadedFile::fake()->create('portfolio.jpg', 100, 'image/jpeg')))
         ->toThrow(RuntimeException::class, 'Cloudinary is not configured.');
 });

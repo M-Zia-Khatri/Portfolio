@@ -44,7 +44,7 @@ it('stores contact messages and dispatches a queued email job', function (): voi
 });
 
 it('requires authentication for admin contact routes', function (): void {
-    $this->get(route('admin.contact.index'))->assertRedirect(route('login'));
+    $this->get(route('admin.contact.index'))->assertRedirect(route('auth.login.create'));
 });
 
 it('renders paginated contacts for admins', function (): void {

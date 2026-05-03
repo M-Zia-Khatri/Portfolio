@@ -46,7 +46,7 @@ it('validates use_tech item entries', function () {
         'site_name' => 'Portfolio Name',
         'site_role' => 'Backend',
         'site_url' => 'https://example.com',
-        'site_image' => UploadedFile::fake()->image('site.jpg'),
+        'site_image' => UploadedFile::fake()->create('site.jpg', 100, 'image/jpeg'),
         'use_tech' => ['Laravel', ''],
         'description' => 'Portfolio description',
     ])->assertSessionHasErrors(['use_tech.1']);
