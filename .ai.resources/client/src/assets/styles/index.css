@@ -1,0 +1,276 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900');
+@font-face {
+  font-family: 'Special Gothic Expanded One';
+  src: url('../fonts/SpecialGothicExpandedOne-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* Recommended for better performance */
+}
+
+/* 1. Tailwind BASE pehle */
+@import 'tailwindcss/theme';
+/* 2. Phir Radix Themes */
+@import '@radix-ui/themes/styles.css' layer(radix-themes);
+
+/* 3. Phir baaki Tailwind (utilities) */
+@import 'tailwindcss/utilities';
+
+/* -------------------------------------------------------
+   CUSTOM THEME VARIABLES
+------------------------------------------------------- */
+
+:root {
+  --container-1: 28rem;
+  --container-2: 43rem;
+  --container-3: 55rem;
+  --container-4: 71rem;
+}
+
+.dark,
+.dark-theme {
+  --blue-1: #00060b;
+  --blue-2: #091920;
+  --blue-3: #032a38;
+  --blue-4: #00384c;
+  --blue-5: #00465e;
+  --blue-6: #075671;
+  --blue-7: #106988;
+  --blue-8: #107fa5;
+  --blue-9: #70c1e5;
+  --blue-10: #65b6da;
+  --blue-11: #76c7eb;
+  --blue-12: #c6efff;
+
+  --blue-a1: #002ae007;
+  --blue-a2: #2abcfb1c;
+  --blue-a3: #00b8fb35;
+  --blue-a4: #00b7fd49;
+  --blue-a5: #00bcff5b;
+  --blue-a6: #0abffd6f;
+  --blue-a7: #1ac4ff86;
+  --blue-a8: #16c3fea4;
+  --blue-a9: #7cd6fee5;
+  --blue-a10: #75d4feda;
+  --blue-a11: #80d8ffeb;
+  --blue-a12: #c6efff;
+
+  --blue-contrast: #092531;
+  --blue-surface: #0d2d3b80;
+  --blue-indicator: #70c1e5;
+  --blue-track: #70c1e5;
+
+  --gray-1: #020608;
+  --gray-2: #10181b;
+  --gray-3: #172328;
+  --gray-4: #1b2c32;
+  --gray-5: #20343b;
+  --gray-6: #243e46;
+  --gray-7: #2c4c58;
+  --gray-8: #3b6777;
+  --gray-9: #497584;
+  --gray-10: #598290;
+  --gray-11: #9bb9c4;
+  --gray-12: #e7f0f3;
+
+  --gray-a1: #0045c504;
+  --gray-a2: #7fd8f917;
+  --gray-a3: #85dafd24;
+  --gray-a4: #7fdeff2e;
+  --gray-a5: #80dcfb38;
+  --gray-a6: #7bdefd43;
+  --gray-a7: #7adbff55;
+  --gray-a8: #7bdbfd75;
+  --gray-a9: #8be1ff82;
+  --gray-a10: #9ce6ff8e;
+  --gray-a11: #caf1ffc3;
+  --gray-a12: #f2fcfff3;
+
+  --gray-contrast: #ffffff;
+  --gray-surface: rgba(0, 0, 0, 0.05);
+  --gray-indicator: #497584;
+  --gray-track: #497584;
+
+  --color-background: #050505;
+}
+
+@theme {
+  --font-inter: 'Inter', sans-serif;
+  --font-gothic-expanded: 'Special Gothic Expanded One', sans-serif;
+}
+
+.radix-themes :is(h1, h2, h3, h4, .rt-Heading) {
+  font-family: var(--font-gothic-expanded) !important;
+}
+
+.radix-themes {
+  --default-font-family: var(--font-inter);
+  --heading-font-family: var(--font-gothic-expanded);
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    .dark,
+    .dark-theme {
+      --blue-1: oklch(11.5% 0.0215 228.6);
+      --blue-2: oklch(20.3% 0.0258 228.6);
+      --blue-3: oklch(26.5% 0.0493 228.6);
+      --blue-4: oklch(31.8% 0.0644 228.6);
+      --blue-5: oklch(36.9% 0.0732 228.6);
+      --blue-6: oklch(42.4% 0.0806 228.6);
+      --blue-7: oklch(48.6% 0.0905 228.6);
+      --blue-8: oklch(55.7% 0.1058 228.6);
+      --blue-9: oklch(77.3% 0.0946 228.6);
+      --blue-10: oklch(73.8% 0.0946 228.6);
+      --blue-11: oklch(79.2% 0.0946 228.6);
+      --blue-12: oklch(93.1% 0.0502 228.6);
+
+      --gray-1: oklch(11.5% 0.0126 222.1);
+      --gray-2: oklch(20.2% 0.0136 222.1);
+      --gray-3: oklch(24.8% 0.0196 222.1);
+      --gray-4: oklch(28% 0.0253 222.1);
+      --gray-5: oklch(31% 0.0286 222.1);
+      --gray-6: oklch(34.5% 0.0347 222.1);
+      --gray-7: oklch(39.8% 0.0425 222.1);
+      --gray-8: oklch(48.9% 0.0546 222.1);
+      --gray-9: oklch(53.6% 0.0545 222.1);
+      --gray-10: oklch(58.2% 0.0502 222.1);
+      --gray-11: oklch(76.7% 0.0364 222.1);
+      --gray-12: oklch(94.8% 0.0097 222.1);
+
+      --color-background: hsl(0, 0%, 0.5%);
+    }
+  }
+}
+
+/* -------------------------------------------------------
+   BASE STYLES
+------------------------------------------------------- */
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    box-sizing: border-box;
+  }
+
+  img,
+  svg,
+  video,
+  canvas,
+  audio,
+  iframe,
+  embed,
+  object {
+    display: block;
+    vertical-align: middle;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  html {
+    scroll-behavior: auto;
+    overflow-x: clip;
+  }
+
+  body {
+    @apply m-0 p-0;
+    overflow-x: clip;
+  }
+
+  #root {
+    overflow-x: clip;
+  }
+}
+
+/* -------------------------------------------------------
+   HIDE SCROLLBAR
+------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* client/src/assets/styles/code-editor.css */
+.code-line {
+  --line-hl: color-mix(in srgb, var(--line-color), transparent 95%);
+  --line-active: color-mix(in srgb, var(--line-color), transparent 97%);
+  position: relative;
+  min-height: 1.6rem;
+}
+
+/* Background highlights handled by CSS */
+.code-line:hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--line-hl);
+  border-left: 2px solid color-mix(in srgb, var(--line-color), transparent 60%);
+  pointer-events: none;
+}
+
+.code-line.is-active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--line-active);
+  border-left: 2px solid color-mix(in srgb, var(--line-color), transparent 70%);
+  pointer-events: none;
+}
+
+/* Line number color transitions */
+.line-num {
+  color: rgba(255, 255, 255, 0.18);
+  transition: color 0.15s;
+}
+
+.code-line:hover .line-num { color: color-mix(in srgb, var(--line-color), white 20%); }
+.code-line.is-active .line-num { color: var(--line-color); opacity: 1; }
+
+/* The Cursor */
+.code-cursor {
+  display: inline-block;
+  margin-left: 1px;
+  height: 13px;
+  width: 2px;
+  background: var(--line-color);
+  vertical-align: middle;
+  animation: code-blink 1s step-end infinite;
+}
+
+@keyframes code-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
