@@ -15,6 +15,8 @@
 /* 3. Phir baaki Tailwind (utilities) */
 @import 'tailwindcss/utilities';
 
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
 /* -------------------------------------------------------
    CUSTOM THEME VARIABLES
 ------------------------------------------------------- */
