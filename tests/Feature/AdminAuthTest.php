@@ -46,6 +46,28 @@ it('redirects otp verify page to login when otp is expired', function () {
         ->assertRedirect('/auth/login');
 });
 
+
+it('redirects to admin dashboard after successful otp verification', function () {
+    $admin = Admin::query()->create([
+        'email' => 'admin@example.com',
+        'password_hash' => Hash::make('secret123!'),
+        'full_name' => 'Admin User',
+        'is_active' => true,
+    ]);
+
+    OtpToken::query()->create([
+        'admin_id' => $admin->id,
+        'code_hash' => Hash::make('123456'),
+        'expires_at' => now()->addMinutes(5),
+    ]);
+
+    $this->withSession(['auth.admin.pending_admin_id' => $admin->id])
+        ->post('/auth/otp-verify', ['otp' => '123456'])
+        ->assertRedirect('/admin/dashboard');
+
+    $this->assertAuthenticatedAs($admin);
+});
+
 it('completes admin two-step login', function () {
     Mail::fake();
 
