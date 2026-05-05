@@ -48,16 +48,16 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/auth/otp-resend', [AdminAuthController::class, 'resendOtp'])->name('auth.login.resend');
 });
 
-Route::middleware(['auth', 'require-admin'])->group(function (): void {
-    Route::get('/admin/dashboard', function () {
+Route::middleware(['auth', 'require-admin'])->prefix('admin')->group(function (): void {
+    Route::get('/dashboard', function () {
         return Inertia::render('(admin)/dashboard');
-    })->name('dashboard');
+    })->name('admin.dashboard');
 
     Route::post('/auth/logout', [AdminAuthController::class, 'logout'])->name('auth.logout');
 
-    Route::resource('skills', SkillController::class)->except('show');
-    Route::resource('portfolio', PortfolioController::class)->except('show');
+    Route::resource('/skills', SkillController::class)->except('show');
+    Route::resource('/portfolio', PortfolioController::class)->except('show');
 
-    Route::get('/admin/contact', [ContactController::class, 'index'])->name('admin.contact.index');
-    Route::delete('/admin/contact/{id}', [ContactController::class, 'destroy'])->name('admin.contact.destroy');
+    Route::get('/contact', [ContactController::class, 'index'])->name('admin.contact.index');
+    Route::delete('/contact/{id}', [ContactController::class, 'destroy'])->name('admin.contact.destroy');
 });

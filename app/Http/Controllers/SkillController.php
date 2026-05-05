@@ -34,7 +34,7 @@ class SkillController extends Controller
                 'commands' => $skill->commands,
             ]);
 
-        return Inertia::render('skills/index', [
+        return Inertia::render('(admin)/skills/index', [
             'skills' => $skills,
             'filters' => [
                 'mode' => $mode,
@@ -44,7 +44,7 @@ class SkillController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('skills/create');
+        return Inertia::render('(admin)/skills/index', ['create' => true]);
     }
 
     public function store(StoreSkillRequest $request): RedirectResponse
@@ -59,7 +59,7 @@ class SkillController extends Controller
 
     public function edit(Skill $skill): Response
     {
-        return Inertia::render('skills/edit', [
+        return Inertia::render('(admin)/skills/index', [
             'skill' => [
                 'id' => $skill->id,
                 'name' => $skill->name,
@@ -71,6 +71,7 @@ class SkillController extends Controller
                 'code' => $skill->code,
                 'commands' => $skill->commands,
             ],
+            'edit' => true,
         ]);
     }
 

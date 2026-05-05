@@ -20,7 +20,7 @@ class AdminAuthController extends Controller
     public function createLogin(): RedirectResponse|Response
     {
         if (Auth::guard('web')->check()) {
-            return to_route('(admin)/dashboard');
+            return to_route('admin.dashboard');
         }
 
         return Inertia::render('(auth)/Login');
@@ -122,7 +122,7 @@ class AdminAuthController extends Controller
         $request->session()->forget('auth.admin.pending_admin_id');
         $request->session()->regenerate();
 
-        return to_route('(admin)/dashboard');
+        return to_route('admin.dashboard');
     }
 
     public function logout(Request $request): RedirectResponse
