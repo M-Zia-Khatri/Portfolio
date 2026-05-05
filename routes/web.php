@@ -50,7 +50,7 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware(['auth', 'require-admin'])->group(function (): void {
     Route::get('/admin/dashboard', function () {
-        return Inertia::render('dashboard');
+        return Inertia::render('(admin)/dashboard');
     })->name('dashboard');
 
     Route::post('/auth/logout', [AdminAuthController::class, 'logout'])->name('auth.logout');
