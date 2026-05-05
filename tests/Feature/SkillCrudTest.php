@@ -21,10 +21,30 @@ function actingAdmin(): Admin
     return $admin;
 }
 
-it('renders the skills index page', function () {
+it('renders the skills index page with server-driven skills props', function () {
     actingAdmin();
 
-    $this->get(route('skills.index'))->assertOk();
+    Skill::query()->create([
+        'name' => 'React',
+        'icon' => 'FaReact',
+        'file_name' => 'App.tsx',
+        'lang' => 'tsx',
+        'color' => '#61dafb',
+        'mode' => 'code',
+        'code' => ['export default function App() {}'],
+        'commands' => null,
+    ]);
+
+    $this->get(route('skills.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('(admin)/skills/index')
+            ->has('skills', 1)
+            ->where('skills.0.name', 'React')
+            ->where('skills.0.fileName', 'App.tsx')
+            ->where('skills.0.mode', 'code')
+            ->where('skills.0.code.0', 'export default function App() {}')
+        );
 });
 
 it('stores a code skill with conditional validation', function () {
