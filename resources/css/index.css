@@ -15,7 +15,7 @@
 /* 3. Phir baaki Tailwind (utilities) */
 @import 'tailwindcss/utilities';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+/* @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php'; */
 
 /* -------------------------------------------------------
    CUSTOM THEME VARIABLES
@@ -181,7 +181,7 @@
   }
 
   body {
-    @apply m-0 p-0;
+    @apply m-0 p-0 bg-(--color-background);
     overflow-x: clip;
   }
 

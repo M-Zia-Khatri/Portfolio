@@ -1,20 +1,11 @@
-import SEO from '@/shared/components/SEO';
 import { cn } from '@/shared/utils/cn';
 import { Spinner } from '@radix-ui/themes';
 import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
-import { sectionClassName, sections } from './Home.config';
+import { sectionClassName, sections } from './config';
+import Footer from './Footer';
+import TopBar from './TopBar/TopBar';
 
-function DeferredSection({
-  id,
-  className,
-  children,
-  eager = false,
-}: {
-  id: string;
-  className: string;
-  children: ReactNode;
-  eager?: boolean;
-}) {
+function DeferredSection({ id, className, children, eager = false }: { id: string; className: string; children: ReactNode; eager?: boolean }) {
   const [shouldRender, setShouldRender] = useState(eager);
   const ref = useRef<HTMLElement | null>(null);
 
@@ -39,11 +30,7 @@ function DeferredSection({
 
   return (
     <section ref={ref} id={id} className={className}>
-      {shouldRender ? (
-        children
-      ) : (
-        <div className="h-full min-h-[inherit] w-full" aria-hidden="true" />
-      )}
+      {shouldRender ? children : <div className="h-full min-h-[inherit] w-full" aria-hidden="true" />}
     </section>
   );
 }
@@ -51,30 +38,18 @@ function DeferredSection({
 export default function Home() {
   return (
     <>
-      <SEO
-        title="Muhammad Zia khatri | Full Stack Developer"
-        description="Mohammad Zia Khatri - Full Stack Developer specializing in React, Node.js, TypeScript, and modern web technologies. Building scalable, performant applications with clean code. Hire me for your next project."
-        canonical="https://zia-khatri.vercel.app/home"
-      />
+      <TopBar />
+
       <div className="absolute top-0 left-0 -z-100 h-full w-full bg-[url(@/assets/images/bg-noise.png)] opacity-2.5" />
       <div className="absolute top-0 left-0 -z-90 h-full w-full bg-(--blue-3)/15" />
 
       <div className="mx-auto space-y-6">
         {sections.map((section) => {
           const SectionComponent = section.Component;
-          const className = cn(
-            section.id === 'home'
-              ? 'mb-5 flex h-[calc(100dvh)] scroll-mt-24 flex-col justify-center'
-              : sectionClassName,
-          );
+          const className = cn(section.id === 'home' ? 'mb-5 flex h-[calc(100dvh)] scroll-mt-24 flex-col justify-center' : sectionClassName);
 
           return (
-            <DeferredSection
-              key={section.id}
-              id={section.id}
-              className={className}
-              eager={section.id === 'home'}
-            >
+            <DeferredSection key={section.id} id={section.id} className={className} eager={section.id === 'home'}>
               <Suspense fallback={<Spinner />}>
                 <SectionComponent />
               </Suspense>
@@ -82,6 +57,8 @@ export default function Home() {
           );
         })}
       </div>
+
+      <Footer />
     </>
   );
 }

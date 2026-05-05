@@ -1,9 +1,7 @@
-import { AppNavigation } from '@/shared/constants/navigation.constants';
 import { TEXT } from '@/shared/constants/style.constants';
 import { cn } from '@/shared/utils/cn';
 import { Box, Card, Container, Link, Text } from '@radix-ui/themes';
 import { useEffect, useRef, useState } from 'react';
-import { NavLink } from 'react-router';
 import { MagneticShinyButton } from './MagneticShinyButton';
 import { HIDE_DELAY_MS } from './TopBar.constants';
 import { TopBarMobile } from './TopBarMobile';
@@ -61,10 +59,7 @@ export default function TopBar() {
   return (
     <Box asChild className="fixed top-4 z-50 w-full px-4">
       <header
-        className={cn(
-          'transition-transform duration-300 ease-out',
-          hidden ? '-translate-y-[120%] opacity-0' : 'translate-y-0 opacity-100',
-        )}
+        className={cn('transition-transform duration-300 ease-out', hidden ? '-translate-y-[120%] opacity-0' : 'translate-y-0 opacity-100')}
         style={{ willChange: 'transform, opacity' }}
       >
         <Container size={{ initial: '3' }}>
@@ -83,8 +78,8 @@ export default function TopBar() {
             <div className="flex w-full items-center justify-between gap-4">
               {/* Brand logo */}
               <Link asChild underline="none" className="shrink-0">
-                <NavLink
-                  to={AppNavigation.HOME}
+                <Link
+                  href="/#home"
                   onClick={(e) => {
                     e.preventDefault();
                     scrollToSection('home');
@@ -94,7 +89,7 @@ export default function TopBar() {
                   <Text size={TEXT.lg.size} weight="bold" className="text-white">
                     M.Zia Khatri
                   </Text>
-                </NavLink>
+                </Link>
               </Link>
 
               <TopBarNav />

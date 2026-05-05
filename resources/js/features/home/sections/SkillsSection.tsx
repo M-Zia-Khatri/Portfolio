@@ -1,5 +1,4 @@
 import { ICON_MAP } from '@/features/dashboard/pages/skills/iconMap';
-import { useSkillsData } from '@/features/dashboard/pages/skills/useSkillActions';
 import CodeEmptyState from '@/features/skills/components/CodeEmptyState';
 import SkillChip from '@/features/skills/components/SkillChip';
 import type { ApiSkill, Skill } from '@/features/skills/types';
@@ -9,6 +8,7 @@ import { HEADING, TEXT } from '@/shared/constants/style.constants';
 import { useGsapReveal } from '@/shared/hooks/gsap/useGsapReveal';
 import { useGsapStagger } from '@/shared/hooks/gsap/useGsapStagger';
 import { cn } from '@/shared/utils/cn';
+import { usePage } from '@inertiajs/react';
 import { Box, Flex, Heading, Spinner, Text } from '@radix-ui/themes';
 import type { RefObject } from 'react';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
@@ -18,7 +18,7 @@ const PERSPECTIVE_STYLE = { perspective: 800 } as const;
 
 const SkillsHeading = memo(function SkillsHeading() {
   return (
-    <div className="text-center gap-1 md:gap-1.5 lg:gap-2 xl:gap-2.5">
+    <div className="gap-1 text-center md:gap-1.5 lg:gap-2 xl:gap-2.5">
       <Heading as="h2" size={HEADING.h2.size} className="font-bold">
         Tech Stack
       </Heading>
@@ -41,17 +41,10 @@ const SkillChips = memo(function SkillChips({
   handlers: Record<string, () => void>;
 }) {
   return (
-    <div
-      ref={cardsRef}
-      className={cn('flex flex-wrap justify-center', 'gap-2 md:gap-2.5 lg:gap-3 2xl:gap-4')}
-    >
+    <div ref={cardsRef} className={cn('flex flex-wrap justify-center', 'gap-2 md:gap-2.5 lg:gap-3 2xl:gap-4')}>
       {skills.map((skill) => (
         <div key={skill.name}>
-          <SkillChip
-            skill={skill}
-            active={activeName === skill.name}
-            onClick={handlers[skill.name]}
-          />
+          <SkillChip skill={skill} active={activeName === skill.name} onClick={handlers[skill.name]} />
         </div>
       ))}
     </div>
@@ -60,7 +53,7 @@ const SkillChips = memo(function SkillChips({
 
 function SkillsSection() {
   const isSectionActive = useSectionActive('skills');
-  const { data, isLoading, isError } = useSkillsData();
+  const { skills: data, errors: isError } = usePage().props;
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
@@ -91,9 +84,7 @@ function SkillsSection() {
   const resolvedSkill = useMemo<Skill | null>(() => {
     if (mappedSkills.length === 0) return null;
     if (!activeName) return openTabs[0] ?? mappedSkills[0];
-    return (
-      mappedSkills.find((skill) => skill.name === activeName) ?? openTabs[0] ?? mappedSkills[0]
-    );
+    return mappedSkills.find((skill) => skill.name === activeName) ?? openTabs[0] ?? mappedSkills[0];
   }, [activeName, mappedSkills, openTabs]);
 
   const handleChipClick = useCallback((skill: Skill) => {
@@ -122,50 +113,30 @@ function SkillsSection() {
     () => Object.fromEntries(mappedSkills.map((s) => [s.name, () => handleChipClick(s)])),
     [handleChipClick, mappedSkills],
   );
+  console.log('skills data : ', data);
+  console.log('mapped skills data : ', mappedSkills);
 
   return (
     <SecComponent>
-      <Box
-        ref={sectionRef}
-        className="mx-auto flex w-full max-w-xs flex-col items-center gap-8 sm:max-w-xl md:gap-12"
-      >
+      <Box ref={sectionRef} className="mx-auto flex w-full max-w-xs flex-col items-center gap-8 sm:max-w-xl md:gap-12">
         <SkillsHeading />
 
-        <SkillChips
-          cardsRef={cardsRef}
-          skills={mappedSkills}
-          activeName={resolvedSkill?.name}
-          handlers={chipHandlers}
-        />
+        <SkillChips cardsRef={cardsRef} skills={mappedSkills} activeName={resolvedSkill?.name} handlers={chipHandlers} />
 
         <div className="relative w-full" style={PERSPECTIVE_STYLE}>
-          {isLoading ? (
-            <Flex
-              align="center"
-              justify="center"
-              className="min-h-[300px] rounded-xl border border-white/10"
-            >
+          {false ? (
+            <Flex align="center" justify="center" className="min-h-[300px] rounded-xl border border-white/10">
               <Spinner size="3" />
             </Flex>
           ) : isError ? (
-            <Flex
-              direction="column"
-              align="center"
-              justify="center"
-              className="min-h-[300px] rounded-xl border border-white/10 p-4"
-            >
+            <Flex direction="column" align="center" justify="center" className="min-h-[300px] rounded-xl border border-white/10 p-4">
               <CodeEmptyState />
               <Text size="2" color="red" className="text-center">
                 Couldn&apos;t load skills right now.
               </Text>
             </Flex>
           ) : !resolvedSkill ? (
-            <Flex
-              direction="column"
-              align="center"
-              justify="center"
-              className="min-h-[300px] rounded-xl border border-white/10 p-4"
-            >
+            <Flex direction="column" align="center" justify="center" className="min-h-[300px] rounded-xl border border-white/10 p-4">
               <CodeEmptyState />
               <Text size="2" color="gray" className="text-center">
                 No skills available yet.

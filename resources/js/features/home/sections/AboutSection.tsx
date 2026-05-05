@@ -30,7 +30,7 @@ export default function AboutSection() {
               initial={{ scale: 0.95 }}
               whileInView={{ scale: 1 }}
               transition={{ duration: 0.6 }}
-              className="h-full  w-full drop-shadow-[0_0_15px_color-mix(in_srgb,var(--blue-3),transparent_10%)]"
+              className="h-full w-full drop-shadow-[0_0_15px_color-mix(in_srgb,var(--blue-3),transparent_10%)]"
               src={ziaImg}
               title="My picture"
               alt="my image"
@@ -49,7 +49,7 @@ export default function AboutSection() {
           <MotionHeading
             as="h2"
             size={HEADING.h2.size}
-            className="font-bold"
+            className="font-bold text-white"
             mb={{ initial: '3', sm: '4' }}
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -58,25 +58,22 @@ export default function AboutSection() {
             About Me
           </MotionHeading>
 
-          <MotionText size={TEXT.base.size}>
+          <MotionText size={TEXT.base.size} className="text-white">
             Hi, I'm&nbsp;
             <Strong className="text-(--blue-a12)">Zia</Strong>, a&nbsp;
             <Strong className="text-(--blue-a12)">Full-Stack Developer</Strong> who builds&nbsp;
-            <Strong className="text-(--blue-a12)">fast, scalable web applications</Strong>. I work
-            primarily with&nbsp;
+            <Strong className="text-(--blue-a12)">fast, scalable web applications</Strong>. I work primarily with&nbsp;
             <Strong className="text-(--blue-a12)">React</Strong>,&nbsp;
             <Strong className="text-(--blue-a12)">Node.js</Strong>,&nbsp;
             <Strong className="text-(--blue-a12)">PHP</Strong>, and&nbsp;
-            <Strong className="text-(--blue-a12)">Laravel</Strong> to create modern digital
-            products. My focus is on&nbsp;
+            <Strong className="text-(--blue-a12)">Laravel</Strong> to create modern digital products. My focus is on&nbsp;
             <Strong className="text-(--blue-a12)">clean architecture</Strong>
             ,&nbsp;
             <Strong className="text-(--blue-a12)">performance optimization</Strong>, and&nbsp;
             <Strong className="text-(--blue-a12)">maintainable code</Strong>. I enjoy&nbsp;
             <Strong className="text-(--blue-a12)">solving complex problems</Strong>
             &nbsp; and turning ideas into&nbsp;
-            <Strong className="text-(--blue-a12)">reliable web solutions</Strong>. I aim to build
-            applications that are both&nbsp;
+            <Strong className="text-(--blue-a12)">reliable web solutions</Strong>. I aim to build applications that are both&nbsp;
             <Strong className="text-(--blue-a12)">efficient</Strong> and&nbsp;
             <Strong className="text-(--blue-a12)">user-focused</Strong>.
           </MotionText>

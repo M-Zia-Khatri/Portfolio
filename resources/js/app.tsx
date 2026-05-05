@@ -1,6 +1,7 @@
 import '../css/index.css';
 
 import { createInertiaApp } from '@inertiajs/react';
+import { Theme } from '@radix-ui/themes';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { route as routeFn } from 'ziggy-js';
@@ -17,7 +18,11 @@ createInertiaApp({
   setup({ el, App, props }) {
     const root = createRoot(el);
 
-    root.render(<App {...props} />);
+    root.render(
+      <Theme appearance="dark" accentColor="blue" grayColor="gray" radius="small" scaling="100%" className="bg-(--color-background)">
+        <App {...props} />
+      </Theme>,
+    );
   },
   progress: {
     color: '#4B5563',

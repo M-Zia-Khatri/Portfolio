@@ -1,10 +1,8 @@
-import { AppNavigation } from '@/shared/constants/navigation.constants';
 import { TEXT } from '@/shared/constants/style.constants';
 import { Link, Strong, Text } from '@radix-ui/themes'; // ✅ Text from here, not callout
 import type { ComponentType } from 'react';
 import { FaInstagram } from 'react-icons/fa';
 import { FaFacebook, FaGithub, FaLinkedin, FaWhatsapp } from 'react-icons/fa6';
-import { NavLink } from 'react-router';
 
 const socialMedia: {
   icon: ComponentType<{ className?: string }>;
@@ -36,11 +34,11 @@ export default function Footer() {
       <div className="flex flex-col flex-wrap items-center justify-between gap-4 sm:flex-row">
         {/* Brand / Logo */}
         <Link asChild underline="none" className="shrink-0">
-          <NavLink to={AppNavigation.HOME} className="flex items-center gap-2">
+          <Link href="#home" className="flex items-center gap-2">
             <Text size={TEXT.lg.size} weight="bold" className="text-(--blue-12)">
               Muhammad Zia Khatri
             </Text>
-          </NavLink>
+          </Link>
         </Link>
 
         {/* Social Media Icons */}

@@ -28,15 +28,9 @@ const underlineVariants: Variants = {
 
 function TopBarItemImpl({ item }: { item: NavItem }) {
   return (
-    <motion.li
-      key={item.label}
-      initial="initial"
-      whileHover="hover"
-      className="relative list-none"
-      variants={itemVariants}
-    >
+    <motion.li key={item.label} initial="initial" whileHover="hover" className="relative list-none" variants={itemVariants}>
       <Link asChild underline="none">
-        <a
+        <Link
           href={item.href}
           onClick={(e) => {
             e.preventDefault();
@@ -52,7 +46,7 @@ function TopBarItemImpl({ item }: { item: NavItem }) {
             className="absolute right-0 -bottom-0.5 left-0 h-0.5 origin-left rounded-full"
             style={{ backgroundColor: 'var(--blue-9)' }}
           />
-        </a>
+        </Link>
       </Link>
     </motion.li>
   );

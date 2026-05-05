@@ -1,11 +1,10 @@
-import { fetchPublicPortfolio } from '@/features/portfolio/api';
 import { PortfolioItemCard } from '@/features/portfolio/components/PortfolioItemCard';
 import type { PortfolioItem } from '@/features/portfolio/types';
 import SecComponent from '@/shared/components/SecContainer';
 import { TEXT } from '@/shared/constants/style.constants';
 import { cn } from '@/shared/utils/cn';
+import { usePage } from '@inertiajs/react';
 import { Box, Card, Flex, Heading, Skeleton, Text } from '@radix-ui/themes';
-import { useQuery } from '@tanstack/react-query';
 import { motion, type Variants } from 'motion/react';
 import React from 'react';
 
@@ -40,9 +39,14 @@ const headingVariants: Variants = {
 const VIEWPORT_ONCE = { once: true, margin: '-60px' } as const;
 const VIEWPORT_GRID = { once: true, margin: '-80px' } as const;
 
-const PORTFOLIO_QUERY_KEY = ['portfolio'] as const;
-
-type PortfolioApiRow = Awaited<ReturnType<typeof fetchPublicPortfolio>>[number];
+type PortfolioApiRow = {
+  site_name: string;
+  site_role: string;
+  site_url: string;
+  site_image_url: string;
+  use_tech: string[];
+  description: string;
+};
 
 const mapPortfolioItem = (item: PortfolioApiRow): PortfolioItem => ({
   siteName: item.site_name,
@@ -54,27 +58,12 @@ const mapPortfolioItem = (item: PortfolioApiRow): PortfolioItem => ({
 });
 
 export default function PortfolioSection() {
-  const {
-    data: portfolioItems = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: PORTFOLIO_QUERY_KEY,
-    queryFn: fetchPublicPortfolio,
-    select: (items) => items.map(mapPortfolioItem),
-    staleTime: 1000 * 60 * 5,
-  });
+  const { portfolioItems = [], errors: isError } = usePage().props;
 
   return (
     <SecComponent className="w-full" py="8">
       <Box className="flex flex-col items-center gap-8 md:gap-10 lg:gap-12 xl:gap-14">
-        <motion.div
-          className=" text-center"
-          variants={headingVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={VIEWPORT_ONCE}
-        >
+        <motion.div className="text-center" variants={headingVariants} initial="hidden" whileInView="visible" viewport={VIEWPORT_ONCE}>
           <Heading as="h2" className="font-bold">
             Portfolio
           </Heading>
@@ -85,13 +74,13 @@ export default function PortfolioSection() {
         </motion.div>
 
         <motion.div
-          className={cn('grid w-full ', 'grid-cols-1 md:grid-cols-2', 'gap-5 md:gap-3 lg:gap-4')}
+          className={cn('grid w-full', 'grid-cols-1 md:grid-cols-2', 'gap-5 md:gap-3 lg:gap-4')}
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={VIEWPORT_GRID}
         >
-          {isLoading ? (
+          {false ? (
             Array.from({ length: 4 }).map((_, index) => (
               <React.Fragment key={index}>
                 <Card size="2">
@@ -110,14 +99,14 @@ export default function PortfolioSection() {
                 Couldn&apos;t load portfolio items right now. Please try again later.
               </Text>
             </Card>
-          ) : portfolioItems.length === 0 ? (
+          ) : portfolioItems?.length === 0 ? (
             <Card size="3" className="md:col-span-2">
               <Text size={TEXT.base.size} color="gray">
                 Portfolio items coming soon.
               </Text>
             </Card>
           ) : (
-            portfolioItems.map((item) => (
+            portfolioItems?.map((item) => (
               <motion.div key={item.siteUrl} variants={cardVariants}>
                 <PortfolioItemCard item={item} />
               </motion.div>
