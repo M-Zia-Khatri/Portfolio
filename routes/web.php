@@ -43,12 +43,13 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/auth/login', [AdminAuthController::class, 'createLogin'])->name('auth.login.create');
     Route::post('/auth/login', [AdminAuthController::class, 'login'])->middleware('throttle:5,1')->name('auth.login');
 
-    Route::get('/auth/verify-otp', [AdminAuthController::class, 'createOtp'])->name('auth.otp.create');
-    Route::post('/auth/verify-otp', [AdminAuthController::class, 'verifyOtp'])->middleware('throttle:5,1')->name('auth.otp.verify');
+    Route::get('/auth/otp-verify', [AdminAuthController::class, 'createOtp'])->name('auth.otp.create');
+    Route::post('/auth/otp-verify', [AdminAuthController::class, 'verifyOtp'])->middleware('throttle:5,1')->name('auth.otp.verify');
+    Route::post('/auth/otp-resend', [AdminAuthController::class, 'resendOtp'])->name('auth.login.resend');
 });
 
 Route::middleware(['auth', 'require-admin'])->group(function (): void {
-    Route::get('/dashboard', function () {
+    Route::get('/admin/dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
