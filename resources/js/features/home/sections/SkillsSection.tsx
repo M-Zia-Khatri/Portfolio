@@ -1,4 +1,4 @@
-import { ICON_MAP } from '@/features/dashboard/pages/skills/iconMap';
+import { ICON_MAP } from '@/Pages/(admin)/skills/iconMap';
 import CodeEmptyState from '@/features/skills/components/CodeEmptyState';
 import SkillChip from '@/features/skills/components/SkillChip';
 import type { ApiSkill, Skill } from '@/features/skills/types';

@@ -1,4 +1,4 @@
-import { ICON_MAP } from '@/features/dashboard/pages/skills/iconMap';
+import { ICON_MAP } from '@/Pages/(admin)/skills/iconMap';
 import type { ApiSkill, Skill } from '@/features/skills/types';
 import type { CodeCardHandle } from '@/shared/components/CodeCard';
 import CodeCard from '@/shared/components/CodeCard';

@@ -2,23 +2,10 @@ import SkillChip from '@/features/skills/components/SkillChip';
 import type { ApiSkill, Skill } from '@/features/skills/types';
 import CodeCard from '@/shared/components/CodeCard';
 import { Pencil1Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
-import {
-  AlertDialog,
-  Box,
-  Button,
-  Card,
-  Container,
-  Flex,
-  Grid,
-  Heading,
-  IconButton,
-  Spinner,
-  Text,
-} from '@radix-ui/themes';
+import { AlertDialog, Box, Button, Card, Container, Flex, Grid, Heading, IconButton, Spinner, Text } from '@radix-ui/themes';
 import { useState } from 'react';
 import { ICON_MAP } from './iconMap';
 import SkillDialog from './SkillDialog';
-import type { SkillFormValues } from './skills.schema';
 import { useCreateSkill, useDeleteSkill, useSkillsData, useUpdateSkill } from './useSkillActions';
 
 // B3 fixed: proper type for a skill that has been mapped (iconComponent resolved)
@@ -39,8 +26,7 @@ export default function Skills() {
   // B10 fixed: each mutation receives an onError callback for user feedback.
   // Replace `console.error` with your toast library (e.g. toast.error(message)).
   const onMutationError = (err: unknown) => {
-    const message =
-      (err as any)?.response?.data?.message ?? 'Something went wrong. Please try again.';
+    const message = (err as any)?.response?.data?.message ?? 'Something went wrong. Please try again.';
     console.error('[Skills mutation]', message);
     // toast.error(message);
   };
@@ -71,9 +57,7 @@ export default function Skills() {
   const mappedSkills: MappedSkill[] = (apiSkills ?? []).map(toMappedSkill);
 
   // B5 fixed: if activeSkillId is null or stale (skill was deleted), fall back to index 0.
-  const activeSkill =
-    mappedSkills.find((s) => s.id === activeSkillId) ??
-    (mappedSkills.length > 0 ? mappedSkills[0] : null);
+  const activeSkill = mappedSkills.find((s) => s.id === activeSkillId) ?? (mappedSkills.length > 0 ? mappedSkills[0] : null);
 
   const handleOpenAdd = () => {
     setEditingSkill(null);
@@ -91,13 +75,10 @@ export default function Skills() {
   //         as 'command' only when actually submitted. For now the textarea only supports
   //         plain command lines; the kind is always 'command' by design.
   //         Extend to a structured editor if richer kinds are needed.
-  const onFormSubmit = async (values: SkillFormValues) => {
+  const onFormSubmit = async (values) => {
     const { content, mode, commands, ...rest } = values;
 
-    const payload =
-      mode === 'code'
-        ? { ...rest, mode, code: content?.split('\n') || [] }
-        : { ...rest, mode, commands: commands || [] };
+    const payload = mode === 'code' ? { ...rest, mode, code: content?.split('\n') || [] } : { ...rest, mode, commands: commands || [] };
 
     // B10 fixed: mutateAsync errors are caught here so the dialog stays open on failure.
     // The onError callback on the mutation handles user-facing feedback.
@@ -136,22 +117,10 @@ export default function Skills() {
                 </Text>
               )}
               {mappedSkills.map((skill) => (
-                <Flex
-                  key={skill.id}
-                  align="center"
-                  justify="between"
-                  className="border-b border-(--gray-4) pb-2 last:border-0"
-                >
-                  <SkillChip
-                    skill={skill}
-                    active={activeSkill?.id === skill.id}
-                    onClick={() => setActiveSkillId(skill.id)}
-                  />
+                <Flex key={skill.id} align="center" justify="between" className="border-b border-(--gray-4) pb-2 last:border-0">
+                  <SkillChip skill={skill} active={activeSkill?.id === skill.id} onClick={() => setActiveSkillId(skill.id)} />
                   <Flex gap="2">
-                    <IconButton
-                      variant="ghost"
-                      onClick={() => handleOpenEdit(skill as unknown as ApiSkill)}
-                    >
+                    <IconButton variant="ghost" onClick={() => handleOpenEdit(skill as unknown as ApiSkill)}>
                       <Pencil1Icon />
                     </IconButton>
 
@@ -163,9 +132,7 @@ export default function Skills() {
                       </AlertDialog.Trigger>
                       <AlertDialog.Content>
                         <AlertDialog.Title>Delete Skill?</AlertDialog.Title>
-                        <AlertDialog.Description>
-                          This will remove "{skill.name}" from your portfolio.
-                        </AlertDialog.Description>
+                        <AlertDialog.Description>This will remove "{skill.name}" from your portfolio.</AlertDialog.Description>
                         <Flex gap="3" mt="4" justify="end">
                           <AlertDialog.Cancel>
                             <Button variant="soft" color="gray">
@@ -199,19 +166,13 @@ export default function Skills() {
         <Box className="md:col-span-8">
           {activeSkill ? (
             <Flex direction="column" gap="4">
-              <Text size="2" weight="bold" color="blue" className="uppercase tracking-widest">
+              <Text size="2" weight="bold" color="blue" className="tracking-widest uppercase">
                 Live Preview (Static)
               </Text>
-              <CodeCard
-                skill={activeSkill}
-                openTabs={[activeSkill]}
-                onTabClick={() => {}}
-                onTabClose={() => {}}
-                started={true}
-              />
+              <CodeCard skill={activeSkill} openTabs={[activeSkill]} onTabClick={() => {}} onTabClose={() => {}} started={true} />
             </Flex>
           ) : (
-            <Card className="h-full flex items-center justify-center border-dashed">
+            <Card className="flex h-full items-center justify-center border-dashed">
               <Text color="gray">Select a skill to preview</Text>
             </Card>
           )}
