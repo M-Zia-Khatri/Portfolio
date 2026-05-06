@@ -1,7 +1,8 @@
 import { ICON_MAP } from '@/Pages/(admin)/skills/iconMap';
 import CodeEmptyState from '@/features/skills/components/CodeEmptyState';
 import SkillChip from '@/features/skills/components/SkillChip';
-import { isCodeSkill, isTerminalSkill, toTerminalLines, type ApiSkill, type Skill } from '@/features/skills/types';
+import type { ApiSkillPayload } from '@/features/skills/types';
+import { isCodeSkill, isTerminalSkill, normalizeApiSkill, toTerminalLines, type Skill } from '@/features/skills/types';
 import CodeCard from '@/shared/components/CodeCard';
 import SecComponent from '@/shared/components/SecContainer';
 import { HEADING, TEXT } from '@/shared/constants/style.constants';
@@ -16,6 +17,10 @@ import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useSectionActive } from '../hooks/useSectionActive';
 
 const PERSPECTIVE_STYLE = { perspective: 800 } as const;
+
+function hasRequiredSkillFields(skill: ApiSkillPayload): boolean {
+  return Boolean(skill.name && skill.fileName && skill.lang && skill.color);
+}
 
 const SkillsHeading = memo(function SkillsHeading() {
   return (
@@ -54,7 +59,8 @@ const SkillChips = memo(function SkillChips({
 
 function SkillsSection() {
   const isSectionActive = useSectionActive('skills');
-  const { skills: data, errors: isError } = usePage<HomePageProps>().props;
+  const { skills: data } = usePage<HomePageProps>().props;
+  const skillsPayload = data as ApiSkillPayload[] | undefined;
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
@@ -63,11 +69,19 @@ function SkillsSection() {
   useGsapReveal(sectionRef, { y: 40, duration: 0.8, once: true });
   useGsapStagger(cardsRef, { y: 20, stagger: 0.1, duration: 0.5, once: true });
 
+  const skillsPayloadError = typeof skillsPayload !== 'undefined' && !Array.isArray(skillsPayload);
+
   const mappedSkills = useMemo<Skill[]>(() => {
-    const apiSkills: ApiSkill[] = data ?? [];
-    return apiSkills.flatMap((apiSkill): Skill[] => {
+    if (!Array.isArray(skillsPayload)) return [];
+
+    return skillsPayload.flatMap((rawSkill): Skill[] => {
+      const apiSkill = normalizeApiSkill(rawSkill);
+
+      if (!hasRequiredSkillFields(apiSkill)) return [];
+
       const iconComponent = ICON_MAP[apiSkill.icon] ?? ICON_MAP.default;
-      if (isCodeSkill(apiSkill))
+
+      if (isCodeSkill(apiSkill)) {
         return [
           {
             id: apiSkill.id,
@@ -81,7 +95,9 @@ function SkillsSection() {
             code: apiSkill.code,
           },
         ];
-      if (isTerminalSkill(apiSkill))
+      }
+
+      if (isTerminalSkill(apiSkill)) {
         return [
           {
             id: apiSkill.id,
@@ -95,25 +111,28 @@ function SkillsSection() {
             commands: toTerminalLines(apiSkill.commands),
           },
         ];
+      }
+
       return [];
     });
-  }, [data]);
+  }, [skillsPayload]);
 
   const [activeName, setActiveName] = useState<string | null>(null);
   const [openTabNames, setOpenTabNames] = useState<string[]>([]);
 
   const openTabs = useMemo<Skill[]>(() => {
-    if (mappedSkills.length === 0) return [];
     const tabs = openTabNames
       .map((tabName) => mappedSkills.find((skill) => skill.name === tabName))
       .filter((skill): skill is Skill => Boolean(skill));
-    return tabs.length > 0 ? tabs : [mappedSkills[0]];
+
+    return tabs.length > 0 ? tabs : mappedSkills.slice(0, 1);
   }, [mappedSkills, openTabNames]);
 
   const resolvedSkill = useMemo<Skill | null>(() => {
     if (mappedSkills.length === 0) return null;
-    if (!activeName) return openTabs[0] ?? mappedSkills[0];
-    return mappedSkills.find((skill) => skill.name === activeName) ?? openTabs[0] ?? mappedSkills[0];
+    if (!activeName) return openTabs[0] ?? mappedSkills[0] ?? null;
+
+    return mappedSkills.find((skill) => skill.name === activeName) ?? openTabs[0] ?? mappedSkills[0] ?? null;
   }, [activeName, mappedSkills, openTabs]);
 
   const handleChipClick = useCallback((skill: Skill) => {
@@ -126,22 +145,27 @@ function SkillsSection() {
   const handleTabClose = useCallback((skill: Skill) => {
     setOpenTabNames((prev) => {
       const next = prev.filter((name) => name !== skill.name);
-      if (next.length === 0) setActiveName(null);
-      else {
-        setActiveName((currentName) => {
-          if (currentName !== skill.name) return currentName;
-          const idx = prev.findIndex((name) => name === skill.name);
-          return next[Math.min(idx, next.length - 1)];
-        });
-      }
+
+      setActiveName((currentName) => {
+        if (next.length === 0) return null;
+        if (currentName !== skill.name) return currentName;
+
+        const closedIndex = prev.findIndex((name) => name === skill.name);
+        return next[Math.min(closedIndex, next.length - 1)] ?? next[0] ?? null;
+      });
+
       return next;
     });
   }, []);
 
   const chipHandlers = useMemo<Record<string, () => void>>(
-    () => Object.fromEntries(mappedSkills.map((s) => [s.name, () => handleChipClick(s)])),
+    () => Object.fromEntries(mappedSkills.map((skill) => [skill.name, () => handleChipClick(skill)])),
     [handleChipClick, mappedSkills],
   );
+
+  const isLoading = typeof skillsPayload === 'undefined';
+  const isMalformed = !isLoading && !skillsPayloadError && Array.isArray(skillsPayload) && skillsPayload.length > 0 && mappedSkills.length === 0;
+
   return (
     <SecComponent>
       <Box ref={sectionRef} className="mx-auto flex w-full max-w-xs flex-col items-center gap-8 sm:max-w-xl md:gap-12">
@@ -150,11 +174,11 @@ function SkillsSection() {
         <SkillChips cardsRef={cardsRef} skills={mappedSkills} activeName={resolvedSkill?.name} handlers={chipHandlers} />
 
         <div className="relative w-full" style={PERSPECTIVE_STYLE}>
-          {false ? (
+          {isLoading ? (
             <Flex align="center" justify="center" className="min-h-[300px] rounded-xl border border-white/10">
               <Spinner size="3" />
             </Flex>
-          ) : isError ? (
+          ) : skillsPayloadError || isMalformed ? (
             <Flex direction="column" align="center" justify="center" className="min-h-[300px] rounded-xl border border-white/10 p-4">
               <CodeEmptyState />
               <Text size="2" color="red" className="text-center">

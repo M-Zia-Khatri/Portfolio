@@ -7,7 +7,7 @@ import TabScrollbarStyle from '@/shared/components/TabScrollbarStyle';
 import { useGsapTypingEffect as useGsapTimeline } from '@/shared/hooks/useGsapAnimations';
 import type gsap from 'gsap';
 import type { RefObject } from 'react';
-import { forwardRef, memo, useDeferredValue, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, memo, useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 const ContentScrollbarStyle = memo(function ContentScrollbarStyle({ color }: { color: string }) {
   return (
@@ -48,17 +48,17 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
   // This tells React to prioritize the "currentLine" typing animation
   // and render the long list of background lines during idle time.
   const deferredCompletedLines = useDeferredValue(completedLines);
+  const codeKey = useMemo(() => (skill.mode === 'code' ? skill.code.join('\n') : ''), [skill]);
 
-  // 2. Strict Reset: Prevents the "writing multiple times" bug
   useEffect(() => {
     setCompletedLines([]);
     setCurrentLine('');
     setIsTyping(started && skill.mode === 'code');
-  }, [skill.name, skill.mode, started]);
+  }, [skill.id, skill.name, skill.mode, started]);
 
   const tlRef = useGsapTimeline(
     cardRef,
-    [skill.name, started],
+    [skill.id, skill.name, skill.mode, started, codeKey, onTypingComplete],
     (timeline: gsap.core.Timeline) => {
       if (skill.mode !== 'code' || !started) return;
 
@@ -160,7 +160,7 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
                 {!isTyping &&
                   deferredCompletedLines.length === 0 &&
                   skill.code.map((line, i) => (
-                    <CodeLine key={`${skill.name}-active-${activeLineIndex}`} line={line} index={i} isActiveLine={false} color={skill.color} />
+                    <CodeLine key={`${skill.name}-fallback-${activeLineIndex}-${i}`} line={line} index={i} isActiveLine={false} color={skill.color} />
                   ))}
               </div>
             )}

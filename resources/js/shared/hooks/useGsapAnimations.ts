@@ -46,11 +46,7 @@ export function useGsapReveal(
   }, [scopeRef, target, options?.duration, options?.ease, options?.once, options?.y]);
 }
 
-export function useGsapStagger(
-  parentRef: RefObject<HTMLElement | null>,
-  target: string,
-  options: GsapStaggerOptions = {},
-) {
+export function useGsapStagger(parentRef: RefObject<HTMLElement | null>, target: string, options: GsapStaggerOptions = {}) {
   const hasAnimatedRef = useRef(false);
   const { y = 20, duration = 0.6, stagger = 0.1, once = true } = options;
   useLayoutEffect(() => {
@@ -64,12 +60,12 @@ export function useGsapStagger(
 
       gsap.fromTo(
         target,
-        { autoAlpha: 0, y: options?.y ?? 16, willChange: 'transform,opacity' },
+        { autoAlpha: 0, y, willChange: 'transform,opacity' },
         {
           autoAlpha: 1,
           y: 0,
-          duration: options?.duration ?? 0.5,
-          stagger: options?.stagger ?? 0.08,
+          duration,
+          stagger,
           ease: 'power2.out',
           clearProps: 'willChange',
           onComplete: () => {
@@ -86,7 +82,7 @@ export function useGsapStagger(
     }, parentRef);
 
     return () => ctx.revert();
-  }, [parentRef, y, duration, stagger, once, parentRef.current?.children.length]);
+  }, [parentRef, target, y, duration, stagger, once, parentRef.current?.children.length]);
 }
 
 export function useGsapTypingEffect(
@@ -113,7 +109,9 @@ export function useGsapTypingEffect(
       tlRef.current = null;
       ctx.revert();
     };
-  }, [scopeRef, paused, ...deps]);
+    // The timeline setup function is intentionally controlled by the explicit deps array passed by callers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scopeRef, ...deps]);
 
   useLayoutEffect(() => {
     if (!tlRef.current) return;
