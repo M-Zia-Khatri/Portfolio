@@ -12,11 +12,20 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    $skills = SkillData::collection(Skill::query()->latest('created_at')->get());
+    $skills = Skill::query()->oldest('created_at')->get();
+    $sortedSkills = $skills->sortBy(function ($skill) {
+        return $skill->mode === 'code' ? 0 : 1;
+    });
+    $contactSkills = $skills->where('mode', 'code');
+    $skillData = SkillData::collection($sortedSkills);
 
     $portfolioItems = PortfolioItemData::collection(PortfolioItem::query()->latest('created_at')->get());
 
-    return Inertia::render('home/index', ['skills' => $skills, 'portfolioItems' => $portfolioItems]);
+    return Inertia::render('home/index', [
+        'skills' => $skillData,
+        'contactSkills' => $contactSkills,
+        'portfolioItems' => $portfolioItems,
+    ]);
 })->name('home');
 
 Route::get('/login', fn () => redirect()->route('auth.login.create'))->name('login');
