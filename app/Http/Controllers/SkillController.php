@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\SkillData;
 use App\Http\Requests\StoreSkillRequest;
 use App\Http\Requests\UpdateSkillRequest;
 use App\Models\Skill;
@@ -16,23 +17,14 @@ class SkillController extends Controller
     {
         $mode = $request->string('mode')->toString();
 
-        $skills = Skill::query()
-            ->when(in_array($mode, ['code', 'terminal'], true), function ($query) use ($mode) {
-                $query->where('mode', $mode);
-            })
-            ->latest('id')
-            ->get()
-            ->map(fn (Skill $skill): array => [
-                'id' => $skill->id,
-                'name' => $skill->name,
-                'icon' => $skill->icon,
-                'fileName' => $skill->file_name,
-                'lang' => $skill->lang,
-                'color' => $skill->color,
-                'mode' => $skill->mode,
-                'code' => $skill->code,
-                'commands' => $skill->commands,
-            ]);
+        $skills = SkillData::collection(
+            Skill::query()
+                ->when(in_array($mode, ['code', 'terminal'], true), function ($query) use ($mode): void {
+                    $query->where('mode', $mode);
+                })
+                ->latest('id')
+                ->get()
+        );
 
         return Inertia::render('(admin)/skills/index', [
             'skills' => $skills,
@@ -60,17 +52,7 @@ class SkillController extends Controller
     public function edit(Skill $skill): Response
     {
         return Inertia::render('(admin)/skills/index', [
-            'skill' => [
-                'id' => $skill->id,
-                'name' => $skill->name,
-                'icon' => $skill->icon,
-                'fileName' => $skill->file_name,
-                'lang' => $skill->lang,
-                'color' => $skill->color,
-                'mode' => $skill->mode,
-                'code' => $skill->code,
-                'commands' => $skill->commands,
-            ],
+            'skill' => SkillData::fromModel($skill),
             'edit' => true,
         ]);
     }

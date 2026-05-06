@@ -5,16 +5,9 @@ import TerminalView from '@/features/skills/components/TerminalView';
 import type { Skill } from '@/features/skills/types';
 import TabScrollbarStyle from '@/shared/components/TabScrollbarStyle';
 import { useGsapTypingEffect as useGsapTimeline } from '@/shared/hooks/useGsapAnimations';
+import type gsap from 'gsap';
 import type { RefObject } from 'react';
-import {
-  forwardRef,
-  memo,
-  useDeferredValue,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import { forwardRef, memo, useDeferredValue, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 const ContentScrollbarStyle = memo(function ContentScrollbarStyle({ color }: { color: string }) {
   return (
@@ -41,16 +34,7 @@ export interface CodeCardProps {
 }
 
 const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard(
-  {
-    skill,
-    openTabs,
-    onTabClick,
-    onTabClose,
-    onTypingComplete,
-    started = true,
-    isActive = true,
-    codeContainerRef,
-  },
+  { skill, openTabs, onTabClick, onTabClose, onTypingComplete, started = true, isActive = true, codeContainerRef },
   ref,
 ) {
   const [completedLines, setCompletedLines] = useState<string[]>([]);
@@ -75,7 +59,7 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
   const tlRef = useGsapTimeline(
     cardRef,
     [skill.name, started],
-    (timeline: any) => {
+    (timeline: gsap.core.Timeline) => {
       if (skill.mode !== 'code' || !started) return;
 
       skill.code.forEach((line, lineIdx) => {
@@ -146,39 +130,18 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
             minHeight: 300,
           }}
         >
-          <CodeTabBar
-            skill={skill}
-            openTabs={openTabs}
-            onTabClick={onTabClick}
-            onTabClose={onTabClose}
-          />
+          <CodeTabBar skill={skill} openTabs={openTabs} onTabClick={onTabClick} onTabClose={onTabClose} />
 
-          <div
-            ref={contentRef}
-            className="content-scrollbar flex-1 py-3"
-            style={{ height: 300, overflowY: 'auto', overflowX: 'hidden' }}
-          >
+          <div ref={contentRef} className="content-scrollbar flex-1 py-3" style={{ height: 300, overflowY: 'auto', overflowX: 'hidden' }}>
             {openTabs.length === 0 ? (
               <CodeEmptyState />
             ) : isTerminal ? (
-              <TerminalView
-                key={skill.name}
-                skillName={skill.name}
-                commands={skill.commands}
-                color={skill.color}
-                isActive={isActive}
-              />
+              <TerminalView key={skill.name} skillName={skill.name} commands={skill.commands} color={skill.color} isActive={isActive} />
             ) : (
               <div ref={codeContainerRef}>
                 {/* Render the deferred "History" of lines */}
                 {deferredCompletedLines.map((line, i) => (
-                  <CodeLine
-                    key={`${skill.name}-done-${i}`}
-                    line={line}
-                    index={i}
-                    isActiveLine={false}
-                    color={skill.color}
-                  />
+                  <CodeLine key={`${skill.name}-done-${i}`} line={line} index={i} isActiveLine={false} color={skill.color} />
                 ))}
 
                 {/* Render the "Active" typing line immediately (High priority) */}
@@ -197,13 +160,7 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
                 {!isTyping &&
                   deferredCompletedLines.length === 0 &&
                   skill.code.map((line, i) => (
-                    <CodeLine
-                      key={`${skill.name}-active-${activeLineIndex}`}
-                      line={line}
-                      index={i}
-                      isActiveLine={false}
-                      color={skill.color}
-                    />
+                    <CodeLine key={`${skill.name}-active-${activeLineIndex}`} line={line} index={i} isActiveLine={false} color={skill.color} />
                   ))}
               </div>
             )}

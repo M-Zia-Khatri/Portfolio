@@ -1,8 +1,17 @@
-import { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import type { AppPageProps } from './page';
 
-export interface Auth {
-  user: User;
-}
+export type {
+  ContactMessageData,
+  PaginationMetaData,
+  PortfolioItemData,
+  SharedAuthData,
+  SharedAuthUserData,
+  SharedQuoteData,
+  SkillCommandData,
+  SkillData,
+} from './generated';
+export type { AdminSkillsPageProps, AppPageProps, ContactMessagesPageProps, HomePageProps, PortfolioPageProps } from './page';
 
 export interface BreadcrumbItem {
   title: string;
@@ -21,20 +30,4 @@ export interface NavItem {
   isActive?: boolean;
 }
 
-export interface SharedData {
-  name: string;
-  quote: { message: string; author: string };
-  auth: Auth;
-  [key: string]: unknown;
-}
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  avatar?: string;
-  emailVerifiedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  [key: string]: unknown; // This allows for additional properties...
-}
+export type SharedData = AppPageProps;

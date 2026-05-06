@@ -1,13 +1,14 @@
 import { ICON_MAP } from '@/Pages/(admin)/skills/iconMap';
 import CodeEmptyState from '@/features/skills/components/CodeEmptyState';
 import SkillChip from '@/features/skills/components/SkillChip';
-import type { ApiSkill, Skill } from '@/features/skills/types';
+import { isCodeSkill, isTerminalSkill, toTerminalLines, type ApiSkill, type Skill } from '@/features/skills/types';
 import CodeCard from '@/shared/components/CodeCard';
 import SecComponent from '@/shared/components/SecContainer';
 import { HEADING, TEXT } from '@/shared/constants/style.constants';
 import { useGsapReveal } from '@/shared/hooks/gsap/useGsapReveal';
 import { useGsapStagger } from '@/shared/hooks/gsap/useGsapStagger';
 import { cn } from '@/shared/utils/cn';
+import type { HomePageProps } from '@/types';
 import { usePage } from '@inertiajs/react';
 import { Box, Flex, Heading, Spinner, Text } from '@radix-ui/themes';
 import type { RefObject } from 'react';
@@ -53,7 +54,7 @@ const SkillChips = memo(function SkillChips({
 
 function SkillsSection() {
   const isSectionActive = useSectionActive('skills');
-  const { skills: data, errors: isError } = usePage().props;
+  const { skills: data, errors: isError } = usePage<HomePageProps>().props;
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
@@ -64,9 +65,37 @@ function SkillsSection() {
 
   const mappedSkills = useMemo<Skill[]>(() => {
     const apiSkills: ApiSkill[] = data ?? [];
-    return apiSkills.map((apiSkill) => {
+    return apiSkills.flatMap((apiSkill): Skill[] => {
       const iconComponent = ICON_MAP[apiSkill.icon] ?? ICON_MAP.default;
-      return { ...apiSkill, iconComponent };
+      if (isCodeSkill(apiSkill))
+        return [
+          {
+            id: apiSkill.id,
+            name: apiSkill.name,
+            icon: apiSkill.icon,
+            fileName: apiSkill.fileName,
+            lang: apiSkill.lang,
+            color: apiSkill.color,
+            iconComponent,
+            mode: 'code',
+            code: apiSkill.code,
+          },
+        ];
+      if (isTerminalSkill(apiSkill))
+        return [
+          {
+            id: apiSkill.id,
+            name: apiSkill.name,
+            icon: apiSkill.icon,
+            fileName: apiSkill.fileName,
+            lang: apiSkill.lang,
+            color: apiSkill.color,
+            iconComponent,
+            mode: 'terminal',
+            commands: toTerminalLines(apiSkill.commands),
+          },
+        ];
+      return [];
     });
   }, [data]);
 
@@ -113,9 +142,6 @@ function SkillsSection() {
     () => Object.fromEntries(mappedSkills.map((s) => [s.name, () => handleChipClick(s)])),
     [handleChipClick, mappedSkills],
   );
-  console.log('skills data : ', data);
-  console.log('mapped skills data : ', mappedSkills);
-
   return (
     <SecComponent>
       <Box ref={sectionRef} className="mx-auto flex w-full max-w-xs flex-col items-center gap-8 sm:max-w-xl md:gap-12">

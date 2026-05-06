@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\ContactMessageData;
+use App\Data\PaginationMetaData;
 use App\Http\Requests\StoreContactRequest;
 use App\Jobs\SendContactEmailJob;
 use App\Models\ContactMessage;
@@ -33,20 +35,10 @@ class ContactController extends Controller
             ->withQueryString();
 
         return Inertia::render('admin/contact/index', [
-            'contacts' => collect($contacts->items())->map(fn (ContactMessage $contact): array => [
-                'id' => (string) $contact->id,
-                'fullName' => $contact->full_name,
-                'email' => $contact->email,
-                'message' => $contact->message,
-                'isRead' => $contact->is_read,
-                'createdAt' => $contact->created_at?->toISOString(),
-            ])->all(),
-            'meta' => [
-                'currentPage' => $contacts->currentPage(),
-                'lastPage' => $contacts->lastPage(),
-                'perPage' => $contacts->perPage(),
-                'total' => $contacts->total(),
-            ],
+            'contacts' => collect($contacts->items())
+                ->map(static fn (ContactMessage $contact): ContactMessageData => ContactMessageData::fromModel($contact))
+                ->all(),
+            'meta' => PaginationMetaData::fromPaginator($contacts),
         ]);
     }
 

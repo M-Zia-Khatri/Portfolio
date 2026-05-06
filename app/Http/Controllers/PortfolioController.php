@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\PortfolioItemData;
 use App\Http\Requests\StorePortfolioRequest;
 use App\Http\Requests\UpdatePortfolioRequest;
 use App\Models\PortfolioItem;
@@ -18,15 +19,9 @@ class PortfolioController extends Controller
 
     public function index(): Response
     {
-        $portfolioItems = PortfolioItem::query()->latest('created_at')->get()->map(fn (PortfolioItem $item): array => [
-            'id' => $item->id,
-            'siteName' => $item->site_name,
-            'siteRole' => $item->site_role,
-            'siteUrl' => $item->site_url,
-            'siteImageUrl' => $item->site_image_url,
-            'useTech' => $item->use_tech,
-            'description' => $item->description,
-        ]);
+        $portfolioItems = PortfolioItemData::collection(
+            PortfolioItem::query()->latest('created_at')->get()
+        );
 
         return Inertia::render('portfolio/index', ['portfolioItems' => $portfolioItems]);
     }
@@ -67,15 +62,7 @@ class PortfolioController extends Controller
     public function edit(PortfolioItem $portfolio): Response
     {
         return Inertia::render('portfolio/edit', [
-            'portfolioItem' => [
-                'id' => $portfolio->id,
-                'siteName' => $portfolio->site_name,
-                'siteRole' => $portfolio->site_role,
-                'siteUrl' => $portfolio->site_url,
-                'siteImageUrl' => $portfolio->site_image_url,
-                'useTech' => $portfolio->use_tech,
-                'description' => $portfolio->description,
-            ],
+            'portfolioItem' => PortfolioItemData::fromModel($portfolio),
         ]);
     }
 

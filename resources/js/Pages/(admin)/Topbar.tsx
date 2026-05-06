@@ -1,5 +1,6 @@
-import { Link, router, usePage } from '@inertiajs/react';
 import { cn } from '@/shared/utils/cn';
+import type { AppPageProps } from '@/types';
+import { Link, router, usePage } from '@inertiajs/react';
 import { ExitIcon, HamburgerMenuIcon } from '@radix-ui/react-icons';
 import { Box, Button, DropdownMenu, Flex, Separator, Text } from '@radix-ui/themes';
 import { ArrowLeftIcon, Clock, Monitor } from 'lucide-react';
@@ -19,7 +20,7 @@ const DEFAULT_NAV: NavItem[] = [
 
 export default function Topbar() {
   const [time, setTime] = useState(new Date());
-  const { url } = usePage(); // current route
+  const { url } = usePage<AppPageProps>();
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -37,7 +38,7 @@ export default function Topbar() {
         <Flex align="center" gap="4">
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity"
+            className="flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase opacity-70 transition-opacity hover:opacity-100"
           >
             <ArrowLeftIcon />
             Go Back
@@ -66,10 +67,7 @@ export default function Topbar() {
                   <Link
                     key={item.link}
                     href={item.link}
-                    className={cn(
-                      'text-sm font-medium transition-colors hover:text-(--blue-11)',
-                      isActive ? 'text-(--blue-11)' : 'text-(--gray-10)',
-                    )}
+                    className={cn('text-sm font-medium transition-colors hover:text-(--blue-11)', isActive ? 'text-(--blue-11)' : 'text-(--gray-10)')}
                   >
                     {item.label}
                   </Link>
@@ -81,13 +79,7 @@ export default function Topbar() {
           <Separator orientation="vertical" size="2" className="hidden md:block" />
 
           <Flex align="center" gap="3">
-            <Flex
-              align="center"
-              gap="2"
-              px="3"
-              py="1"
-              className="hidden sm:flex rounded-full border border-(--gray-5)"
-            >
+            <Flex align="center" gap="2" px="3" py="1" className="hidden rounded-full border border-(--gray-5) sm:flex">
               <Clock size={14} />
               <span>
                 {time.toLocaleTimeString([], {

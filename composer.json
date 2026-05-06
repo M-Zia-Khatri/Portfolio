@@ -9,11 +9,13 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
         "cloudinary-labs/cloudinary-laravel": "^3.0",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
+        "php": "^8.2",
+        "spatie/laravel-data": "^4.0",
+        "spatie/laravel-typescript-transformer": "^3.0",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
@@ -59,7 +61,8 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
-        ]
+        ],
+        "typescript:transform": "@php artisan typescript:transform --format"
     },
     "extra": {
         "laravel": {

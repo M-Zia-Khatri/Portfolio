@@ -1,19 +1,10 @@
 import { cn } from '@/shared/utils/cn';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Button,
-  Callout,
-  Dialog,
-  Flex,
-  Spinner,
-  Text,
-  TextArea,
-  TextField,
-} from '@radix-ui/themes';
+import { Button, Callout, Dialog, Flex, Spinner, Text, TextArea, TextField } from '@radix-ui/themes';
 import { ImageIcon, TriangleAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { z } from 'zod';
 import { uploadToCloudinary } from './portfolio.api';
 import type { PortfolioFormValues, PortfolioItem } from './portfolio.types';
@@ -24,7 +15,7 @@ const createSchema = z.object({
   site_name: z.string().min(1, 'Site name is required'),
   site_role: z.string().optional(),
   site_url: z.string().url('Enter a valid URL'),
-  site_image: z.custom<FileList>((v) => v instanceof FileList && v.length > 0, 'Image is required'),
+  site_image: z.custom<FileList>((v: unknown) => v instanceof FileList && v.length > 0, 'Image is required'),
   use_tech: z.string().optional(),
   description: z.string().optional(),
 });
@@ -52,15 +43,7 @@ interface PortfolioDialogProps {
 
 // ─── Field Wrapper ────────────────────────────────────────────────────────────
 
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <Flex direction="column" gap="1">
       <Text as="label" size="1" weight="medium" className={cn('text-(--gray-11)')}>
@@ -102,7 +85,7 @@ export function PortfolioDialog({ open, onOpenChange, editItem, onSubmit }: Port
     watch,
     formState: { errors },
   } = useForm<PortfolioFormValues>({
-    resolver: zodResolver(isEdit ? editSchema : createSchema) as any,
+    resolver: zodResolver(isEdit ? editSchema : createSchema) as Resolver<PortfolioFormValues>,
     defaultValues: {
       site_name: '',
       site_role: '',
@@ -177,8 +160,8 @@ export function PortfolioDialog({ open, onOpenChange, editItem, onSubmit }: Port
       );
 
       onOpenChange(false);
-    } catch (err: any) {
-      setApiError(err?.message ?? 'Something went wrong. Please try again.');
+    } catch (error: unknown) {
+      setApiError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -190,14 +173,10 @@ export function PortfolioDialog({ open, onOpenChange, editItem, onSubmit }: Port
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content maxWidth="520px" className={cn('bg-(--gray-2) border border-(--gray-4)')}>
-        <Dialog.Title className={cn('text-(--gray-12)')}>
-          {isEdit ? 'Edit Portfolio Item' : 'Add Portfolio Item'}
-        </Dialog.Title>
+      <Dialog.Content maxWidth="520px" className={cn('border border-(--gray-4) bg-(--gray-2)')}>
+        <Dialog.Title className={cn('text-(--gray-12)')}>{isEdit ? 'Edit Portfolio Item' : 'Add Portfolio Item'}</Dialog.Title>
         <Dialog.Description size="2" className={cn('text-(--gray-10)')}>
-          {isEdit
-            ? 'Update the details for this portfolio entry.'
-            : 'Fill in the details to add a new portfolio entry.'}
+          {isEdit ? 'Update the details for this portfolio entry.' : 'Fill in the details to add a new portfolio entry.'}
         </Dialog.Description>
 
         <form onSubmit={handleSubmit(onFormSubmit)}>
@@ -246,16 +225,13 @@ export function PortfolioDialog({ open, onOpenChange, editItem, onSubmit }: Port
             </Field>
 
             {/* site_image */}
-            <Field
-              label={isEdit ? 'Image (leave blank to keep current)' : 'Image *'}
-              error={(errors.site_image as any)?.message}
-            >
+            <Field label={isEdit ? 'Image (leave blank to keep current)' : 'Image *'} error={errors.site_image?.message}>
               <div
                 className={cn(
                   'relative flex flex-col items-center justify-center gap-2',
-                  'border-2 border-dashed rounded-(--radius-3) p-4 cursor-pointer',
+                  'cursor-pointer rounded-(--radius-3) border-2 border-dashed p-4',
                   'border-(--gray-6) hover:border-(--blue-7)',
-                  'transition-colors duration-150 overflow-hidden',
+                  'overflow-hidden transition-colors duration-150',
                 )}
                 onClick={() => fileInputRef.current?.click()}
               >
@@ -269,7 +245,7 @@ export function PortfolioDialog({ open, onOpenChange, editItem, onSubmit }: Port
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.97 }}
                       transition={{ duration: 0.2 }}
-                      className={cn('w-full max-h-32 object-cover rounded-(--radius-2)')}
+                      className={cn('max-h-32 w-full rounded-(--radius-2) object-cover')}
                     />
                   ) : (
                     <motion.div
@@ -308,11 +284,7 @@ export function PortfolioDialog({ open, onOpenChange, editItem, onSubmit }: Port
 
             {/* description */}
             <Field label="Description" error={errors.description?.message}>
-              <TextArea
-                placeholder="Brief description of the project..."
-                rows={3}
-                {...register('description')}
-              />
+              <TextArea placeholder="Brief description of the project..." rows={3} {...register('description')} />
             </Field>
           </Flex>
 

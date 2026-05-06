@@ -1,17 +1,42 @@
 import { ICON_MAP } from '@/Pages/(admin)/skills/iconMap';
-import type { ApiSkill, Skill } from '@/features/skills/types';
+import { isCodeSkill, isTerminalSkill, toTerminalLines, type ApiSkill, type Skill } from '@/features/skills/types';
 import type { CodeCardHandle } from '@/shared/components/CodeCard';
 import CodeCard from '@/shared/components/CodeCard';
 import { useGsapReveal } from '@/shared/hooks/useGsapAnimations';
+import type { HomePageProps } from '@/types';
 import { usePage } from '@inertiajs/react';
 import { memo, startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type CardStatus = 'idle' | 'typing' | 'paused' | 'advancing' | 'done';
 
 // Helper to convert API skill to runtime Skill with iconComponent resolved
-function toRuntimeSkill(apiSkill: ApiSkill): Skill {
+function toRuntimeSkill(apiSkill: ApiSkill): Skill | null {
   const iconComponent = ICON_MAP[apiSkill.icon] ?? ICON_MAP.default;
-  return { ...apiSkill, iconComponent } as Skill;
+  if (isCodeSkill(apiSkill))
+    return {
+      id: apiSkill.id,
+      name: apiSkill.name,
+      icon: apiSkill.icon,
+      fileName: apiSkill.fileName,
+      lang: apiSkill.lang,
+      color: apiSkill.color,
+      iconComponent,
+      mode: 'code',
+      code: apiSkill.code,
+    };
+  if (isTerminalSkill(apiSkill))
+    return {
+      id: apiSkill.id,
+      name: apiSkill.name,
+      icon: apiSkill.icon,
+      fileName: apiSkill.fileName,
+      lang: apiSkill.lang,
+      color: apiSkill.color,
+      iconComponent,
+      mode: 'terminal',
+      commands: toTerminalLines(apiSkill.commands),
+    };
+  return null;
 }
 
 function StatusBadge({ status, color, secondsLeft, nextName }: { status: CardStatus; color: string; secondsLeft: number; nextName: string }) {
@@ -60,12 +85,12 @@ const MemoizedStatusBadge = memo(StatusBadge);
 const MemoizedProgressRail = memo(ProgressRail);
 
 export default function ContactCodeCard({ isActive }: { isActive: boolean }) {
-  const { contactSkills: apiSkills, errors: isError } = usePage().props;
+  const { contactSkills: apiSkills, errors: isError } = usePage<HomePageProps>().props;
 
   // Map API skills to runtime skills with iconComponent resolved
   const contactSkills = useMemo<Skill[]>(() => {
     if (!apiSkills || apiSkills?.length === 0) return [];
-    return apiSkills?.map(toRuntimeSkill);
+    return apiSkills.map(toRuntimeSkill).filter((skill): skill is Skill => skill !== null);
   }, [apiSkills]);
 
   const [autoIndex, setAutoIndex] = useState(0);

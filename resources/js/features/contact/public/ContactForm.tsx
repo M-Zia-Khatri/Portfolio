@@ -2,8 +2,10 @@ import { useForm } from '@inertiajs/react';
 import { CheckCircledIcon, PaperPlaneIcon } from '@radix-ui/react-icons';
 import { Button, Callout, Card, Flex, Heading, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
 
+type ContactFormValues = { fullName: string; email: string; message: string };
+
 function ContactFormCard() {
-  const { data, setData, post, processing, errors, reset, recentlySuccessful } = useForm({
+  const { data, setData, post, processing, errors, reset, recentlySuccessful } = useForm<ContactFormValues>({
     fullName: '',
     email: '',
     message: '',

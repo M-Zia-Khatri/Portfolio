@@ -1,8 +1,1 @@
-export interface PortfolioItem {
-  siteName: string;
-  siteRole: string;
-  siteUrl: string;
-  siteImageUrl: string;
-  useTech: string[];
-  description: string;
-}
+export type { PortfolioItemData as PortfolioItem } from '@/types/generated';

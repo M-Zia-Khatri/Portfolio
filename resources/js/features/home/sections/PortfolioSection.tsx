@@ -1,8 +1,8 @@
 import { PortfolioItemCard } from '@/features/portfolio/components/PortfolioItemCard';
-import type { PortfolioItem } from '@/features/portfolio/types';
 import SecComponent from '@/shared/components/SecContainer';
 import { TEXT } from '@/shared/constants/style.constants';
 import { cn } from '@/shared/utils/cn';
+import type { HomePageProps } from '@/types';
 import { usePage } from '@inertiajs/react';
 import { Box, Card, Flex, Heading, Skeleton, Text } from '@radix-ui/themes';
 import { motion, type Variants } from 'motion/react';
@@ -39,26 +39,8 @@ const headingVariants: Variants = {
 const VIEWPORT_ONCE = { once: true, margin: '-60px' } as const;
 const VIEWPORT_GRID = { once: true, margin: '-80px' } as const;
 
-type PortfolioApiRow = {
-  site_name: string;
-  site_role: string;
-  site_url: string;
-  site_image_url: string;
-  use_tech: string[];
-  description: string;
-};
-
-const mapPortfolioItem = (item: PortfolioApiRow): PortfolioItem => ({
-  siteName: item.site_name,
-  siteRole: item.site_role,
-  siteUrl: item.site_url,
-  siteImageUrl: item.site_image_url,
-  useTech: item.use_tech,
-  description: item.description,
-});
-
 export default function PortfolioSection() {
-  const { portfolioItems = [], errors: isError } = usePage().props;
+  const { portfolioItems = [], errors: isError } = usePage<HomePageProps>().props;
 
   return (
     <SecComponent className="w-full" py="8">

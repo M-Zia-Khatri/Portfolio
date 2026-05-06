@@ -1,5 +1,7 @@
 <?php
 
+use App\Data\PortfolioItemData;
+use App\Data\SkillData;
 use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PortfolioController;
@@ -10,27 +12,9 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    $skills = Skill::query()->latest('created_at')->get()->map(fn (Skill $skill): array => [
-        'id' => $skill->id,
-        'name' => $skill->name,
-        'icon' => $skill->icon,
-        'fileName' => $skill->file_name,
-        'lang' => $skill->lang,
-        'color' => $skill->color,
-        'mode' => $skill->mode,
-        'code' => $skill->code,
-        'commands' => $skill->commands,
-    ]);
+    $skills = SkillData::collection(Skill::query()->latest('created_at')->get());
 
-    $portfolioItems = PortfolioItem::query()->latest('created_at')->get()->map(fn (PortfolioItem $portfolioItem): array => [
-        'id' => $portfolioItem->id,
-        'siteName' => $portfolioItem->site_name,
-        'siteRole' => $portfolioItem->site_role,
-        'siteUrl' => $portfolioItem->site_url,
-        'siteImageUrl' => $portfolioItem->site_image_url,
-        'useTech' => $portfolioItem->use_tech,
-        'description' => $portfolioItem->description,
-    ]);
+    $portfolioItems = PortfolioItemData::collection(PortfolioItem::query()->latest('created_at')->get());
 
     return Inertia::render('home/index', ['skills' => $skills, 'portfolioItems' => $portfolioItems]);
 })->name('home');

@@ -1,28 +1,43 @@
 import SkillChip from '@/features/skills/components/SkillChip';
-import type { ApiSkill, Skill } from '@/features/skills/types';
+import { isCodeSkill, isTerminalSkill, toTerminalLines, type ApiSkill, type Skill } from '@/features/skills/types';
 import CodeCard from '@/shared/components/CodeCard';
+import type { AdminSkillsPageProps } from '@/types';
 import { router, usePage } from '@inertiajs/react';
 import { Pencil1Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { AlertDialog, Box, Button, Card, Container, Flex, Grid, Heading, IconButton, Text } from '@radix-ui/themes';
 import { useState } from 'react';
 import { ICON_MAP } from './iconMap';
-import SkillDialog from './SkillDialog';
+import SkillDialog, { type SkillDialogFormValues } from './SkillDialog';
 
-type MappedSkill = Skill & { id: string };
+type MappedSkill = Skill & { id: number };
 
-function toMappedSkill(s: ApiSkill): MappedSkill {
+function toMappedSkill(s: ApiSkill): MappedSkill | null {
   const iconComponent = ICON_MAP[s.icon] ?? ICON_MAP.default;
-  return { ...s, iconComponent } as MappedSkill;
+  if (isCodeSkill(s))
+    return { id: s.id, name: s.name, icon: s.icon, fileName: s.fileName, lang: s.lang, color: s.color, iconComponent, mode: 'code', code: s.code };
+  if (isTerminalSkill(s))
+    return {
+      id: s.id,
+      name: s.name,
+      icon: s.icon,
+      fileName: s.fileName,
+      lang: s.lang,
+      color: s.color,
+      iconComponent,
+      mode: 'terminal',
+      commands: toTerminalLines(s.commands),
+    };
+  return null;
 }
 
 export default function Skills() {
-  const { skills } = usePage().props;
+  const { skills } = usePage<AdminSkillsPageProps>().props;
 
-  const [activeSkillId, setActiveSkillId] = useState<string | null>(null);
+  const [activeSkillId, setActiveSkillId] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingSkill, setEditingSkill] = useState<ApiSkill | null>(null);
+  const [editingSkill, setEditingSkill] = useState<MappedSkill | null>(null);
 
-  const mappedSkills: MappedSkill[] = (skills ?? []).map(toMappedSkill);
+  const mappedSkills: MappedSkill[] = (skills ?? []).map(toMappedSkill).filter((skill): skill is MappedSkill => skill !== null);
 
   const activeSkill = mappedSkills.find((s) => s.id === activeSkillId) ?? (mappedSkills.length > 0 ? mappedSkills[0] : null);
 
@@ -31,12 +46,12 @@ export default function Skills() {
     setIsDialogOpen(true);
   };
 
-  const handleOpenEdit = (skill: ApiSkill) => {
+  const handleOpenEdit = (skill: MappedSkill) => {
     setEditingSkill(skill);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     router.delete(route('skills.destroy', id), {
       onSuccess: () => {
         if (activeSkillId === id) setActiveSkillId(null);
@@ -44,10 +59,10 @@ export default function Skills() {
     });
   };
 
-  const onFormSubmit = (values: any) => {
+  const onFormSubmit = (values: SkillDialogFormValues) => {
     const { content, mode, commands, ...rest } = values;
 
-    const payload = mode === 'code' ? { ...rest, mode, code: content?.split('\n') || [] } : { ...rest, mode, commands };
+    const payload = mode === 'code' ? { ...rest, mode, code: content.split('\n') } : { ...rest, mode, commands };
 
     if (editingSkill) {
       router.put(route('skills.update', editingSkill.id), payload, {

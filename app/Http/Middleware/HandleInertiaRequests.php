@@ -2,6 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Data\SharedAuthData;
+use App\Data\SharedAuthUserData;
+use App\Data\SharedQuoteData;
+use App\Models\Admin;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -40,10 +44,10 @@ class HandleInertiaRequests extends Middleware
 
         return array_merge(parent::share($request), [
             'name' => config('app.name'),
-            'quote' => ['message' => trim($message), 'author' => trim($author)],
-            'auth' => [
-                'user' => $request->user() ? ['id' => $request->user()->id, 'email' => $request->user()->email, 'fullName' => $request->user()->full_name] : null,
-            ],
+            'quote' => new SharedQuoteData(message: trim($message), author: trim($author)),
+            'auth' => new SharedAuthData(
+                user: $request->user() instanceof Admin ? SharedAuthUserData::fromAdmin($request->user()) : null,
+            ),
         ]);
     }
 }

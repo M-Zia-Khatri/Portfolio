@@ -2,9 +2,11 @@ import { TEXT } from '@/shared/constants/style.constants';
 import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 import { Badge, Callout, Card, Separator, Strong, Text } from '@radix-ui/themes';
 import { memo } from 'react';
-import { useGuessNumStatus, useGuessNumProgress } from '../context/GuessNumContext';
+import { useGuessNumProgress, useGuessNumStatus } from '../context/GuessNumContext';
 
-const feedbackColor = (message: string) => {
+type FeedbackColor = 'green' | 'amber' | 'blue' | 'red';
+
+const feedbackColor = (message: string): FeedbackColor => {
   if (message === 'you win') return 'green';
   if (message === 'very close') return 'amber';
   if (message === 'too low') return 'blue';
@@ -61,12 +63,8 @@ interface GuessHistoryItemProps {
   message: string;
 }
 
-const GuessHistoryItem = memo(function GuessHistoryItem({
-  index,
-  guess,
-  message,
-}: GuessHistoryItemProps) {
-  const color = feedbackColor(message) as any;
+const GuessHistoryItem = memo(function GuessHistoryItem({ index, guess, message }: GuessHistoryItemProps) {
+  const color = feedbackColor(message);
   return (
     <Card
       size={'1'}
@@ -97,12 +95,7 @@ function GuessHistoryList() {
   return (
     <>
       {guessResults.map((result, i) => (
-        <GuessHistoryItem
-          key={`${result.guess}-${i}`}
-          index={i}
-          guess={result.guess}
-          message={result.message}
-        />
+        <GuessHistoryItem key={`${result.guess}-${i}`} index={i} guess={result.guess} message={result.message} />
       ))}
     </>
   );

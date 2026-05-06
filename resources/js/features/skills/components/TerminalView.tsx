@@ -1,4 +1,5 @@
 import { useGsapTypingEffect } from '@/shared/hooks/useGsapAnimations';
+import type gsap from 'gsap';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { TerminalLine as TLine } from '../types';
 import TerminalLine from './TerminalLine';
@@ -39,12 +40,7 @@ const DoneBlock = memo(({ block, bi, color }: { block: Block; bi: number; color:
   </div>
 ));
 
-export default function TerminalView({
-  skillName,
-  commands,
-  color,
-  isActive = true,
-}: TerminalViewProps) {
+export default function TerminalView({ skillName, commands, color, isActive = true }: TerminalViewProps) {
   const blocks = useMemo(() => buildBlocks(commands), [commands]);
   const [doneBlocks, setDoneBlocks] = useState<Block[]>([]);
   const [activeCommand, setActiveCommand] = useState('');
@@ -62,7 +58,7 @@ export default function TerminalView({
   useGsapTypingEffect(
     rootRef,
     [skillName, blocks],
-    (timeline: any) => {
+    (timeline: gsap.core.Timeline) => {
       setDoneBlocks([]);
       setActiveCommand('');
       setActiveBlock(null);
@@ -76,11 +72,9 @@ export default function TerminalView({
           setActiveOutputs([]);
         });
 
-        for (let ci = 1; ci <= block.command.text.length; ci++) {
-          timeline.to(
-            {},
-            { duration: 0.03, onComplete: () => setActiveCommand(block.command.text.slice(0, ci)) },
-          );
+        const commandText = block.command.text ?? '';
+        for (let ci = 1; ci <= commandText.length; ci++) {
+          timeline.to({}, { duration: 0.03, onComplete: () => setActiveCommand(commandText.slice(0, ci)) });
         }
 
         timeline.to({}, { duration: 0.16 });
@@ -111,23 +105,9 @@ export default function TerminalView({
       ))}
       {activeBlock && (
         <div>
-          <TerminalLine
-            line={activeBlock.command}
-            partial={activeCommand}
-            isActive={true}
-            cursor={cursor}
-            color={color}
-            index={doneBlocks.length}
-          />
+          <TerminalLine line={activeBlock.command} partial={activeCommand} isActive={true} cursor={cursor} color={color} index={doneBlocks.length} />
           {activeOutputs.map((out, oi) => (
-            <TerminalLine
-              key={oi}
-              line={out}
-              isActive={false}
-              cursor={false}
-              color={color}
-              index={oi}
-            />
+            <TerminalLine key={oi} line={out} isActive={false} cursor={false} color={color} index={oi} />
           ))}
         </div>
       )}
@@ -136,10 +116,7 @@ export default function TerminalView({
           <span style={{ color }} className="mr-1.5 text-[12.5px] font-bold select-none">
             $
           </span>
-          <span
-            className="inline-block h-[13px] w-[2px] align-middle"
-            style={{ background: color, opacity: cursor ? 1 : 0 }}
-          />
+          <span className="inline-block h-[13px] w-[2px] align-middle" style={{ background: color, opacity: cursor ? 1 : 0 }} />
         </div>
       )}
     </div>
