@@ -16,7 +16,11 @@ Route::get('/', function () {
 
     $portfolioItems = PortfolioItemData::collection(PortfolioItem::query()->latest('created_at')->get());
 
-    return Inertia::render('home/index', ['skills' => $skills, 'portfolioItems' => $portfolioItems]);
+    return Inertia::render('home/index', [
+        'skills' => $skills,
+        'contactSkills' => $skills,
+        'portfolioItems' => $portfolioItems,
+    ]);
 })->name('home');
 
 Route::get('/login', fn () => redirect()->route('auth.login.create'))->name('login');

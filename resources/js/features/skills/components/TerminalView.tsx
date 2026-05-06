@@ -9,6 +9,7 @@ interface TerminalViewProps {
   commands: TLine[];
   color: string;
   isActive?: boolean;
+  onComplete?: () => void;
 }
 
 interface Block {
@@ -40,7 +41,7 @@ const DoneBlock = memo(({ block, bi, color }: { block: Block; bi: number; color:
   </div>
 ));
 
-export default function TerminalView({ skillName, commands, color, isActive = true }: TerminalViewProps) {
+export default function TerminalView({ skillName, commands, color, isActive = true, onComplete }: TerminalViewProps) {
   const blocks = useMemo(() => buildBlocks(commands), [commands]);
   const [doneBlocks, setDoneBlocks] = useState<Block[]>([]);
   const [activeCommand, setActiveCommand] = useState('');
@@ -49,6 +50,11 @@ export default function TerminalView({ skillName, commands, color, isActive = tr
   const [done, setDone] = useState(false);
   const [cursor, setCursor] = useState(true);
   const rootRef = useRef<HTMLDivElement>(null);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     const id = setInterval(() => setCursor((c) => !c), 530);
@@ -93,7 +99,10 @@ export default function TerminalView({ skillName, commands, color, isActive = tr
         if (bi < blocks.length - 1) timeline.to({}, { duration: 0.25 });
       });
 
-      timeline.call(() => setDone(true));
+      timeline.call(() => {
+        setDone(true);
+        onCompleteRef.current?.();
+      });
     },
     !isActive,
   );
