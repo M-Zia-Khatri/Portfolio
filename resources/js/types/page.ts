@@ -16,7 +16,7 @@ export type AppPageProps<TPageProps extends Record<string, unknown> = Record<str
 
 export type HomePageProps = AppPageProps<{
   skills: SkillData[];
-  contactSkills?: SkillData[];
+  contactSkills: SkillData[];
   portfolioItems: PortfolioItemData[];
 }>;
 

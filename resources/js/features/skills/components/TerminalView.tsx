@@ -1,6 +1,6 @@
 import { useGsapTypingEffect } from '@/shared/hooks/useGsapAnimations';
 import type gsap from 'gsap';
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TerminalLine as TLine } from '../types';
 import TerminalLine from './TerminalLine';
 
@@ -9,6 +9,7 @@ interface TerminalViewProps {
   commands: TLine[];
   color: string;
   isActive?: boolean;
+  onTypingComplete?: () => void;
 }
 
 interface Block {
@@ -40,7 +41,7 @@ const DoneBlock = memo(({ block, bi, color }: { block: Block; bi: number; color:
   </div>
 ));
 
-export default function TerminalView({ skillName, commands, color, isActive = true }: TerminalViewProps) {
+export default function TerminalView({ skillName, commands, color, isActive = true, onTypingComplete }: TerminalViewProps) {
   const blocks = useMemo(() => buildBlocks(commands), [commands]);
   const [doneBlocks, setDoneBlocks] = useState<Block[]>([]);
   const [activeCommand, setActiveCommand] = useState('');
@@ -49,15 +50,18 @@ export default function TerminalView({ skillName, commands, color, isActive = tr
   const [done, setDone] = useState(false);
   const [cursor, setCursor] = useState(true);
   const rootRef = useRef<HTMLDivElement>(null);
+  const onTypingCompleteRef = useRef(onTypingComplete);
+
+  useEffect(() => {
+    onTypingCompleteRef.current = onTypingComplete;
+  }, [onTypingComplete]);
 
   useEffect(() => {
     const id = setInterval(() => setCursor((c) => !c), 530);
     return () => clearInterval(id);
   }, []);
 
-  useGsapTypingEffect(
-    rootRef,
-    [skillName, blocks],
+  const setupTerminalTimeline = useCallback(
     (timeline: gsap.core.Timeline) => {
       setDoneBlocks([]);
       setActiveCommand('');
@@ -93,10 +97,15 @@ export default function TerminalView({ skillName, commands, color, isActive = tr
         if (bi < blocks.length - 1) timeline.to({}, { duration: 0.25 });
       });
 
-      timeline.call(() => setDone(true));
+      timeline.call(() => {
+        setDone(true);
+        onTypingCompleteRef.current?.();
+      });
     },
-    !isActive,
+    [blocks],
   );
+
+  useGsapTypingEffect(rootRef, setupTerminalTimeline, !isActive, [skillName, blocks]);
 
   return (
     <div ref={rootRef} className="px-4 py-2">

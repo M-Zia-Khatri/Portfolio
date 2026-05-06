@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { RefObject } from 'react';
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, type DependencyList } from 'react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -46,11 +46,7 @@ export function useGsapReveal(
   }, [scopeRef, target, options?.duration, options?.ease, options?.once, options?.y]);
 }
 
-export function useGsapStagger(
-  parentRef: RefObject<HTMLElement | null>,
-  target: string,
-  options: GsapStaggerOptions = {},
-) {
+export function useGsapStagger(parentRef: RefObject<HTMLElement | null>, target: string, options: GsapStaggerOptions = {}) {
   const hasAnimatedRef = useRef(false);
   const { y = 20, duration = 0.6, stagger = 0.1, once = true } = options;
   useLayoutEffect(() => {
@@ -64,12 +60,12 @@ export function useGsapStagger(
 
       gsap.fromTo(
         target,
-        { autoAlpha: 0, y: options?.y ?? 16, willChange: 'transform,opacity' },
+        { autoAlpha: 0, y, willChange: 'transform,opacity' },
         {
           autoAlpha: 1,
           y: 0,
-          duration: options?.duration ?? 0.5,
-          stagger: options?.stagger ?? 0.08,
+          duration,
+          stagger,
           ease: 'power2.out',
           clearProps: 'willChange',
           onComplete: () => {
@@ -86,14 +82,14 @@ export function useGsapStagger(
     }, parentRef);
 
     return () => ctx.revert();
-  }, [parentRef, y, duration, stagger, once, parentRef.current?.children.length]);
+  }, [parentRef, target, y, duration, stagger, once, parentRef.current?.children.length]);
 }
 
 export function useGsapTypingEffect(
   scopeRef: RefObject<HTMLElement | null>,
-  deps: unknown[],
   setup: (timeline: gsap.core.Timeline) => void,
   paused?: boolean,
+  deps: DependencyList = [],
 ) {
   const tlRef = useRef<gsap.core.Timeline | null>(null);
 
@@ -102,7 +98,7 @@ export function useGsapTypingEffect(
 
     const ctx = gsap.context(() => {
       tlRef.current?.kill();
-      const timeline = gsap.timeline({ paused: !!paused });
+      const timeline = gsap.timeline({ paused: true });
       tlRef.current = timeline;
       setup(timeline);
       if (!paused) timeline.play(0);
@@ -113,7 +109,8 @@ export function useGsapTypingEffect(
       tlRef.current = null;
       ctx.revert();
     };
-  }, [scopeRef, paused, ...deps]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- callers pass explicit timeline reset dependencies through deps.
+  }, [scopeRef, setup, ...deps]);
 
   useLayoutEffect(() => {
     if (!tlRef.current) return;

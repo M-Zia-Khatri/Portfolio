@@ -9,33 +9,39 @@ import { memo, startTransition, useCallback, useEffect, useMemo, useRef, useStat
 
 type CardStatus = 'idle' | 'typing' | 'paused' | 'advancing' | 'done';
 
-// Helper to convert API skill to runtime Skill with iconComponent resolved
+const ADVANCE_DELAY_MS = 700;
+const PAUSE_RESUME_DELAY_MS = 12_000;
+const COUNTDOWN_INTERVAL_MS = 1_000;
+
 function toRuntimeSkill(apiSkill: ApiSkill): Skill | null {
   const iconComponent = ICON_MAP[apiSkill.icon] ?? ICON_MAP.default;
-  if (isCodeSkill(apiSkill))
+
+  const baseSkill = {
+    id: apiSkill.id,
+    name: apiSkill.name,
+    icon: apiSkill.icon,
+    fileName: apiSkill.fileName,
+    lang: apiSkill.lang,
+    color: apiSkill.color,
+    iconComponent,
+  };
+
+  if (isCodeSkill(apiSkill)) {
     return {
-      id: apiSkill.id,
-      name: apiSkill.name,
-      icon: apiSkill.icon,
-      fileName: apiSkill.fileName,
-      lang: apiSkill.lang,
-      color: apiSkill.color,
-      iconComponent,
+      ...baseSkill,
       mode: 'code',
       code: apiSkill.code,
     };
-  if (isTerminalSkill(apiSkill))
+  }
+
+  if (isTerminalSkill(apiSkill)) {
     return {
-      id: apiSkill.id,
-      name: apiSkill.name,
-      icon: apiSkill.icon,
-      fileName: apiSkill.fileName,
-      lang: apiSkill.lang,
-      color: apiSkill.color,
-      iconComponent,
+      ...baseSkill,
       mode: 'terminal',
       commands: toTerminalLines(apiSkill.commands),
     };
+  }
+
   return null;
 }
 
@@ -67,7 +73,7 @@ function ProgressRail({ contactSkills, autoIndex, isDone }: { contactSkills: Ski
     <div className="flex items-center justify-center gap-1.5 py-2.5">
       {contactSkills.map((s, i) => (
         <div
-          key={s.name}
+          key={s.id ?? s.name}
           title={s.name}
           className="h-1 rounded-full transition-all duration-300"
           style={{
@@ -85,13 +91,9 @@ const MemoizedStatusBadge = memo(StatusBadge);
 const MemoizedProgressRail = memo(ProgressRail);
 
 export default function ContactCodeCard({ isActive }: { isActive: boolean }) {
-  const { contactSkills: apiSkills, errors: isError } = usePage<HomePageProps>().props;
+  const { contactSkills: apiSkills } = usePage<HomePageProps>().props;
 
-  // Map API skills to runtime skills with iconComponent resolved
-  const contactSkills = useMemo<Skill[]>(() => {
-    if (!apiSkills || apiSkills?.length === 0) return [];
-    return apiSkills.map(toRuntimeSkill).filter((skill): skill is Skill => skill !== null);
-  }, [apiSkills]);
+  const contactSkills = useMemo<Skill[]>(() => apiSkills.map(toRuntimeSkill).filter((skill): skill is Skill => skill !== null), [apiSkills]);
 
   const [autoIndex, setAutoIndex] = useState(0);
   const autoIndexRef = useRef(0);
@@ -99,57 +101,123 @@ export default function ContactCodeCard({ isActive }: { isActive: boolean }) {
   const [openTabs, setOpenTabs] = useState<Skill[]>([]);
   const [cardStatus, setCardStatus] = useState<CardStatus>('idle');
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const codeCardRef = useRef<CodeCardHandle>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useGsapReveal(wrapRef, '[data-contact-card]', { y: 16, duration: 0.45 });
 
-  // Initialize activeSkill when contactSkills are available
-  useEffect(() => {
-    if (contactSkills.length > 0 && !activeSkill) {
-      setActiveSkill(contactSkills[0]);
-      setOpenTabs([contactSkills[0]]);
+  const clearAdvanceTimer = useCallback(() => {
+    if (advanceTimeoutRef.current) {
+      clearTimeout(advanceTimeoutRef.current);
+      advanceTimeoutRef.current = null;
     }
-  }, [contactSkills, activeSkill]);
+  }, []);
 
-  const nextName = contactSkills.length > 0 ? contactSkills[(autoIndex + 1) % contactSkills.length].name : '';
+  const clearPauseTimers = useCallback(() => {
+    if (resumeTimeoutRef.current) {
+      clearTimeout(resumeTimeoutRef.current);
+      resumeTimeoutRef.current = null;
+    }
 
-  const advanceToNext = useCallback(() => {
-    if (contactSkills.length === 0) return;
-    const currentIndex = autoIndexRef.current;
-    if (currentIndex === contactSkills.length - 1) return setCardStatus('done');
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+  }, []);
 
-    setCardStatus('advancing');
+  useEffect(() => {
+    autoIndexRef.current = autoIndex;
+  }, [autoIndex]);
 
-    setTimeout(() => {
-      const nextIdx = currentIndex + 1;
-      const nextSkill = contactSkills[nextIdx];
+  useEffect(() => {
+    if (contactSkills.length === 0) {
+      setAutoIndex(0);
+      setActiveSkill(null);
+      setOpenTabs([]);
+      setCardStatus('idle');
+      setSecondsLeft(0);
+      return;
+    }
 
-      autoIndexRef.current = nextIdx;
-      setAutoIndex(nextIdx);
-
-      setOpenTabs((prev) => {
-        if (prev.some((t) => t.name === nextSkill.name)) return prev;
-        return [...prev, nextSkill];
-      });
-
-      setActiveSkill(nextSkill);
-      setCardStatus('typing');
-    }, 700);
+    const nextIndex = Math.min(autoIndexRef.current, contactSkills.length - 1);
+    autoIndexRef.current = nextIndex;
+    setAutoIndex(nextIndex);
+    setActiveSkill(contactSkills[nextIndex]);
+    setOpenTabs(contactSkills.slice(0, nextIndex + 1));
   }, [contactSkills]);
 
+  useEffect(
+    () => () => {
+      clearAdvanceTimer();
+      clearPauseTimers();
+    },
+    [clearAdvanceTimer, clearPauseTimers],
+  );
+
+  const nextName = contactSkills.length > 0 && autoIndex < contactSkills.length - 1 ? contactSkills[autoIndex + 1].name : '';
+
+  const advanceToNext = useCallback(() => {
+    if (contactSkills.length === 0 || cardStatus === 'advancing' || cardStatus === 'paused' || cardStatus === 'done') return;
+
+    const currentIndex = autoIndexRef.current;
+    if (currentIndex >= contactSkills.length - 1) {
+      setCardStatus('done');
+      return;
+    }
+
+    clearAdvanceTimer();
+    setCardStatus('advancing');
+
+    advanceTimeoutRef.current = setTimeout(() => {
+      setAutoIndex((previousIndex) => {
+        const nextIndex = Math.min(previousIndex + 1, contactSkills.length - 1);
+        const nextSkill = contactSkills[nextIndex];
+
+        autoIndexRef.current = nextIndex;
+        setOpenTabs((previousTabs) => (previousTabs.some((tab) => tab.id === nextSkill.id) ? previousTabs : [...previousTabs, nextSkill]));
+        setActiveSkill(nextSkill);
+        setCardStatus('typing');
+
+        return nextIndex;
+      });
+
+      advanceTimeoutRef.current = null;
+    }, ADVANCE_DELAY_MS);
+  }, [cardStatus, clearAdvanceTimer, contactSkills]);
+
   useEffect(() => {
-    if (isActive && cardStatus === 'idle') setCardStatus('typing');
-    if (!isActive) codeCardRef.current?.pause();
-    if (isActive && cardStatus !== 'paused') codeCardRef.current?.resume();
-  }, [isActive, cardStatus]);
+    if (contactSkills.length === 0) return;
+
+    if (!isActive) {
+      codeCardRef.current?.pause();
+      return;
+    }
+
+    if (cardStatus === 'idle') {
+      setCardStatus('typing');
+      return;
+    }
+
+    if (cardStatus !== 'paused' && cardStatus !== 'advancing' && cardStatus !== 'done') {
+      codeCardRef.current?.resume();
+    }
+  }, [cardStatus, contactSkills.length, isActive]);
 
   const handleTabClick = useCallback(
     (skill: Skill) => {
-      if (cardStatus === 'done' || cardStatus === 'idle') return;
+      if (cardStatus === 'done' || cardStatus === 'idle' || cardStatus === 'advancing') return;
+
       const liveSkill = contactSkills[autoIndexRef.current];
-      if (skill.name === liveSkill.name) {
+      if (!liveSkill) return;
+
+      clearPauseTimers();
+
+      if (skill.id === liveSkill.id) {
         codeCardRef.current?.resume();
+        setSecondsLeft(0);
         setCardStatus('typing');
 
         startTransition(() => {
@@ -160,23 +228,25 @@ export default function ContactCodeCard({ isActive }: { isActive: boolean }) {
 
       setActiveSkill(skill);
       codeCardRef.current?.pause();
-      const delaySecs = Math.ceil((10_000 + Math.random() * 10_000) / 1000);
+      setSecondsLeft(Math.ceil(PAUSE_RESUME_DELAY_MS / 1000));
       setCardStatus('paused');
-      setSecondsLeft(delaySecs);
-      const interval = setInterval(() => setSecondsLeft((v) => Math.max(0, v - 1)), 1000);
-      setTimeout(() => {
-        clearInterval(interval);
-        const live = contactSkills[autoIndexRef.current];
-        setActiveSkill(live);
+
+      countdownIntervalRef.current = setInterval(() => setSecondsLeft((value) => Math.max(0, value - 1)), COUNTDOWN_INTERVAL_MS);
+      resumeTimeoutRef.current = setTimeout(() => {
+        clearPauseTimers();
+        const currentLiveSkill = contactSkills[autoIndexRef.current];
+        if (!currentLiveSkill) return;
+
+        setActiveSkill(currentLiveSkill);
+        setSecondsLeft(0);
         codeCardRef.current?.resume();
         setCardStatus('typing');
-      }, delaySecs * 1000);
+      }, PAUSE_RESUME_DELAY_MS);
     },
-    [cardStatus, contactSkills],
+    [cardStatus, clearPauseTimers, contactSkills],
   );
 
-  // Show loading or empty state if no skills available
-  if (false || isError || contactSkills.length === 0) {
+  if (contactSkills.length === 0) {
     return null;
   }
 
@@ -194,7 +264,7 @@ export default function ContactCodeCard({ isActive }: { isActive: boolean }) {
             skill={activeSkill}
             openTabs={cardStatus !== 'idle' ? openTabs : []}
             started={cardStatus !== 'idle'}
-            isActive={isActive && cardStatus !== 'advancing'}
+            isActive={isActive && cardStatus !== 'advancing' && cardStatus !== 'paused'}
             onTabClick={handleTabClick}
             onTabClose={() => undefined}
             onTypingComplete={cardStatus !== 'done' ? advanceToNext : undefined}

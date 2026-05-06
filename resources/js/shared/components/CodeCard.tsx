@@ -7,7 +7,7 @@ import TabScrollbarStyle from '@/shared/components/TabScrollbarStyle';
 import { useGsapTypingEffect as useGsapTimeline } from '@/shared/hooks/useGsapAnimations';
 import type gsap from 'gsap';
 import type { RefObject } from 'react';
-import { forwardRef, memo, useDeferredValue, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, memo, useCallback, useDeferredValue, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 const ContentScrollbarStyle = memo(function ContentScrollbarStyle({ color }: { color: string }) {
   return (
@@ -43,6 +43,13 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
 
   const contentRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const onTypingCompleteRef = useRef(onTypingComplete);
+  const animationKey =
+    skill.mode === 'code' ? skill.code.join('\u0000') : skill.commands.map((command) => `${command.kind}:${command.text ?? ''}`).join('\u0000');
+
+  useEffect(() => {
+    onTypingCompleteRef.current = onTypingComplete;
+  }, [onTypingComplete]);
 
   // 1. Use useDeferredValue for the list of lines.
   // This tells React to prioritize the "currentLine" typing animation
@@ -54,11 +61,9 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
     setCompletedLines([]);
     setCurrentLine('');
     setIsTyping(started && skill.mode === 'code');
-  }, [skill.name, skill.mode, started]);
+  }, [animationKey, skill.id, skill.name, skill.mode, started]);
 
-  const tlRef = useGsapTimeline(
-    cardRef,
-    [skill.name, started],
+  const setupTypingTimeline = useCallback(
     (timeline: gsap.core.Timeline) => {
       if (skill.mode !== 'code' || !started) return;
 
@@ -92,11 +97,13 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
 
       timeline.call(() => {
         setIsTyping(false);
-        onTypingComplete?.();
+        onTypingCompleteRef.current?.();
       });
     },
-    !isActive,
+    [skill, started],
   );
+
+  const tlRef = useGsapTimeline(cardRef, setupTypingTimeline, !isActive, [animationKey, skill.id, skill.name, skill.mode, started]);
 
   useImperativeHandle(
     ref,
@@ -136,7 +143,14 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
             {openTabs.length === 0 ? (
               <CodeEmptyState />
             ) : isTerminal ? (
-              <TerminalView key={skill.name} skillName={skill.name} commands={skill.commands} color={skill.color} isActive={isActive} />
+              <TerminalView
+                key={skill.id ?? skill.name}
+                skillName={skill.name}
+                commands={skill.commands}
+                color={skill.color}
+                isActive={isActive}
+                onTypingComplete={() => onTypingCompleteRef.current?.()}
+              />
             ) : (
               <div ref={codeContainerRef}>
                 {/* Render the deferred "History" of lines */}
@@ -160,7 +174,7 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
                 {!isTyping &&
                   deferredCompletedLines.length === 0 &&
                   skill.code.map((line, i) => (
-                    <CodeLine key={`${skill.name}-active-${activeLineIndex}`} line={line} index={i} isActiveLine={false} color={skill.color} />
+                    <CodeLine key={`${skill.name}-complete-${i}-${activeLineIndex}`} line={line} index={i} isActiveLine={false} color={skill.color} />
                   ))}
               </div>
             )}

@@ -46,14 +46,23 @@ export type SkillCommandData = {
   text: string | null;
 };
 
-export type SkillData = {
+type SkillBaseData = {
   id: number;
   name: string;
   icon: string;
   fileName: string;
   lang: string;
   color: string;
-  mode: string;
-  code: Array<string> | null;
-  commands: Array<SkillCommandData> | null;
 };
+
+export type SkillData =
+  | (SkillBaseData & {
+      mode: 'code';
+      code: Array<string>;
+      commands: null;
+    })
+  | (SkillBaseData & {
+      mode: 'terminal';
+      code: null;
+      commands: Array<SkillCommandData>;
+    });
