@@ -1,8 +1,15 @@
 import { ICON_MAP } from '@/Pages/(admin)/skills/iconMap';
 import CodeEmptyState from '@/features/skills/components/CodeEmptyState';
 import SkillChip from '@/features/skills/components/SkillChip';
-import type { ApiSkillPayload } from '@/features/skills/types';
-import { isCodeSkill, isTerminalSkill, normalizeApiSkill, toTerminalLines, type Skill } from '@/features/skills/types';
+import {
+  hasRequiredSkillFields,
+  isCodeSkill,
+  isTerminalSkill,
+  normalizeApiSkill,
+  toTerminalLines,
+  type ApiSkillPayload,
+  type Skill,
+} from '@/features/skills/types';
 import CodeCard from '@/shared/components/CodeCard';
 import SecComponent from '@/shared/components/SecContainer';
 import { HEADING, TEXT } from '@/shared/constants/style.constants';
@@ -17,10 +24,6 @@ import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useSectionActive } from '../hooks/useSectionActive';
 
 const PERSPECTIVE_STYLE = { perspective: 800 } as const;
-
-function hasRequiredSkillFields(skill: ApiSkillPayload): boolean {
-  return Boolean(skill.name && skill.fileName && skill.lang && skill.color);
-}
 
 const SkillsHeading = memo(function SkillsHeading() {
   return (

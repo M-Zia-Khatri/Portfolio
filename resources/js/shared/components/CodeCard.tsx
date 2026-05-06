@@ -7,7 +7,7 @@ import TabScrollbarStyle from '@/shared/components/TabScrollbarStyle';
 import { useGsapTypingEffect as useGsapTimeline } from '@/shared/hooks/useGsapAnimations';
 import type gsap from 'gsap';
 import type { RefObject } from 'react';
-import { forwardRef, memo, useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, memo, useDeferredValue, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 const ContentScrollbarStyle = memo(function ContentScrollbarStyle({ color }: { color: string }) {
   return (
@@ -49,16 +49,21 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
   // and render the long list of background lines during idle time.
   const deferredCompletedLines = useDeferredValue(completedLines);
   const codeKey = useMemo(() => (skill.mode === 'code' ? skill.code.join('\n') : ''), [skill]);
+  const onTypingCompleteRef = useRef(onTypingComplete);
 
   useEffect(() => {
+    onTypingCompleteRef.current = onTypingComplete;
+  }, [onTypingComplete]);
+
+  useLayoutEffect(() => {
     setCompletedLines([]);
     setCurrentLine('');
     setIsTyping(started && skill.mode === 'code');
-  }, [skill.id, skill.name, skill.mode, started]);
+  }, [skill.id, skill.name, skill.mode, started, codeKey]);
 
   const tlRef = useGsapTimeline(
     cardRef,
-    [skill.id, skill.name, skill.mode, started, codeKey, onTypingComplete],
+    [skill.id, skill.name, skill.mode, started, codeKey],
     (timeline: gsap.core.Timeline) => {
       if (skill.mode !== 'code' || !started) return;
 
@@ -92,7 +97,7 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
 
       timeline.call(() => {
         setIsTyping(false);
-        onTypingComplete?.();
+        onTypingCompleteRef.current?.();
       });
     },
     !isActive,
@@ -136,7 +141,14 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
             {openTabs.length === 0 ? (
               <CodeEmptyState />
             ) : isTerminal ? (
-              <TerminalView key={skill.name} skillName={skill.name} commands={skill.commands} color={skill.color} isActive={isActive} />
+              <TerminalView
+                key={skill.name}
+                skillName={skill.name}
+                commands={skill.commands}
+                color={skill.color}
+                isActive={isActive}
+                onComplete={onTypingCompleteRef.current}
+              />
             ) : (
               <div ref={codeContainerRef}>
                 {/* Render the deferred "History" of lines */}

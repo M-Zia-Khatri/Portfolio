@@ -1,5 +1,6 @@
 import SkillChip from '@/features/skills/components/SkillChip';
 import { isCodeSkill, isTerminalSkill, toTerminalLines, type ApiSkill, type Skill } from '@/features/skills/types';
+import AdminLayout from '@/Pages/(admin)/Layout';
 import CodeCard from '@/shared/components/CodeCard';
 import type { AdminSkillsPageProps } from '@/types';
 import { router, usePage } from '@inertiajs/react';
@@ -30,7 +31,7 @@ function toMappedSkill(s: ApiSkill): MappedSkill | null {
   return null;
 }
 
-export default function Skills() {
+function Skills() {
   const { skills } = usePage<AdminSkillsPageProps>().props;
 
   const [activeSkillId, setActiveSkillId] = useState<number | null>(null);
@@ -160,3 +161,7 @@ export default function Skills() {
     </Container>
   );
 }
+
+Skills.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+
+export default Skills;
