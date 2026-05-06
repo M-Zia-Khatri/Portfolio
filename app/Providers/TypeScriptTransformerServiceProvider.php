@@ -4,10 +4,10 @@ namespace App\Providers;
 
 use Spatie\LaravelTypeScriptTransformer\LaravelData\LaravelDataTypeScriptTransformerExtension;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerServiceProvider as BaseTypeScriptTransformerServiceProvider;
-use Spatie\TypeScriptTransformer\Config\TypeScriptTransformerConfigFactory;
 use Spatie\TypeScriptTransformer\Formatters\PrettierFormatter;
 use Spatie\TypeScriptTransformer\Transformers\AttributedClassTransformer;
 use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
+use Spatie\TypeScriptTransformer\TypeScriptTransformerConfigFactory;
 use Spatie\TypeScriptTransformer\Writers\ModuleWriter;
 
 class TypeScriptTransformerServiceProvider extends BaseTypeScriptTransformerServiceProvider
