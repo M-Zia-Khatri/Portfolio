@@ -23,12 +23,12 @@ class PortfolioController extends Controller
             PortfolioItem::query()->latest('created_at')->get()
         );
 
-        return Inertia::render('portfolio/index', ['portfolioItems' => $portfolioItems]);
+        return Inertia::render('(admin)/portfolio/index', ['portfolioItems' => $portfolioItems]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('portfolio/create');
+        return Inertia::render('(admin)/portfolio/index');
     }
 
     public function store(StorePortfolioRequest $request): RedirectResponse
@@ -61,7 +61,7 @@ class PortfolioController extends Controller
 
     public function edit(PortfolioItem $portfolio): Response
     {
-        return Inertia::render('portfolio/edit', [
+        return Inertia::render('(admin)/portfolio/index', [
             'portfolioItem' => PortfolioItemData::fromModel($portfolio),
         ]);
     }
