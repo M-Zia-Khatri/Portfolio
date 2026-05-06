@@ -1,16 +1,5 @@
 import { cn } from '@/shared/utils/cn';
-import {
-  AlertDialog,
-  Button,
-  Callout,
-  Flex,
-  Grid,
-  Heading,
-  Select,
-  Skeleton,
-  Spinner,
-  Text,
-} from '@radix-ui/themes';
+import { AlertDialog, Button, Callout, Flex, Grid, Heading, Select, Skeleton, Spinner, Text } from '@radix-ui/themes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, TriangleAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -19,6 +8,7 @@ import { createPortfolio, deletePortfolio, fetchPortfolio, updatePortfolio } fro
 import type { PortfolioItem } from './portfolio.types';
 import { PortfolioCard } from './PortfolioCard';
 import { PortfolioDialog } from './PortfolioDialog';
+import AdminLayout from '../Layout';
 
 const QUERY_KEY = ['portfolio'] as const;
 
@@ -47,14 +37,9 @@ const gridContainer = {
 
 function CardSkeleton() {
   return (
-    <div
-      className={cn(
-        'rounded-[var(--radius-4)] overflow-hidden',
-        'border border-[var(--gray-4)] bg-[var(--gray-2)]',
-      )}
-    >
+    <div className={cn('overflow-hidden rounded-[var(--radius-4)]', 'border border-[var(--gray-4)] bg-[var(--gray-2)]')}>
       <Skeleton className={cn('h-44 w-full')} />
-      <div className={cn('p-4 flex flex-col gap-2')}>
+      <div className={cn('flex flex-col gap-2 p-4')}>
         <Skeleton className={cn('h-4 w-3/4')} />
         <Skeleton className={cn('h-3 w-1/2')} />
         <Skeleton className={cn('h-3 w-full')} />
@@ -66,7 +51,7 @@ function CardSkeleton() {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function Portfolio() {
+function PortfolioPage() {
   const queryClient = useQueryClient();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -125,9 +110,7 @@ export default function Portfolio() {
     },
     // FIX: removed unused `ctx` parameter
     onSuccess: (serverItem) => {
-      queryClient.setQueryData<PortfolioItem[]>(QUERY_KEY, (old = []) =>
-        old.map((item) => (item.id.startsWith('optimistic-') ? serverItem : item)),
-      );
+      queryClient.setQueryData<PortfolioItem[]>(QUERY_KEY, (old = []) => old.map((item) => (item.id.startsWith('optimistic-') ? serverItem : item)));
     },
   });
 
@@ -142,9 +125,7 @@ export default function Portfolio() {
       await queryClient.cancelQueries({ queryKey: QUERY_KEY });
       const previous = queryClient.getQueryData<PortfolioItem[]>(QUERY_KEY) ?? [];
 
-      queryClient.setQueryData<PortfolioItem[]>(QUERY_KEY, (old = []) =>
-        old.map((item) => (item.id === id ? { ...item, ...payload } : item)),
-      );
+      queryClient.setQueryData<PortfolioItem[]>(QUERY_KEY, (old = []) => old.map((item) => (item.id === id ? { ...item, ...payload } : item)));
       return { previous };
     },
     onError: (_err, _vars, ctx) => {
@@ -153,9 +134,7 @@ export default function Portfolio() {
       }
     },
     onSuccess: (serverItem) => {
-      queryClient.setQueryData<PortfolioItem[]>(QUERY_KEY, (old = []) =>
-        old.map((item) => (item.id === serverItem.id ? serverItem : item)),
-      );
+      queryClient.setQueryData<PortfolioItem[]>(QUERY_KEY, (old = []) => old.map((item) => (item.id === serverItem.id ? serverItem : item)));
     },
   });
 
@@ -169,9 +148,7 @@ export default function Portfolio() {
       await queryClient.cancelQueries({ queryKey: QUERY_KEY });
       const previous = queryClient.getQueryData<PortfolioItem[]>(QUERY_KEY) ?? [];
 
-      queryClient.setQueryData<PortfolioItem[]>(QUERY_KEY, (old = []) =>
-        old.filter((item) => item.id !== id),
-      );
+      queryClient.setQueryData<PortfolioItem[]>(QUERY_KEY, (old = []) => old.filter((item) => item.id !== id));
       return { previous };
     },
     onError: (_err, _vars, ctx) => {
@@ -217,15 +194,15 @@ export default function Portfolio() {
 
   return (
     <div className={cn('min-h-screen bg-[var(--color-background)] p-6 md:p-10')}>
-      <div className={cn('max-w-[var(--container-4)] mx-auto')}>
+      <div className={cn('mx-auto max-w-[var(--container-4)]')}>
         {/* Header */}
         <motion.div variants={slideDown} initial="hidden" animate="show">
           <Flex align="center" justify="between" mb="6" gap="4" wrap="wrap">
             <div>
-              <Heading size="7" className={cn('text-[var(--gray-12)] font-bold')}>
+              <Heading size="7" className={cn('font-bold text-[var(--gray-12)]')}>
                 Portfolio
               </Heading>
-              <Text size="2" className={cn('text-[var(--gray-10)] mt-1')}>
+              <Text size="2" className={cn('mt-1 text-[var(--gray-10)]')}>
                 {items.length} {items.length === 1 ? 'project' : 'projects'}
               </Text>
             </div>
@@ -240,12 +217,7 @@ export default function Portfolio() {
         {/* Filters */}
         <AnimatePresence>
           {items.length > 0 && (
-            <motion.div
-              variants={slideDown}
-              initial="hidden"
-              animate="show"
-              exit={{ opacity: 0, y: -6, transition: { duration: 0.15 } }}
-            >
+            <motion.div variants={slideDown} initial="hidden" animate="show" exit={{ opacity: 0, y: -6, transition: { duration: 0.15 } }}>
               <Flex gap="3" mb="6" wrap="wrap">
                 <Flex align="center" gap="2">
                   <Text size="1" className={cn('text-[var(--gray-10)]')}>
@@ -283,12 +255,7 @@ export default function Portfolio() {
 
                 <AnimatePresence>
                   {(filterTech !== 'all' || filterRole !== 'all') && (
-                    <motion.div
-                      variants={fadeIn}
-                      initial="hidden"
-                      animate="show"
-                      exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                    >
+                    <motion.div variants={fadeIn} initial="hidden" animate="show" exit={{ opacity: 0, transition: { duration: 0.1 } }}>
                       <Button variant="ghost" color="gray" size="1" onClick={clearFilters}>
                         Clear filters
                       </Button>
@@ -368,12 +335,7 @@ export default function Portfolio() {
             className={cn('grid gap-4', 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3')}
           >
             {filtered.map((item) => (
-              <PortfolioCard
-                key={item.id}
-                item={item}
-                onEdit={handleEdit}
-                onDelete={setDeleteTarget}
-              />
+              <PortfolioCard key={item.id} item={item} onEdit={handleEdit} onDelete={setDeleteTarget} />
             ))}
           </motion.div>
         )}
@@ -391,15 +353,10 @@ export default function Portfolio() {
       />
 
       {/* ─── Delete Confirmation ─────────────────────────────────────────────── */}
-      <AlertDialog.Root
-        open={Boolean(deleteTarget)}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-      >
+      <AlertDialog.Root open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialog.Content maxWidth="400px">
           <AlertDialog.Title>Delete Portfolio Item</AlertDialog.Title>
-          <AlertDialog.Description>
-            Are you sure? This action cannot be undone.
-          </AlertDialog.Description>
+          <AlertDialog.Description>Are you sure? This action cannot be undone.</AlertDialog.Description>
           <Flex gap="3" mt="4" justify="end">
             <AlertDialog.Cancel>
               <Button variant="soft" color="gray">
@@ -423,3 +380,7 @@ export default function Portfolio() {
     </div>
   );
 }
+
+PortfolioPage.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+
+export default PortfolioPage;
