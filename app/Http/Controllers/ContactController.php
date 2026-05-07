@@ -34,7 +34,7 @@ class ContactController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return Inertia::render('admin/contact/index', [
+        return Inertia::render('(admin)/contact/index', [
             'contacts' => collect($contacts->items())
                 ->map(static fn (ContactMessage $contact): ContactMessageData => ContactMessageData::fromModel($contact))
                 ->all(),
