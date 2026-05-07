@@ -42,7 +42,11 @@ export function useGsapReveal(
     }, scopeRef);
 
     initializedRef.current = true;
-    return () => ctx.revert();
+
+    return () => {
+      initializedRef.current = false;
+      ctx.revert();
+    };
   }, [scopeRef, target, options?.duration, options?.ease, options?.once, options?.y]);
 }
 

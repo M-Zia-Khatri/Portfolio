@@ -16,7 +16,7 @@ Route::get('/', function () {
     $sortedSkills = $skills->sortBy(function ($skill) {
         return $skill->mode === 'code' ? 0 : 1;
     });
-    $contactSkills = $skills->where('mode', 'code');
+    $contactSkills = SkillData::collection($skills->where('mode', 'code')->values());
     $skillData = SkillData::collection($sortedSkills);
 
     $portfolioItems = PortfolioItemData::collection(PortfolioItem::query()->latest('created_at')->get());

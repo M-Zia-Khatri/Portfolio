@@ -1,5 +1,5 @@
 import { ICON_MAP } from '@/Pages/(admin)/skills/iconMap';
-import { isCodeSkill, isTerminalSkill, normalizeApiSkill, toTerminalLines, type ApiSkill, type Skill } from '@/features/skills/types';
+import { isCodeSkill, isTerminalSkill, normalizeApiSkillList, toTerminalLines, type ApiSkill, type Skill } from '@/features/skills/types';
 import type { CodeCardHandle } from '@/shared/components/CodeCard';
 import CodeCard from '@/shared/components/CodeCard';
 import { useGsapReveal } from '@/shared/hooks/useGsapAnimations';
@@ -12,8 +12,7 @@ type CardStatus = 'idle' | 'typing' | 'paused' | 'advancing' | 'done';
 const ADVANCE_DELAY_MS = 700;
 const TAB_PREVIEW_PAUSE_MS = 12_000;
 
-function toRuntimeSkill(rawSkill: ApiSkill): Skill | null {
-  const apiSkill = normalizeApiSkill(rawSkill);
+function toRuntimeSkill(apiSkill: ApiSkill): Skill | null {
   const iconComponent = ICON_MAP[apiSkill.icon] ?? ICON_MAP.default;
 
   if (isCodeSkill(apiSkill)) {
@@ -110,17 +109,15 @@ const MemoizedProgressRail = memo(ProgressRail);
 export default function ContactCodeCard({ isActive }: { isActive: boolean }) {
   const { contactSkills: apiSkills } = usePage<HomePageProps>().props;
 
-  const contactSkills = useMemo<Skill[]>(() => {
-    if (!Array.isArray(apiSkills) || apiSkills.length === 0) {
-      return [];
-    }
+  const contactSkills = useMemo<Skill[]>(
+    () =>
+      normalizeApiSkillList(apiSkills).flatMap((apiSkill): Skill[] => {
+        const runtimeSkill = toRuntimeSkill(apiSkill);
 
-    return apiSkills.flatMap((apiSkill): Skill[] => {
-      const runtimeSkill = toRuntimeSkill(apiSkill);
-
-      return runtimeSkill ? [runtimeSkill] : [];
-    });
-  }, [apiSkills]);
+        return runtimeSkill?.mode === 'code' ? [runtimeSkill] : [];
+      }),
+    [apiSkills],
+  );
 
   const [autoIndex, setAutoIndex] = useState(0);
   const autoIndexRef = useRef(0);
@@ -300,11 +297,11 @@ export default function ContactCodeCard({ isActive }: { isActive: boolean }) {
   const currentColor = contactSkills[autoIndex]?.color ?? '#ffffff';
 
   return (
-    <div ref={wrapRef} className="flex flex-col gap-2">
+    <div ref={wrapRef} className="flex min-w-0 flex-col gap-2">
       <div className="flex h-5 justify-end pr-1">
         <MemoizedStatusBadge status={cardStatus} color={currentColor} secondsLeft={secondsLeft} nextName={nextName} />
       </div>
-      <div data-contact-card className="relative" style={{ perspective: 800 }}>
+      <div data-contact-card className="relative min-w-0" style={{ perspective: 800 }}>
         {activeSkill && (
           <CodeCard
             ref={codeCardRef}

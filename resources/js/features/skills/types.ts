@@ -37,11 +37,20 @@ export type ApiSkillPayload = Omit<SkillData, 'fileName' | 'mode'> & {
   mode: string;
 };
 export type ApiSkill = ApiSkillPayload;
+export type UnknownSkillPayload = Partial<Omit<SkillData, 'fileName' | 'mode'>> & {
+  fileName?: unknown;
+  file_name?: unknown;
+  mode?: unknown;
+};
 
 const TERMINAL_LINE_KINDS = ['command', 'output', 'comment', 'blank'] as const satisfies readonly TerminalLine['kind'][];
 
 function isTerminalLineKind(kind: string): kind is TerminalLine['kind'] {
   return TERMINAL_LINE_KINDS.includes(kind as TerminalLine['kind']);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -58,12 +67,44 @@ function isSkillCommandDataArray(value: unknown): value is SkillCommandData[] {
   );
 }
 
-export function getApiSkillFileName(skill: ApiSkillPayload): string | undefined {
-  return skill.fileName ?? skill.file_name;
+export function getApiSkillFileName(skill: UnknownSkillPayload): string | undefined {
+  const fileName = skill.fileName ?? skill.file_name;
+
+  return typeof fileName === 'string' ? fileName : undefined;
+}
+
+export function isApiSkillPayload(skill: unknown): skill is ApiSkillPayload {
+  if (!isRecord(skill)) {
+    return false;
+  }
+
+  return (
+    typeof skill.id === 'number' &&
+    typeof skill.name === 'string' &&
+    typeof skill.icon === 'string' &&
+    typeof skill.lang === 'string' &&
+    typeof skill.color === 'string' &&
+    typeof skill.mode === 'string' &&
+    (Array.isArray(skill.code) || skill.code === null || skill.code === undefined) &&
+    (Array.isArray(skill.commands) || skill.commands === null || skill.commands === undefined) &&
+    typeof getApiSkillFileName(skill) === 'string'
+  );
 }
 
 export function normalizeApiSkill(skill: ApiSkillPayload): ApiSkillPayload {
   return { ...skill, fileName: getApiSkillFileName(skill) };
+}
+
+export function normalizeApiSkillList(skills: unknown): ApiSkillPayload[] {
+  if (Array.isArray(skills)) {
+    return skills.filter(isApiSkillPayload).map(normalizeApiSkill);
+  }
+
+  if (isRecord(skills)) {
+    return Object.values(skills).filter(isApiSkillPayload).map(normalizeApiSkill);
+  }
+
+  return [];
 }
 
 export function hasRequiredSkillFields(skill: ApiSkillPayload): skill is ApiSkillPayload & {

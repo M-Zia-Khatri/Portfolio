@@ -18,11 +18,7 @@ export default function ContactSection() {
         <div className="mt-4 grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
           <ContactFormCard />
 
-          <div
-            data-gsap="contact-card"
-            className="hidden flex-col justify-center lg:flex"
-            style={{ perspective: 900 }}
-          >
+          <div data-gsap="contact-card" className="hidden min-w-0 flex-col justify-center lg:flex" style={{ perspective: 900 }}>
             <ContactCodeCard isActive={isSectionActive} />
           </div>
         </div>
