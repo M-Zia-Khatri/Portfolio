@@ -1,10 +1,6 @@
-export interface Contact {
-  id: string;
-  full_name: string;
-  email: string;
-  message: string;
-  created_at: string;
-}
+import type { ContactMessageData } from '@/types';
+
+export type Contact = ContactMessageData;
 
 export interface ContactFilters {
   search: string;

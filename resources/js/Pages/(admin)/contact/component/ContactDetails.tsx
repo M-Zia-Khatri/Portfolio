@@ -1,4 +1,4 @@
-import { Contact } from '@/features/contact/types';
+import type { Contact } from '@/features/contact/types';
 import { TrashIcon } from '@radix-ui/react-icons';
 import { Box, Button, DataList, Dialog, Flex } from '@radix-ui/themes';
 
@@ -22,7 +22,7 @@ export const ContactDetails = ({ contact, isOpen, onOpenChange, onDelete, isDele
           <DataList.Root>
             <DataList.Item align="center">
               <DataList.Label minWidth="88px">From</DataList.Label>
-              <DataList.Value>{contact.full_name}</DataList.Value>
+              <DataList.Value>{contact.fullName}</DataList.Value>
             </DataList.Item>
             <DataList.Item align="center">
               <DataList.Label minWidth="88px">Email</DataList.Label>

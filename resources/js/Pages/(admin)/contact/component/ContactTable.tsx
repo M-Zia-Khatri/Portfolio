@@ -1,4 +1,4 @@
-import { Contact } from '@/features/contact/types';
+import type { Contact } from '@/features/contact/types';
 import { VirtualList } from '@/shared/components/VirtualList';
 import { Table, Text } from '@radix-ui/themes';
 import { memo } from 'react';
@@ -42,9 +42,9 @@ export const ContactTable = memo(({ contacts, onSelect }: Props) => {
                 onClick={() => onSelect(contact)}
                 className="grid h-12 w-full cursor-pointer grid-cols-3 items-center px-3 text-left hover:bg-(--blue-2)/50"
               >
-                <span className="truncate font-medium">{contact.full_name}</span>
+                <span className="truncate font-medium">{contact.fullName}</span>
                 <span className="truncate">{contact.email}</span>
-                <span>{new Date(contact.created_at).toLocaleDateString()}</span>
+                <span>{contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : ''}</span>
               </button>
             </div>
           )}
