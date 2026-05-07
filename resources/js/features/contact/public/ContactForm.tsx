@@ -1,3 +1,4 @@
+import { HEADING, TEXT } from '@/shared/constants/style.constants';
 import { useForm } from '@inertiajs/react';
 import { CheckCircledIcon, PaperPlaneIcon } from '@radix-ui/react-icons';
 import { Button, Callout, Card, Flex, Heading, Separator, Text, TextArea, TextField } from '@radix-ui/themes';
@@ -23,8 +24,19 @@ function ContactFormCard() {
 
   return (
     <Card size="3">
-      <Heading align="center">Contact Form</Heading>
-      <Separator my="4" />
+      <div className="space-y-2">
+        <Heading as="h3" size={HEADING.h3.size} weight="bold" className="text-center text-white">
+          Contact Form
+        </Heading>
+        <Text size={TEXT.sm.size} weight="medium">
+          Please contact me directly at{' '}
+          <Text size={TEXT.sm.size} className="font-extrabold text-(--blue-a11)" as="span">
+            muhammadziakhatri@gmail.com
+          </Text>{' '}
+          or drop your info here.
+        </Text>
+      </div>
+      <Separator my="4" className="w-full" />
 
       {recentlySuccessful && (
         <Callout.Root color="green">
@@ -57,6 +69,10 @@ function ContactFormCard() {
             <TextArea value={data.message} onChange={(e) => setData('message', e.target.value)} />
             {errors.message && <Text color="red">{errors.message}</Text>}
           </div>
+
+          <Text size="1" color="blue" weight="medium">
+            I&apos;ll never share your data with anyone else. Pinky promise!
+          </Text>
 
           <Button type="submit" disabled={processing}>
             {processing ? (
