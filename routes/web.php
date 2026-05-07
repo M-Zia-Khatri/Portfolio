@@ -12,14 +12,21 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    $skills = Skill::query()->oldest('created_at')->get();
-    $sortedSkills = $skills->sortBy(function ($skill) {
-        return $skill->mode === 'code' ? 0 : 1;
-    });
-    $contactSkills = SkillData::collection($skills->where('mode', 'code')->values());
-    $skillData = SkillData::collection($sortedSkills);
+    // 1. Optimize skill retrieval: Sort by mode in DB (code=0, other=1) then by date
+    $skills = Skill::query()
+        ->orderByRaw("CASE WHEN mode = 'code' THEN 0 ELSE 1 END")
+        ->oldest('created_at')
+        ->get();
 
-    $portfolioItems = PortfolioItemData::collection(PortfolioItem::query()->latest('created_at')->get());
+    // 2. Efficiently split skills for contact section
+    $contactSkills = SkillData::collection($skills->where('mode', 'code'));
+
+    // 3. Keep original sorted skills
+    $skillData = SkillData::collection($skills);
+
+    $portfolioItems = PortfolioItemData::collection(
+        PortfolioItem::query()->latest('created_at')->get()
+    );
 
     return Inertia::render('home/index', [
         'skills' => $skillData,
