@@ -1,47 +1,16 @@
 import { cn } from '@/shared/utils/cn';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from '@inertiajs/react';
 import { Button, Callout, Dialog, Flex, Spinner, Text, TextArea, TextField } from '@radix-ui/themes';
 import { ImageIcon, TriangleAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
-import { useForm, type Resolver } from 'react-hook-form';
-import { z } from 'zod';
-import { uploadToCloudinary } from './portfolio.api';
 import type { PortfolioFormValues, PortfolioItem } from './portfolio.types';
-
-// ─── Validation Schemas ───────────────────────────────────────────────────────
-
-const createSchema = z.object({
-  site_name: z.string().min(1, 'Site name is required'),
-  site_role: z.string().optional(),
-  site_url: z.string().url('Enter a valid URL'),
-  site_image: z.custom<FileList>((v: unknown) => v instanceof FileList && v.length > 0, 'Image is required'),
-  use_tech: z.string().optional(),
-  description: z.string().optional(),
-});
-
-const editSchema = z.object({
-  site_name: z.string().min(1, 'Site name is required'),
-  site_role: z.string().optional(),
-  site_url: z.string().url('Enter a valid URL'),
-  site_image: z.custom<FileList>().optional(),
-  use_tech: z.string().optional(),
-  description: z.string().optional(),
-});
-
-// type CreateSchema = z.infer<typeof createSchema>
-// type EditSchema = z.infer<typeof editSchema>
-
-// ─── Props ────────────────────────────────────────────────────────────────────
 
 interface PortfolioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editItem?: PortfolioItem | null;
-  onSubmit: (data: Omit<PortfolioItem, 'id'>, id?: string) => Promise<void>;
 }
-
-// ─── Field Wrapper ────────────────────────────────────────────────────────────
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
@@ -68,108 +37,110 @@ function Field({ label, error, children }: { label: string; error?: string; chil
   );
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+function techStringToArray(value: string): string[] {
+  return value
+    .split(',')
+    .map((tech) => tech.trim())
+    .filter(Boolean);
+}
 
-export function PortfolioDialog({ open, onOpenChange, editItem, onSubmit }: PortfolioDialogProps) {
-  // console.log(editItem)
+export function PortfolioDialog({ open, onOpenChange, editItem }: PortfolioDialogProps) {
   const isEdit = Boolean(editItem);
-  const [submitting, setSubmitting] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors },
-  } = useForm<PortfolioFormValues>({
-    resolver: zodResolver(isEdit ? editSchema : createSchema) as Resolver<PortfolioFormValues>,
-    defaultValues: {
-      site_name: '',
-      site_role: '',
-      site_url: '',
-      use_tech: '',
-      description: '',
-    },
+  const { data, setData, post, processing, errors, reset, clearErrors, transform } = useForm<PortfolioFormValues>({
+    siteName: '',
+    siteRole: '',
+    siteUrl: '',
+    siteImage: null,
+    useTech: '',
+    description: '',
   });
 
-  // ─── Populate on edit / clear on add ──────────────────────────────────────
-
   useEffect(() => {
+    if (!open) {
+      return;
+    }
+
     if (editItem) {
-      reset({
-        site_name: editItem.site_name,
-        site_role: editItem.site_role,
-        site_url: editItem.site_url,
-        use_tech: editItem.use_tech.join(', '),
+      setData({
+        siteName: editItem.siteName,
+        siteRole: editItem.siteRole,
+        siteUrl: editItem.siteUrl,
+        siteImage: null,
+        useTech: editItem.useTech.join(', '),
         description: editItem.description,
       });
-      setPreviewUrl(editItem.site_image_url);
+      setPreviewUrl(editItem.siteImageUrl);
     } else {
-      reset({
-        site_name: '',
-        site_role: '',
-        site_url: '',
-        use_tech: '',
-        description: '',
-      });
+      reset();
       setPreviewUrl(null);
     }
-    setApiError(null);
-  }, [editItem, open, reset]);
 
-  // ─── Live file preview ────────────────────────────────────────────────────
-
-  const watchedImage = watch('site_image');
-  useEffect(() => {
-    if (watchedImage && watchedImage.length > 0) {
-      const url = URL.createObjectURL(watchedImage[0]);
-      setPreviewUrl(url);
-      return () => URL.revokeObjectURL(url);
+    clearErrors();
+    setFormError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
-  }, [watchedImage]);
+  }, [clearErrors, editItem, open, reset, setData]);
 
-  // ─── Submit ───────────────────────────────────────────────────────────────
+  function handleImageChange(file: File | null) {
+    setData('siteImage', file);
 
-  const onFormSubmit = async (values: PortfolioFormValues) => {
-    setSubmitting(true);
-    setApiError(null);
+    if (!file) {
+      setPreviewUrl(editItem?.siteImageUrl ?? null);
+      return;
+    }
 
-    try {
-      let site_image_url = editItem?.site_image_url ?? '';
-
-      if (values.site_image && values.site_image.length > 0) {
-        site_image_url = await uploadToCloudinary(values.site_image[0]);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl((currentUrl) => {
+      if (currentUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(currentUrl);
       }
 
-      await onSubmit(
-        {
-          site_name: values.site_name,
-          site_role: values.site_role ?? '',
-          site_url: values.site_url,
-          site_image_url,
-          use_tech: (values.use_tech ?? '')
-            .split(',')
-            .map((t) => t.trim())
-            .filter(Boolean),
-          description: values.description ?? '',
-        },
-        editItem?.id,
-      );
+      return url;
+    });
+  }
 
-      onOpenChange(false);
-    } catch (error: unknown) {
-      setApiError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  useEffect(() => {
+    return () => {
+      if (previewUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
-  const { ref: imageRefCallback, ...imageRegisterRest } = register('site_image');
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormError(null);
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+    transform((formData) => ({
+      siteName: formData.siteName,
+      siteRole: formData.siteRole,
+      siteUrl: formData.siteUrl,
+      ...(formData.siteImage ? { siteImage: formData.siteImage } : {}),
+      useTech: techStringToArray(formData.useTech),
+      description: formData.description,
+      ...(isEdit ? { _method: 'patch' } : {}),
+    }));
+
+    post(isEdit && editItem ? route('portfolio.update', editItem.id) : route('portfolio.store'), {
+      forceFormData: true,
+      preserveScroll: true,
+      onSuccess: () => {
+        reset();
+        onOpenChange(false);
+      },
+      onError: () => {
+        setFormError('Please correct the highlighted fields and try again.');
+      },
+      onFinish: () => {
+        transform((formData) => formData);
+      },
+    });
+  }
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -179,11 +150,11 @@ export function PortfolioDialog({ open, onOpenChange, editItem, onSubmit }: Port
           {isEdit ? 'Update the details for this portfolio entry.' : 'Fill in the details to add a new portfolio entry.'}
         </Dialog.Description>
 
-        <form onSubmit={handleSubmit(onFormSubmit)}>
+        <form onSubmit={submit}>
           <Flex direction="column" gap="4" mt="4">
             {/* API error */}
             <AnimatePresence>
-              {apiError && (
+              {formError && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -194,38 +165,44 @@ export function PortfolioDialog({ open, onOpenChange, editItem, onSubmit }: Port
                     <Callout.Icon>
                       <TriangleAlert size={14} />
                     </Callout.Icon>
-                    <Callout.Text>{apiError}</Callout.Text>
+                    <Callout.Text>{formError}</Callout.Text>
                   </Callout.Root>
                 </motion.div>
               )}
             </AnimatePresence>
 
             {/* site_name */}
-            <Field label="Site Name *" error={errors.site_name?.message}>
+            <Field label="Site Name *" error={errors.siteName}>
               <TextField.Root
                 placeholder="My Awesome Project"
-                {...register('site_name')}
-                className={cn(errors.site_name ? 'border-(--red-7)' : '')}
+                value={data.siteName}
+                onChange={(event) => setData('siteName', event.target.value)}
+                className={cn(errors.siteName ? 'border-(--red-7)' : '')}
               />
             </Field>
 
             {/* site_role */}
-            <Field label="Role" error={errors.site_role?.message}>
-              <TextField.Root placeholder="Full Stack Developer" {...register('site_role')} />
+            <Field label="Role" error={errors.siteRole}>
+              <TextField.Root
+                placeholder="Full Stack Developer"
+                value={data.siteRole}
+                onChange={(event) => setData('siteRole', event.target.value)}
+              />
             </Field>
 
             {/* site_url */}
-            <Field label="Site URL *" error={errors.site_url?.message}>
+            <Field label="Site URL *" error={errors.siteUrl}>
               <TextField.Root
                 placeholder="https://example.com"
                 type="url"
-                {...register('site_url')}
-                className={cn(errors.site_url ? 'border-(--red-7)' : '')}
+                value={data.siteUrl}
+                onChange={(event) => setData('siteUrl', event.target.value)}
+                className={cn(errors.siteUrl ? 'border-(--red-7)' : '')}
               />
             </Field>
 
             {/* site_image */}
-            <Field label={isEdit ? 'Image (leave blank to keep current)' : 'Image *'} error={errors.site_image?.message}>
+            <Field label={isEdit ? 'Image (leave blank to keep current)' : 'Image *'} error={errors.siteImage}>
               <div
                 className={cn(
                   'relative flex flex-col items-center justify-center gap-2',
@@ -268,35 +245,41 @@ export function PortfolioDialog({ open, onOpenChange, editItem, onSubmit }: Port
                   type="file"
                   accept="image/*"
                   className={cn('hidden')}
-                  {...imageRegisterRest}
-                  ref={(el) => {
-                    imageRefCallback(el);
-                    fileInputRef.current = el;
-                  }}
+                  ref={fileInputRef}
+                  onChange={(event) => handleImageChange(event.target.files?.[0] ?? null)}
                 />
               </div>
             </Field>
 
             {/* use_tech */}
-            <Field label="Technologies (comma-separated)" error={errors.use_tech?.message}>
-              <TextField.Root placeholder="React, Node.js, PostgreSQL" {...register('use_tech')} />
+            <Field label="Technologies (comma-separated)" error={errors.useTech}>
+              <TextField.Root
+                placeholder="React, Node.js, PostgreSQL"
+                value={data.useTech}
+                onChange={(event) => setData('useTech', event.target.value)}
+              />
             </Field>
 
             {/* description */}
-            <Field label="Description" error={errors.description?.message}>
-              <TextArea placeholder="Brief description of the project..." rows={3} {...register('description')} />
+            <Field label="Description" error={errors.description}>
+              <TextArea
+                placeholder="Brief description of the project..."
+                rows={3}
+                value={data.description}
+                onChange={(event) => setData('description', event.target.value)}
+              />
             </Field>
           </Flex>
 
           {/* Actions */}
           <Flex justify="end" gap="3" mt="5">
             <Dialog.Close>
-              <Button variant="soft" color="gray" type="button" disabled={submitting}>
+              <Button variant="soft" color="gray" type="button" disabled={processing}>
                 Cancel
               </Button>
             </Dialog.Close>
-            <Button type="submit" disabled={submitting} color="blue">
-              {submitting ? (
+            <Button type="submit" disabled={processing} color="blue">
+              {processing ? (
                 <Flex align="center" gap="2">
                   <Spinner size="1" />
                   {isEdit ? 'Saving…' : 'Adding…'}

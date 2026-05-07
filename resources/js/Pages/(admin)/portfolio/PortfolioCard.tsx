@@ -26,29 +26,25 @@ interface PortfolioCardProps {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function PortfolioCard({ item, onEdit, onDelete }: PortfolioCardProps) {
-  const techList = item.use_tech ?? [];
+  const techList = item.useTech ?? [];
 
   return (
     <motion.div variants={cardVariants}>
       <Card
         className={cn(
-          'group relative overflow-hidden h-full',
+          'group relative h-full overflow-hidden',
           'border border-(--gray-4) bg-(--gray-2)',
-          'hover:border-(--blue-7) transition-colors duration-200',
+          'transition-colors duration-200 hover:border-(--blue-7)',
         )}
       >
         {/* Image */}
         <div className={cn('relative w-full overflow-hidden', 'h-44 rounded-t-(--radius-3)')}>
           <img
-            src={item.site_image_url}
-            alt={item.site_name}
-            className={cn(
-              'w-full h-full object-cover',
-              'group-hover:scale-[1.03] transition-transform duration-300',
-            )}
+            src={item.siteImageUrl}
+            alt={item.siteName}
+            className={cn('h-full w-full object-cover', 'transition-transform duration-300 group-hover:scale-[1.03]')}
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src =
-                'https://placehold.co/400x200/0d2d3b/70c1e5?text=No+Image';
+              (e.currentTarget as HTMLImageElement).src = 'https://placehold.co/400x200/0d2d3b/70c1e5?text=No+Image';
             }}
           />
 
@@ -61,25 +57,13 @@ export function PortfolioCard({ item, onEdit, onDelete }: PortfolioCardProps) {
             )}
           >
             <Tooltip content="Edit">
-              <IconButton
-                size="2"
-                variant="soft"
-                color="blue"
-                onClick={() => onEdit(item)}
-                aria-label="Edit portfolio item"
-              >
+              <IconButton size="2" variant="soft" color="blue" onClick={() => onEdit(item)} aria-label="Edit portfolio item">
                 <Pencil size={14} />
               </IconButton>
             </Tooltip>
 
             <Tooltip content="Delete">
-              <IconButton
-                size="2"
-                variant="soft"
-                color="red"
-                onClick={() => onDelete(item.id)}
-                aria-label="Delete portfolio item"
-              >
+              <IconButton size="2" variant="soft" color="red" onClick={() => onDelete(item.id)} aria-label="Delete portfolio item">
                 <Trash2 size={14} />
               </IconButton>
             </Tooltip>
@@ -87,52 +71,40 @@ export function PortfolioCard({ item, onEdit, onDelete }: PortfolioCardProps) {
         </div>
 
         {/* Content */}
-        <div className={cn('p-4 flex flex-col gap-2')}>
+        <div className={cn('flex flex-col gap-2 p-4')}>
           {/* Title + link */}
           <div className={cn('flex items-start justify-between gap-2')}>
-            <Text
-              as="p"
-              size="3"
-              weight="bold"
-              className={cn('text-(--gray-12) leading-snug line-clamp-1')}
-            >
-              {item.site_name}
+            <Text as="p" size="3" weight="bold" className={cn('line-clamp-1 leading-snug text-(--gray-12)')}>
+              {item.siteName}
             </Text>
             <a
-              href={item.site_url}
+              href={item.siteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(
-                'shrink-0 text-(--blue-9) hover:text-(--blue-11)',
-                'transition-colors duration-150',
-              )}
-              aria-label={`Visit ${item.site_name}`}
+              className={cn('shrink-0 text-(--blue-9) hover:text-(--blue-11)', 'transition-colors duration-150')}
+              aria-label={`Visit ${item.siteName}`}
             >
               <ExternalLink size={15} />
             </a>
           </div>
 
           {/* Role */}
-          {item.site_role && (
-            <Text
-              as="p"
-              size="1"
-              className={cn('text-(--blue-9) font-medium tracking-wide uppercase')}
-            >
-              {item.site_role}
+          {item.siteRole && (
+            <Text as="p" size="1" className={cn('font-medium tracking-wide text-(--blue-9) uppercase')}>
+              {item.siteRole}
             </Text>
           )}
 
           {/* Description */}
           {item.description && (
-            <Text as="p" size="1" className={cn('text-(--gray-11) leading-relaxed line-clamp-3')}>
+            <Text as="p" size="1" className={cn('line-clamp-3 leading-relaxed text-(--gray-11)')}>
               {item.description}
             </Text>
           )}
 
           {/* Tech badges */}
           {techList.length > 0 && (
-            <div className={cn('flex flex-wrap gap-1 mt-1')}>
+            <div className={cn('mt-1 flex flex-wrap gap-1')}>
               {techList.map((tech) => (
                 <Badge key={tech} color="blue" variant="soft" size="1" radius="full">
                   {tech}

@@ -19,16 +19,15 @@ class PortfolioController extends Controller
 
     public function index(): Response
     {
-        $portfolioItems = PortfolioItemData::collection(
-            PortfolioItem::query()->latest('created_at')->get()
-        );
-
-        return Inertia::render('(admin)/portfolio/index', ['portfolioItems' => $portfolioItems]);
+        return Inertia::render('(admin)/portfolio/index', $this->pageProps());
     }
 
     public function create(): Response
     {
-        return Inertia::render('(admin)/portfolio/index');
+        return Inertia::render('(admin)/portfolio/index', [
+            ...$this->pageProps(),
+            'create' => true,
+        ]);
     }
 
     public function store(StorePortfolioRequest $request): RedirectResponse
@@ -62,7 +61,9 @@ class PortfolioController extends Controller
     public function edit(PortfolioItem $portfolio): Response
     {
         return Inertia::render('(admin)/portfolio/index', [
+            ...$this->pageProps(),
             'portfolioItem' => PortfolioItemData::fromModel($portfolio),
+            'edit' => true,
         ]);
     }
 
@@ -113,5 +114,17 @@ class PortfolioController extends Controller
         $this->cloudinaryService->deleteFromCloudinary($imageUrl);
 
         return to_route('portfolio.index')->with('success', 'Portfolio item deleted successfully.');
+    }
+
+    /**
+     * @return array{portfolioItems: array<int, PortfolioItemData>}
+     */
+    private function pageProps(): array
+    {
+        return [
+            'portfolioItems' => PortfolioItemData::collection(
+                PortfolioItem::query()->latest('created_at')->get()
+            ),
+        ];
     }
 }

@@ -40,7 +40,10 @@ const VIEWPORT_ONCE = { once: true, margin: '-60px' } as const;
 const VIEWPORT_GRID = { once: true, margin: '-80px' } as const;
 
 export default function PortfolioSection() {
-  const { portfolioItems = [], errors: isError } = usePage<HomePageProps>().props;
+  const { portfolioItems, errors } = usePage<HomePageProps>().props;
+  const items = portfolioItems ?? [];
+  const isLoading = portfolioItems === undefined;
+  const isError = Object.keys(errors ?? {}).length > 0;
 
   return (
     <SecComponent className="w-full" py="8">
@@ -62,7 +65,7 @@ export default function PortfolioSection() {
           whileInView="visible"
           viewport={VIEWPORT_GRID}
         >
-          {false ? (
+          {isLoading ? (
             Array.from({ length: 4 }).map((_, index) => (
               <React.Fragment key={index}>
                 <Card size="2">
@@ -81,14 +84,14 @@ export default function PortfolioSection() {
                 Couldn&apos;t load portfolio items right now. Please try again later.
               </Text>
             </Card>
-          ) : portfolioItems?.length === 0 ? (
+          ) : items.length === 0 ? (
             <Card size="3" className="md:col-span-2">
               <Text size={TEXT.base.size} color="gray">
                 Portfolio items coming soon.
               </Text>
             </Card>
           ) : (
-            portfolioItems?.map((item) => (
+            items.map((item) => (
               <motion.div key={item.siteUrl} variants={cardVariants}>
                 <PortfolioItemCard item={item} />
               </motion.div>

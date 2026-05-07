@@ -48,6 +48,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => new SharedAuthData(
                 user: $request->user() instanceof Admin ? SharedAuthUserData::fromAdmin($request->user()) : null,
             ),
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'status' => $request->session()->get('status'),
+                'error' => $request->session()->get('error'),
+            ],
         ]);
     }
 }

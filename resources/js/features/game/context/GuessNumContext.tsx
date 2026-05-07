@@ -1,13 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useTransition,
-  type ReactNode,
-} from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useReducer, useRef, useTransition, type ReactNode } from 'react';
 import useGameTimer from '../hooks/useGameTimer';
 import { generateId } from '../services/idGenerator';
 import useGameSet, { type ScoreRecord } from '../store/GameSetStore';
@@ -88,7 +79,7 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialGameState(guessLimit));
   const { randomNumber, guessResults, showNumber, guessTurn, started, playerName, didWin } = state;
 
-  const [_, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const randomNumberRef = useRef<number | null>(randomNumber);
   const showNumberRef = useRef(showNumber);
@@ -187,18 +178,7 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
       addScoreRecord(record);
     });
     lastSavedSignatureRef.current = gameSignature;
-  }, [
-    addScoreRecord,
-    difficultLevel,
-    didWin,
-    gameSignature,
-    guessLimit,
-    guessResults,
-    initialTimeLimit,
-    playerName,
-    showNumber,
-    timeLeft,
-  ]);
+  }, [addScoreRecord, difficultLevel, didWin, gameSignature, guessLimit, guessResults, initialTimeLimit, playerName, showNumber, timeLeft]);
 
   useEffect(() => {
     actionsValue.startGame();

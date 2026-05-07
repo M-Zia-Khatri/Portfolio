@@ -22,11 +22,13 @@ export function TextLoop({
   className,
   interval = 2,
   transition = { duration: 0.3 },
-  variants: _variants,
+  variants,
   onIndexChange,
   trigger = true,
   mode = 'popLayout',
 }: TextLoopProps) {
+  void variants;
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const items = Children.toArray(children);
 
@@ -48,11 +50,7 @@ export function TextLoop({
 
   return (
     <div className={cn('relative inline-block whitespace-nowrap', className)}>
-      <div
-        key={`${mode}-${currentIndex}`}
-        style={{ animationDuration: `${animationDuration}s` }}
-        className="animate-[fadeUp_ease_forwards]"
-      >
+      <div key={`${mode}-${currentIndex}`} style={{ animationDuration: `${animationDuration}s` }} className="animate-[fadeUp_ease_forwards]">
         {items[currentIndex]}
       </div>
     </div>
