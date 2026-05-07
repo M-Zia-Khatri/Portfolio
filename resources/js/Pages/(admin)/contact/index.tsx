@@ -1,65 +1,71 @@
-import { Contact } from '@/features/contact/types';
+import type { Contact } from '@/features/contact/types';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
-import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { Box, Callout, Flex, Heading, Spinner } from '@radix-ui/themes';
-import { useCallback, useMemo, useState } from 'react';
+import type { ContactMessagesPageProps } from '@/types';
+import { router, usePage } from '@inertiajs/react';
+import { Box, Heading } from '@radix-ui/themes';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import AdminLayout from '../Layout';
 import { ContactDetails } from './component/ContactDetails';
 import { ContactFilters } from './component/ContactFilters';
 import { ContactTable } from './component/ContactTable';
 
-export default function ContactPage() {
-  const { data: contacts, isLoading, isError, error } = useContacts();
-  const deleteMutation = useDeleteContact();
+function ContactPage() {
+  const { contacts = [], meta } = usePage<ContactMessagesPageProps>().props;
+  const paginatedContacts = useMemo(() => contacts.slice(0, meta.perPage), [contacts, meta.perPage]);
 
   const [search, setSearch] = useState('');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const debouncedSearch = useDebouncedValue(search, 250);
 
   const filteredContacts = useMemo(() => {
-    if (!contacts || !Array.isArray(contacts)) return [];
-
     const q = debouncedSearch.toLowerCase();
-    if (!q) return contacts;
 
-    return contacts.filter((c) => {
-      const name = c.full_name?.toLowerCase() || '';
-      const email = c.email?.toLowerCase() || '';
-      const message = c.message?.toLowerCase() || '';
+    if (!q) {
+      return paginatedContacts;
+    }
+
+    return paginatedContacts.filter((contact) => {
+      const name = contact.fullName.toLowerCase();
+      const email = contact.email.toLowerCase();
+      const message = contact.message.toLowerCase();
 
       return name.includes(q) || email.includes(q) || message.includes(q);
     });
-  }, [contacts, debouncedSearch]);
+  }, [paginatedContacts, debouncedSearch]);
 
-  const handleDelete = useCallback(
-    async (id: string) => {
-      if (window.confirm('Are you sure?')) {
-        await deleteMutation.mutateAsync(id);
-        setSelectedContact(null);
+  useEffect(() => {
+    setSelectedContact((currentContact) => {
+      if (!currentContact) {
+        return null;
       }
-    },
-    [deleteMutation],
-  );
 
-  const handleSelect = useCallback((contact: Contact) => setSelectedContact(contact), []);
+      return paginatedContacts.find((contact) => contact.id === currentContact.id) ?? null;
+    });
+  }, [paginatedContacts]);
 
-  if (isLoading)
-    return (
-      <Flex p="9" justify="center">
-        <Spinner size="3" />
-      </Flex>
-    );
+  const handleDelete = useCallback((id: string) => {
+    if (!window.confirm('Are you sure?')) {
+      return;
+    }
 
-  if (isError)
-    return (
-      <Box p="6">
-        <Callout.Root color="red">
-          <Callout.Icon>
-            <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>{error instanceof Error ? error.message : 'Failed to fetch'}</Callout.Text>
-        </Callout.Root>
-      </Box>
-    );
+    router.delete(route('admin.contact.destroy', id), {
+      preserveScroll: true,
+      onStart: () => {
+        setIsDeleting(true);
+      },
+      onSuccess: () => {
+        setSelectedContact(null);
+      },
+      onFinish: () => {
+        setIsDeleting(false);
+      },
+    });
+  }, []);
+
+  const handleSelect = useCallback((contact: Contact) => {
+    setSelectedContact(contact);
+  }, []);
 
   return (
     <>
@@ -75,9 +81,13 @@ export default function ContactPage() {
           isOpen={!!selectedContact}
           onOpenChange={(open) => !open && setSelectedContact(null)}
           onDelete={handleDelete}
-          isDeleting={deleteMutation.isPending}
+          isDeleting={isDeleting}
         />
       </Box>
     </>
   );
 }
+
+ContactPage.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+
+export default ContactPage;

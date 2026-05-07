@@ -50,14 +50,20 @@ it('requires authentication for admin contact routes', function (): void {
 it('renders paginated contacts for admins', function (): void {
     actingAsContactAdmin();
 
-    ContactMessage::factory()->count(25)->create();
+    ContactMessage::factory()->count(24)->create(['created_at' => now()->subDay()]);
+    $latestContactMessage = ContactMessage::factory()->create([
+        'full_name' => 'Newest Contact',
+        'created_at' => now(),
+    ]);
 
     $this->get(route('admin.contact.index'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->component('admin/contact/index')
+            ->component('(admin)/contact/index')
             ->has('contacts', 20)
-            ->where('meta.current_page', 1)
+            ->where('contacts.0.fullName', $latestContactMessage->full_name)
+            ->where('meta.currentPage', 1)
+            ->where('meta.perPage', 20)
             ->where('meta.total', 25));
 });
 
