@@ -3,10 +3,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 interface UseGameTimerOptions {
   initialTime: number;
   isActive: boolean;
+  isCompleted: boolean;
   onExpire?: () => void;
 }
 
-export default function useGameTimer({ initialTime, isActive, onExpire }: UseGameTimerOptions) {
+export default function useGameTimer({ initialTime, isActive, isCompleted, onExpire }: UseGameTimerOptions) {
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const intervalRef = useRef<number | null>(null);
   const timeLeftRef = useRef(initialTime);
@@ -17,9 +18,13 @@ export default function useGameTimer({ initialTime, isActive, onExpire }: UseGam
   }, [onExpire]);
 
   useEffect(() => {
+    // Prevent completed games from having their final timer value replaced when
+    // difficulty changes after the round is over.
+    if (isCompleted && !isActive) return;
+
     timeLeftRef.current = initialTime;
     setTimeLeft(initialTime);
-  }, [initialTime]);
+  }, [initialTime, isActive, isCompleted]);
 
   const clearRunningInterval = useCallback(() => {
     if (intervalRef.current !== null) {

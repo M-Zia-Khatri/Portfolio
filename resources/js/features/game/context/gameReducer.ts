@@ -9,12 +9,21 @@ export interface GameState {
   started: boolean;
   playerName: string;
   didWin: boolean;
+  // Prevent duplicate persistence when unrelated settings change after game completion.
+  scoreSaved: boolean;
+  // Snapshot the game settings at the time the game started so score records remain accurate
+  // even if the difficulty changes after the game is over.
+  gameSettings: {
+    guessLimit: number;
+    initialTimeLimit: number;
+    difficultLevel: string;
+  };
 }
 
 export type GameAction =
   | {
       type: 'RESET_GAME';
-      payload: { randomNumber: number; guessLimit: number };
+      payload: { randomNumber: number; guessLimit: number; initialTimeLimit: number; difficultLevel: string };
     }
   | {
       type: 'MAKE_GUESS';
@@ -30,9 +39,12 @@ export type GameAction =
   | {
       type: 'SET_PLAYER_NAME';
       payload: string;
+    }
+  | {
+      type: 'MARK_SCORE_SAVED';
     };
 
-export const initialGameState = (guessLimit: number): GameState => ({
+export const initialGameState = (guessLimit: number, initialTimeLimit: number, difficultLevel: string): GameState => ({
   randomNumber: null,
   guessResults: [],
   showNumber: false,
@@ -40,6 +52,12 @@ export const initialGameState = (guessLimit: number): GameState => ({
   started: false,
   playerName: '',
   didWin: false,
+  scoreSaved: false,
+  gameSettings: {
+    guessLimit,
+    initialTimeLimit,
+    difficultLevel,
+  },
 });
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -53,6 +71,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         guessTurn: action.payload.guessLimit,
         started: false,
         didWin: false,
+        scoreSaved: false,
+        gameSettings: {
+          guessLimit: action.payload.guessLimit,
+          initialTimeLimit: action.payload.initialTimeLimit,
+          difficultLevel: action.payload.difficultLevel,
+        },
       };
 
     case 'MAKE_GUESS': {
@@ -76,6 +100,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'SET_PLAYER_NAME':
       return { ...state, playerName: action.payload };
+
+    case 'MARK_SCORE_SAVED':
+      return { ...state, scoreSaved: true };
 
     default:
       return state;
