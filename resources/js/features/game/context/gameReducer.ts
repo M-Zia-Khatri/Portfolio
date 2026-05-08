@@ -17,13 +17,14 @@ export interface GameState {
     guessLimit: number;
     initialTimeLimit: number;
     difficultLevel: string;
+    maxNumber: number;
   };
 }
 
 export type GameAction =
   | {
       type: 'RESET_GAME';
-      payload: { randomNumber: number; guessLimit: number; initialTimeLimit: number; difficultLevel: string };
+      payload: { randomNumber: number; guessLimit: number; initialTimeLimit: number; difficultLevel: string; maxNumber: number };
     }
   | {
       type: 'MAKE_GUESS';
@@ -44,7 +45,12 @@ export type GameAction =
       type: 'MARK_SCORE_SAVED';
     };
 
-export const initialGameState = (guessLimit: number, initialTimeLimit: number, difficultLevel: string): GameState => ({
+export const initialGameState = (
+  guessLimit: number,
+  initialTimeLimit: number,
+  difficultLevel: string,
+  maxNumber: number,
+): GameState => ({
   randomNumber: null,
   guessResults: [],
   showNumber: false,
@@ -57,6 +63,7 @@ export const initialGameState = (guessLimit: number, initialTimeLimit: number, d
     guessLimit,
     initialTimeLimit,
     difficultLevel,
+    maxNumber,
   },
 });
 
@@ -76,6 +83,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           guessLimit: action.payload.guessLimit,
           initialTimeLimit: action.payload.initialTimeLimit,
           difficultLevel: action.payload.difficultLevel,
+          maxNumber: action.payload.maxNumber,
         },
       };
 

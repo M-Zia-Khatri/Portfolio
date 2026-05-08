@@ -12,28 +12,55 @@ function calculateScore({
   initialTimeLimit,
   timeLeft,
   difficultLevel,
+  maxNumber,
+  didWin,
 }: {
   guessResults: GuessResultType[];
   guessLimit: number;
   initialTimeLimit: number;
   timeLeft: number;
   difficultLevel: string;
+  maxNumber: number;
+  didWin: boolean;
 }): number {
-  const attemptScore = guessResults.length ? (guessLimit / guessResults.length) * 100 : 0;
-  const timeScore = initialTimeLimit ? (timeLeft / initialTimeLimit) * 100 : 0;
-  const closeBonus = guessResults.reduce((sum, { message }) => {
-    return message === 'very close' ? sum + 10 : sum;
-  }, 0);
-  const levelBonus =
-    {
-      easy: 100,
-      normal: 200,
-      hard: 400,
-      'very-hard': 800,
-      custom: 300,
-    }[difficultLevel] ?? 0;
+  // New balanced scoring: Normalize components to 0-100 base, apply difficulty multiplier, penalize losses.
+  // Prevents inflation, ensures fair difficulty scaling, and caps at 1000.
+  const attemptEfficiency = guessResults.length > 0 ? Math.min(guessLimit / guessResults.length, 1) : 0;
+  const timeEfficiency = initialTimeLimit > 0 ? timeLeft / initialTimeLimit : 0;
+  const closeBonus = guessResults.filter((r) => r.message === 'very close').length * 0.1; // Scaled to 0-1
 
-  return attemptScore + timeScore + closeBonus + levelBonus;
+  const baseScore = attemptEfficiency * 40 + timeEfficiency * 40 + closeBonus * 20; // Max 100
+
+  const difficultyMultiplier = getDifficultyMultiplier(difficultLevel, maxNumber, guessLimit, initialTimeLimit);
+
+  const winModifier = didWin ? 1 : 0.5; // Losses get 50% penalty
+
+  return Math.round(Math.min(baseScore * difficultyMultiplier * winModifier, 1000));
+}
+
+function getDifficultyMultiplier(level: string, maxNumber: number, guessLimit: number, timeLimit: number): number {
+  // Dynamic difficulty scaling: Higher maxNumber, fewer guesses, less time = harder.
+  // Built-ins have fixed multipliers; custom calculates based on parameters.
+  const builtinMultipliers: Record<string, number> = {
+    easy: 1.0,
+    normal: 1.5,
+    hard: 2.0,
+    'very-hard': 3.0,
+  };
+
+  if (builtinMultipliers[level]) {
+    return builtinMultipliers[level];
+  }
+
+  if (level === 'custom') {
+    const maxFactor = Math.max(maxNumber / 20, 1); // Base 20
+    const guessFactor = Math.max(7 / guessLimit, 1); // Base 7 guesses
+    const timeFactor = Math.max(180 / timeLimit, 1); // Base 180s
+    const combined = (maxFactor + guessFactor + timeFactor) / 3;
+    return Math.min(Math.max(combined, 1.0), 4.0); // Clamp 1.0-4.0
+  }
+
+  return 1.0; // Fallback
 }
 
 interface GuessNumStatusContextType {
@@ -78,7 +105,7 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
   const clearScoreHistory = useGameSet((state) => state.clearScoreHistory);
 
   const typedReducer: React.Reducer<GameState, GameAction> = gameReducer;
-  const [state, dispatch] = useReducer(typedReducer, initialGameState(guessLimit, initialTimeLimit, difficultLevel));
+  const [state, dispatch] = useReducer(typedReducer, initialGameState(guessLimit, initialTimeLimit, difficultLevel, maxNumber));
   const { randomNumber, guessResults, showNumber, guessTurn, started, playerName, didWin, scoreSaved, gameSettings } = state;
 
   const [, startTransition] = useTransition();
@@ -112,6 +139,7 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
             guessLimit,
             initialTimeLimit,
             difficultLevel,
+            maxNumber,
           },
         });
         resetTimer();
@@ -138,6 +166,7 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
             guessLimit,
             initialTimeLimit,
             difficultLevel,
+            maxNumber,
           },
         });
         dispatch({ type: 'SET_STARTED', payload: true });
@@ -155,6 +184,7 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
             guessLimit,
             initialTimeLimit,
             difficultLevel,
+            maxNumber,
           },
         });
         resetTimer();
@@ -168,7 +198,12 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
     // completion should not create new records or replay end-game logic.
     if (!showNumber || guessResults.length === 0 || scoreSaved) return;
 
-    const { guessLimit: guessLimitAtStart, initialTimeLimit: initialTimeLimitAtStart, difficultLevel: difficultLevelAtStart } = gameSettings;
+    const {
+      guessLimit: guessLimitAtStart,
+      initialTimeLimit: initialTimeLimitAtStart,
+      difficultLevel: difficultLevelAtStart,
+      maxNumber: maxNumberAtStart,
+    } = gameSettings;
 
     const record: ScoreRecord = {
       id: generateId(8),
@@ -179,6 +214,8 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
         initialTimeLimit: initialTimeLimitAtStart,
         timeLeft,
         difficultLevel: difficultLevelAtStart,
+        maxNumber: maxNumberAtStart,
+        didWin,
       }),
       result: didWin ? 'win' : 'lose',
       attempts: guessResults.length,
