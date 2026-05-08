@@ -1,6 +1,6 @@
 import { Button } from '@radix-ui/themes';
 import { memo, useMemo } from 'react';
-import { useGuessNumActions, useGuessNumStatus, useGuessNumProgress } from '../context/GuessNumContext';
+import { useGuessNumActions, useGuessNumProgress, useGuessNumStatus } from '../context/GuessNumContext';
 import useGameSet from '../store/GameSetStore';
 import type { GuessResultType } from '../types/guessNumContextTypes';
 
@@ -54,20 +54,12 @@ export default function CheckHiddenNumber() {
   }, [guessResults]);
 
   return (
-    <div className="flex flex-wrap justify-center gap-2">
+    <div className="flex h-full flex-wrap justify-center gap-2 overflow-auto">
       {numbers.map((number) => {
         const result = resultMap.get(number);
         const disabled = Boolean(result) || showNumber || !started;
 
-        return (
-          <SpreadButton
-            key={number}
-            number={number}
-            disabled={disabled}
-            result={result}
-            onGuess={makeGuess}
-          />
-        );
+        return <SpreadButton key={number} number={number} disabled={disabled} result={result} onGuess={makeGuess} />;
       })}
     </div>
   );

@@ -1,11 +1,4 @@
-import {
-  CheckHiddenNumber,
-  Feedback,
-  GuessResult,
-  HiddenNumber,
-  ScoreHistory,
-  ViewDelHistory,
-} from '@/features/game/components';
+import { CheckHiddenNumber, Feedback, GuessResult, HiddenNumber, ScoreHistory, ViewDelHistory } from '@/features/game/components';
 import { GuessNumProvider } from '@/features/game/context/GuessNumContext';
 import SecComponent from '@/shared/components/SecContainer';
 import { HEADING } from '@/shared/constants/style.constants';
@@ -42,7 +35,7 @@ export default function GameSection() {
             </Card>
 
             {/* Guess Buttons */}
-            <Card size={'2'} className="flex-1 overflow-auto">
+            <Card size={'2'} className="flex-1">
               <CheckHiddenNumber />
             </Card>
           </section>
