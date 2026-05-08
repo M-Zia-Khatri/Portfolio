@@ -26,7 +26,12 @@ const underlineVariants: Variants = {
   },
 };
 
-function TopBarItemImpl({ item }: { item: NavItem }) {
+type TopBarItemProps = {
+  item: NavItem;
+  onNavigate?: () => void;
+};
+
+function TopBarItemImpl({ item, onNavigate }: TopBarItemProps) {
   return (
     <motion.li key={item.label} initial="initial" whileHover="hover" className="relative list-none" variants={itemVariants}>
       <Link asChild underline="none">
@@ -34,7 +39,8 @@ function TopBarItemImpl({ item }: { item: NavItem }) {
           href={item.href}
           onClick={(e) => {
             e.preventDefault();
-            scrollToTarget(`#${item.sectionId}`);
+            onNavigate?.();
+            void scrollToTarget(`#${item.sectionId}`);
           }}
           className="relative inline-flex items-center pb-1"
         >

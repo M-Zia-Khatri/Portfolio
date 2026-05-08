@@ -1,4 +1,5 @@
 import { TEXT } from '@/shared/constants/style.constants';
+import { scrollToTarget } from '@/shared/lib/lenis';
 import { cn } from '@/shared/utils/cn';
 import { Box, Card, Container, Link, Text } from '@radix-ui/themes';
 import { useEffect, useRef, useState } from 'react';
@@ -8,10 +9,6 @@ import { TopBarMobile } from './TopBarMobile';
 import { TopBarNav } from './TopBarNav';
 
 /** How long (ms) the user must keep scrolling DOWN before the bar hides */
-
-function scrollToSection(sectionId: string) {
-  document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
-}
 
 export default function TopBar() {
   // ── scroll-hide logic ─────────────────────────────────────────────────────
@@ -82,7 +79,7 @@ export default function TopBar() {
                   href="/#home"
                   onClick={(e) => {
                     e.preventDefault();
-                    scrollToSection('home');
+                    void scrollToTarget('#home');
                   }}
                   className="flex items-center gap-2"
                 >
