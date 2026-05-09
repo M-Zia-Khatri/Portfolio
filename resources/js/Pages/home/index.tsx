@@ -118,7 +118,11 @@ export default function Home() {
       <div className="mx-auto space-y-6">
         {sections.map((section) => {
           const SectionComponent = section.Component;
-          const className = cn(section.id === 'home' ? 'mb-5 flex h-[calc(100dvh)] scroll-mt-24 flex-col justify-center' : sectionClassName);
+          const className = cn(
+            section.id === 'home'
+              ? 'mb-5 flex h-[calc(100dvh)] w-full max-w-none scroll-mt-24 flex-col justify-center'
+              : sectionClassName,
+          );
 
           return (
             <DeferredSection key={section.id} id={section.id} className={className} eager={section.id === 'home' || forcedSectionIds.has(section.id)}>

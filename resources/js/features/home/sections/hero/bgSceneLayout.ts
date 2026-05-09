@@ -6,6 +6,12 @@
  * (already DPR-independent CSS pixel units).
  */
 
+/** Horizontal sine offset in BgScene — must stay in sync with wave `amplitude` there. */
+export const HORIZONTAL_WAVE_AMPLITUDE_PX = 20;
+
+/** Half stroke + anti-alias slop so extreme wave + mouse nudge still paints to the edge. */
+const HORIZONTAL_EDGE_SLOP_PX = 4;
+
 export function getLineSpacingPx(cssWidth: number): number {
   if (cssWidth < 480) {
     return 16;
@@ -18,7 +24,10 @@ export function getLineSpacingPx(cssWidth: number): number {
 }
 
 export function getLineCount(cssWidth: number, spacing: number): number {
-  return Math.max(6, Math.ceil(cssWidth / spacing));
+  /** Extra width so lines stay visually dense when the sine wave pulls columns past either edge. */
+  const horizontalPad = HORIZONTAL_WAVE_AMPLITUDE_PX * 4 + HORIZONTAL_EDGE_SLOP_PX;
+
+  return Math.max(8, Math.ceil((cssWidth + horizontalPad) / spacing));
 }
 
 export function getDeformationSegmentCount(cssWidth: number): number {

@@ -1,7 +1,13 @@
 import gsap from 'gsap';
 import { useLayoutEffect, useRef } from 'react';
 import { bgSceneDebug } from './bgSceneDebug';
-import { getDeformationSegmentCount, getLineCount, getLineSpacingPx } from './bgSceneLayout';
+import { appendHeroLineGradientDefs, applyHeroLineStrokeStyle } from './bgSceneGradient';
+import {
+  getDeformationSegmentCount,
+  getLineCount,
+  getLineSpacingPx,
+  HORIZONTAL_WAVE_AMPLITUDE_PX,
+} from './bgSceneLayout';
 
 const RESIZE_DEBOUNCE_MS = 150;
 const ZERO_SIZE_RAF_MAX = 120;
@@ -117,6 +123,8 @@ export default function BgScene() {
       svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
       svg.setAttribute('preserveAspectRatio', 'none');
 
+      appendHeroLineGradientDefs(svg, h);
+
       const parts: string[] = new Array(SEGMENTS + 1);
       const yValues = new Float32Array(SEGMENTS + 1);
       for (let s = 0; s <= SEGMENTS; s++) {
@@ -125,20 +133,17 @@ export default function BgScene() {
 
       for (let i = 0; i < count; i++) {
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path') as SVGPathElement;
-        path.setAttribute('stroke', '#76c7eb');
-        path.setAttribute('stroke-width', '1');
-        path.setAttribute('opacity', '0.5');
-        path.setAttribute('fill', 'none');
+        applyHeroLineStrokeStyle(path);
         svg.appendChild(path);
         linesRef.current[i] = path;
       }
 
       const baseXValues = new Float32Array(count);
       for (let i = 0; i < count; i++) {
-        baseXValues[i] = i * spacing;
+        baseXValues[i] = i * spacing - HORIZONTAL_WAVE_AMPLITUDE_PX;
       }
 
-      const amplitude = 20;
+      const amplitude = HORIZONTAL_WAVE_AMPLITUDE_PX;
       const frequency = 0.2;
       const mouseRadius = 40;
       const mouseRadiusSq = mouseRadius ** 2;
