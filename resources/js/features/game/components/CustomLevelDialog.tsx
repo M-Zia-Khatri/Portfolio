@@ -1,22 +1,5 @@
-import {
-  CheckIcon,
-  Cross2Icon,
-  ExclamationTriangleIcon,
-  Pencil1Icon,
-  PlusIcon,
-  TrashIcon,
-} from '@radix-ui/react-icons';
-import {
-  Badge,
-  Button,
-  Callout,
-  Dialog,
-  Flex,
-  IconButton,
-  Separator,
-  Text,
-  TextField,
-} from '@radix-ui/themes';
+import { CheckIcon, Cross2Icon, ExclamationTriangleIcon, Pencil1Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import { Badge, Button, Callout, Dialog, Flex, IconButton, Separator, Text, TextField } from '@radix-ui/themes';
 import { useState } from 'react';
 import { generateId } from '../services/idGenerator';
 import useGameSet, { type CustomLevelPreset } from '../store/GameSetStore';
@@ -52,20 +35,11 @@ function validate(f: FormState): FormErrors {
   const secs = Number(f.timeSeconds);
   if (f.timeSeconds === '') errors.timeSeconds = 'Required';
   else if (isNaN(secs) || secs < 0 || secs > 59) errors.timeSeconds = '0–59';
-  if (!errors.timeMinutes && !errors.timeSeconds && mins === 0 && secs === 0)
-    errors.timeMinutes = 'Total time must be > 0';
+  if (!errors.timeMinutes && !errors.timeSeconds && mins === 0 && secs === 0) errors.timeMinutes = 'Total time must be > 0';
   return errors;
 }
 
-function FieldRow({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
+function FieldRow({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <Flex direction="column" gap="1" style={{ flex: 1 }}>
       <Text size="2" weight="medium" style={{ color: 'var(--gray-11)' }}>
@@ -211,24 +185,12 @@ export default function CustomLevelDialog({ open, onOpenChange }: Props) {
                     <Flex gap="1" align="center">
                       {isBeingEdited ? (
                         /* Cancel edit */
-                        <IconButton
-                          size="1"
-                          variant="ghost"
-                          color="gray"
-                          onClick={handleCancelEdit}
-                          title="Cancel edit"
-                        >
+                        <IconButton size="1" variant="ghost" color="gray" onClick={handleCancelEdit} title="Cancel edit">
                           <Cross2Icon />
                         </IconButton>
                       ) : (
                         /* Edit */
-                        <IconButton
-                          size="1"
-                          variant="ghost"
-                          color="blue"
-                          onClick={() => handleEdit(lvl)}
-                          title="Edit level"
-                        >
+                        <IconButton size="1" variant="ghost" color="blue" onClick={() => handleEdit(lvl)} title="Edit level">
                           <Pencil1Icon />
                         </IconButton>
                       )}

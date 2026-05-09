@@ -41,7 +41,7 @@ export const MagneticShinyButton = () => {
       <motion.a
         ref={ref}
         href="mailto:muhammadziakhatri@gmail.com"
-        className="relative overflow-hidden md:inline-flex items-center justify-center px-5 py-2 text-center hidden"
+        className="relative hidden items-center justify-center overflow-hidden px-5 py-2 text-center md:inline-flex"
         style={{
           x: springX,
           y: springY,
@@ -54,10 +54,7 @@ export const MagneticShinyButton = () => {
         animate="rest"
       >
         {/* Glow */}
-        <motion.span
-          style={{ opacity: glow }}
-          className="absolute inset-0 rounded-full bg-[var(--blue-4)] blur-md z-0"
-        />
+        <motion.span style={{ opacity: glow }} className="absolute inset-0 z-0 rounded-full bg-[var(--blue-4)] blur-md" />
 
         {/* Shine */}
         <motion.span
@@ -69,11 +66,11 @@ export const MagneticShinyButton = () => {
             repeat: Infinity,
             repeatDelay: 2,
           }}
-          className="pointer-events-none absolute top-0 left-0 h-full w-[20%]    bg-linear-to-r from-transparent via-(--blue-10) to-transparent    opacity-60 blur-sm z-20"
+          className="pointer-events-none absolute top-0 left-0 z-20 h-full w-[20%] bg-linear-to-r from-transparent via-(--blue-10) to-transparent opacity-60 blur-sm"
         />
 
         {/* Text */}
-        <motion.span className="relative z-30 flex items-center justify-center w-full h-full text-center">
+        <motion.span className="relative z-30 flex h-full w-full items-center justify-center text-center">
           <Text size={TEXT.lg.size} weight="bold" className="leading-none text-white">
             Let&apos;s Talk
           </Text>

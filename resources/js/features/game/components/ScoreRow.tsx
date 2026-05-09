@@ -25,9 +25,7 @@ function ScoreRow({ record, idx, isEditing, onCancel, onSave }: ScoreRowProps) {
     <Table.Row
       style={{
         background:
-          record.result === 'win'
-            ? 'color-mix(in srgb, var(--green-a3) 60%, transparent)'
-            : 'color-mix(in srgb, var(--red-a3) 60%, transparent)',
+          record.result === 'win' ? 'color-mix(in srgb, var(--green-a3) 60%, transparent)' : 'color-mix(in srgb, var(--red-a3) 60%, transparent)',
       }}
     >
       <Table.Cell>
@@ -59,10 +57,7 @@ function ScoreRow({ record, idx, isEditing, onCancel, onSave }: ScoreRowProps) {
             }}
           />
         ) : (
-          <Text
-            className="max-w-30 cursor-pointer truncate text-left text-xs font-medium capitalize"
-            style={{ color: 'var(--blue-11)' }}
-          >
+          <Text className="max-w-30 cursor-pointer truncate text-left text-xs font-medium capitalize" style={{ color: 'var(--blue-11)' }}>
             {record.name || <span style={{ color: 'var(--gray-9)', fontStyle: 'italic' }}>—</span>}
           </Text>
         )}
@@ -75,12 +70,7 @@ function ScoreRow({ record, idx, isEditing, onCancel, onSave }: ScoreRowProps) {
       </Table.Cell>
 
       <Table.Cell>
-        <Badge
-          color={record.result === 'win' ? 'green' : 'red'}
-          variant="soft"
-          radius="full"
-          size="1"
-        >
+        <Badge color={record.result === 'win' ? 'green' : 'red'} variant="soft" radius="full" size="1">
           {record.result}
         </Badge>
       </Table.Cell>

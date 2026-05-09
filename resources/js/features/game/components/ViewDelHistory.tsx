@@ -31,9 +31,7 @@ export default function ViewDelHistory() {
             border: '1px solid var(--gray-5)',
           }}
         >
-          <AlertDialog.Title style={{ color: 'var(--gray-12)' }}>
-            Delete all history?
-          </AlertDialog.Title>
+          <AlertDialog.Title style={{ color: 'var(--gray-12)' }}>Delete all history?</AlertDialog.Title>
           <AlertDialog.Description style={{ color: 'var(--gray-11)' }}>
             This will permanently delete all game history. This action cannot be undone.
           </AlertDialog.Description>

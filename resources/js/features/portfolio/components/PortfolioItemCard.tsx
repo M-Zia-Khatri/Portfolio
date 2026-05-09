@@ -137,8 +137,7 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
     });
   }, [rotateY]);
 
-  const faceBase =
-    'absolute inset-0 flex flex-col [backface-visibility:hidden] overflow-hidden rounded-xl';
+  const faceBase = 'absolute inset-0 flex flex-col [backface-visibility:hidden] overflow-hidden rounded-xl';
 
   return (
     <motion.div
@@ -187,8 +186,7 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
             <motion.div
               className="pointer-events-none absolute inset-0 z-10"
               style={{
-                background:
-                  'linear-gradient(108deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)',
+                background: 'linear-gradient(108deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)',
               }}
               variants={{
                 idle: { x: '-110%', opacity: 0 },
@@ -223,10 +221,7 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
                 transition: { type: 'spring', stiffness: 350, damping: 20 },
               }}
             >
-              <motion.div
-                whileHover={{ rotate: 45 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-              >
+              <motion.div whileHover={{ rotate: 45 }} transition={{ type: 'spring', stiffness: 300, damping: 18 }}>
                 <ArrowUpRight size={14} className="text-(--blue-12)/70" />
               </motion.div>
             </motion.a>
@@ -242,17 +237,10 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
                 },
               }}
             >
-              <Heading
-                as="h3"
-                size={HEADING.h3.size}
-                className="ml-2 leading-tight font-bold text-white"
-              >
+              <Heading as="h3" size={HEADING.h3.size} className="ml-2 leading-tight font-bold text-white">
                 {item.siteName}
               </Heading>
-              <Badge
-                size="3"
-                className="mt-2 inline-block rounded-full text-[10px] font-semibold uppercase"
-              >
+              <Badge size="3" className="mt-2 inline-block rounded-full text-[10px] font-semibold uppercase">
                 {item.siteRole}
               </Badge>
             </motion.div>
@@ -287,14 +275,11 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
               ref={gridShineTrailRef}
               className="pointer-events-none absolute inset-0"
               style={{
-                backgroundImage:
-                  'linear-gradient(135deg, transparent 44%, rgba(96,165,250,0.25) 50%, transparent 56%)',
+                backgroundImage: 'linear-gradient(135deg, transparent 44%, rgba(96,165,250,0.25) 50%, transparent 56%)',
                 backgroundSize: '350% 350%',
                 backgroundPosition: '-180% -180%',
-                maskImage:
-                  'linear-gradient(black 1px, transparent 1px), linear-gradient(90deg, black 1px, transparent 1px)',
-                WebkitMaskImage:
-                  'linear-gradient(black 1px, transparent 1px), linear-gradient(90deg, black 1px, transparent 1px)',
+                maskImage: 'linear-gradient(black 1px, transparent 1px), linear-gradient(90deg, black 1px, transparent 1px)',
+                WebkitMaskImage: 'linear-gradient(black 1px, transparent 1px), linear-gradient(90deg, black 1px, transparent 1px)',
                 maskSize: '24px 24px',
                 WebkitMaskSize: '24px 24px',
                 willChange: 'background-position, opacity',
@@ -306,14 +291,11 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
               ref={gridShineLeadRef}
               className="pointer-events-none absolute inset-0"
               style={{
-                backgroundImage:
-                  'linear-gradient(135deg, transparent 48%, rgba(186,230,255,0.95) 50%, transparent 52%)',
+                backgroundImage: 'linear-gradient(135deg, transparent 48%, rgba(186,230,255,0.95) 50%, transparent 52%)',
                 backgroundSize: '300% 300%',
                 backgroundPosition: '-150% -150%',
-                maskImage:
-                  'linear-gradient(black 1px, transparent 1px), linear-gradient(90deg, black 1px, transparent 1px)',
-                WebkitMaskImage:
-                  'linear-gradient(black 1px, transparent 1px), linear-gradient(90deg, black 1px, transparent 1px)',
+                maskImage: 'linear-gradient(black 1px, transparent 1px), linear-gradient(90deg, black 1px, transparent 1px)',
+                WebkitMaskImage: 'linear-gradient(black 1px, transparent 1px), linear-gradient(90deg, black 1px, transparent 1px)',
                 maskSize: '24px 24px',
                 WebkitMaskSize: '24px 24px',
                 willChange: 'background-position, opacity',
@@ -323,21 +305,12 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
             <div className="absolute top-0 right-0 left-0 h-0.5 bg-linear-to-r from-transparent via-(--blue-8) to-transparent blur-[1.5px]" />
 
             <div className="relative z-10 flex h-full flex-col gap-2 p-4">
-              <motion.div
-                custom={0}
-                variants={backItemVariants}
-                animate={flipped ? 'visible' : 'hidden'}
-                className="flex justify-between"
-              >
+              <motion.div custom={0} variants={backItemVariants} animate={flipped ? 'visible' : 'hidden'} className="flex justify-between">
                 <div className="flex flex-col">
                   <Heading as="h4" size={HEADING.h4.size} className="leading-tight text-white">
                     {item.siteName}
                   </Heading>
-                  <Text
-                    size={TEXT.sm.size}
-                    className="mt-1 font-semibold tracking-widest text-(--blue-10)/90 uppercase"
-                    as="p"
-                  >
+                  <Text size={TEXT.sm.size} className="mt-1 font-semibold tracking-widest text-(--blue-10)/90 uppercase" as="p">
                     {item.siteRole}
                   </Text>
                 </div>
@@ -348,32 +321,19 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
                   onClick={(e) => e.stopPropagation()}
                   className="z-20 flex h-8 w-8 items-center justify-center rounded-full border border-(--blue-12)/30 bg-(--blue-12)/10 backdrop-blur-sm"
                 >
-                  <motion.div
-                    whileHover={{ rotate: 45 }}
-                    whileTap={{ rotate: 45 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-                  >
+                  <motion.div whileHover={{ rotate: 45 }} whileTap={{ rotate: 45 }} transition={{ type: 'spring', stiffness: 300, damping: 18 }}>
                     <ArrowUpRight size={14} className="text-(--blue-12)/70" />
                   </motion.div>
                 </motion.a>
               </motion.div>
 
-              <motion.div
-                custom={1}
-                variants={backItemVariants}
-                animate={flipped ? 'visible' : 'hidden'}
-                className="flex-1"
-              >
+              <motion.div custom={1} variants={backItemVariants} animate={flipped ? 'visible' : 'hidden'} className="flex-1">
                 <Text size={TEXT.sm.size} className="leading-relaxed text-white/60" as="p">
                   {item.description}
                 </Text>
               </motion.div>
 
-              <motion.div
-                custom={2}
-                variants={backItemVariants}
-                animate={flipped ? 'visible' : 'hidden'}
-              >
+              <motion.div custom={2} variants={backItemVariants} animate={flipped ? 'visible' : 'hidden'}>
                 <Flex wrap="wrap" gap="2">
                   {item.useTech.map((tech, i) => (
                     <motion.div

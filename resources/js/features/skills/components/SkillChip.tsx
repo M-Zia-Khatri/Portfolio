@@ -63,12 +63,7 @@ const SkillChip = memo(function SkillChip({ skill, active, onClick }: SkillChipP
         <Icon size={15} />
       </span>
       <span>{skill.name}</span>
-      {active && (
-        <span
-          className="pointer-events-none absolute inset-0 rounded-lg"
-          style={{ border: `1px solid ${skill.color}50` }}
-        />
-      )}
+      {active && <span className="pointer-events-none absolute inset-0 rounded-lg" style={{ border: `1px solid ${skill.color}50` }} />}
     </button>
   );
 });

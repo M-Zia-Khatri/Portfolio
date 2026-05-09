@@ -10,29 +10,17 @@ interface TerminalLineProps {
   index: number;
 }
 
-const TerminalLine = memo(function TerminalLine({
-  line,
-  partial,
-  isActive,
-  cursor,
-  color,
-}: TerminalLineProps) {
+const TerminalLine = memo(function TerminalLine({ line, partial, isActive, cursor, color }: TerminalLineProps) {
   return (
     <div className="flex items-start" style={{ minHeight: '1.6rem', fontFamily: 'inherit' }}>
       {line.kind === 'blank' ? (
         <span className="leading-[1.6rem]">&nbsp;</span>
       ) : line.kind === 'comment' ? (
-        <span
-          className="text-[12.5px] leading-[1.6rem] tracking-tight whitespace-pre select-none"
-          style={{ color: 'rgba(255,255,255,0.28)' }}
-        >
+        <span className="text-[12.5px] leading-[1.6rem] tracking-tight whitespace-pre select-none" style={{ color: 'rgba(255,255,255,0.28)' }}>
           {line.text}
         </span>
       ) : line.kind === 'output' ? (
-        <span
-          className="pl-4 text-[12.5px] leading-[1.6rem] tracking-tight whitespace-pre"
-          style={{ color: 'rgba(255,255,255,0.55)' }}
-        >
+        <span className="pl-4 text-[12.5px] leading-[1.6rem] tracking-tight whitespace-pre" style={{ color: 'rgba(255,255,255,0.55)' }}>
           {line.text}
         </span>
       ) : (

@@ -9,10 +9,7 @@ interface GsapTypingOptions {
   replayKey?: string | number;
 }
 
-export function useGsapTypingEffect(
-  containerRef: RefObject<HTMLElement | null>,
-  options: GsapTypingOptions = {},
-) {
+export function useGsapTypingEffect(containerRef: RefObject<HTMLElement | null>, options: GsapTypingOptions = {}) {
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const { speed = 0.05, cursorSelector, lineSelector = '.code-line', replayKey } = options;
 

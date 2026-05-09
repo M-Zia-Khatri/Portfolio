@@ -119,9 +119,7 @@ export default function Home() {
         {sections.map((section) => {
           const SectionComponent = section.Component;
           const className = cn(
-            section.id === 'home'
-              ? 'mb-5 flex h-[calc(100dvh)] w-full max-w-none scroll-mt-24 flex-col justify-center'
-              : sectionClassName,
+            section.id === 'home' ? 'mb-5 flex h-[calc(100dvh)] w-full max-w-none scroll-mt-24 flex-col justify-center' : sectionClassName,
           );
 
           return (

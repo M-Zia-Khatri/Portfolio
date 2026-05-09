@@ -14,10 +14,7 @@ const PATTERNS: Array<[RegExp, string]> = [
   [/\/\/.*$/, 'comment'],
   [/#.*$/, 'comment'],
   [/"[^"]*"|'[^']*'|`[^`]*`/, 'string'],
-  [
-    /\b(import|export|default|from|const|let|var|type|interface|class|function|return|extends|public|private|new|if|else|<?php)\b/,
-    'keyword',
-  ],
+  [/\b(import|export|default|from|const|let|var|type|interface|class|function|return|extends|public|private|new|if|else|<?php)\b/, 'keyword'],
   [/\b(string|number|boolean|void|any|JsonResponse|array|int)\b/, 'type'],
   [/<\/?[a-zA-Z][\w-]*/, 'tag'],
   [/[a-zA-Z_][\w]*(?=\s*\()/, 'fn'],

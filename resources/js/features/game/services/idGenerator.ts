@@ -1,6 +1,5 @@
 export function generateId(length: number = 8): string {
-  const charset =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`~!@#$%^&*()-_+{}[]:;<>,./?';
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`~!@#$%^&*()-_+{}[]:;<>,./?';
   let result = '';
   // Create a Uint32Array of given length
   const values = new Uint32Array(length);

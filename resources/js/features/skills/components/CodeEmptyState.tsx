@@ -7,11 +7,7 @@ export default function CodeEmptyState() {
   useLayoutEffect(() => {
     if (!rootRef.current) return;
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        rootRef.current,
-        { autoAlpha: 0, scale: 0.94 },
-        { autoAlpha: 1, scale: 1, duration: 0.25 },
-      );
+      gsap.fromTo(rootRef.current, { autoAlpha: 0, scale: 0.94 }, { autoAlpha: 1, scale: 1, duration: 0.25 });
       gsap.to('[data-empty-icon]', {
         y: -4,
         duration: 1.4,
@@ -24,11 +20,7 @@ export default function CodeEmptyState() {
   }, []);
 
   return (
-    <div
-      ref={rootRef}
-      className="flex h-full flex-col items-center justify-center gap-2 select-none"
-      style={{ minHeight: 240 }}
-    >
+    <div ref={rootRef} className="flex h-full flex-col items-center justify-center gap-2 select-none" style={{ minHeight: 240 }}>
       <div data-empty-icon className="text-4xl opacity-20">
         📂
       </div>

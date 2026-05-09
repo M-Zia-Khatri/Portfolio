@@ -45,12 +45,7 @@ export type GameAction =
       type: 'MARK_SCORE_SAVED';
     };
 
-export const initialGameState = (
-  guessLimit: number,
-  initialTimeLimit: number,
-  difficultLevel: string,
-  maxNumber: number,
-): GameState => ({
+export const initialGameState = (guessLimit: number, initialTimeLimit: number, difficultLevel: string, maxNumber: number): GameState => ({
   randomNumber: null,
   guessResults: [],
   showNumber: false,

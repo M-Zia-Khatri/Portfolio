@@ -2,12 +2,7 @@ import gsap from 'gsap';
 import { useLayoutEffect, useRef } from 'react';
 import { bgSceneDebug } from './bgSceneDebug';
 import { appendHeroLineGradientDefs, applyHeroLineStrokeStyle } from './bgSceneGradient';
-import {
-  getDeformationSegmentCount,
-  getLineCount,
-  getLineSpacingPx,
-  HORIZONTAL_WAVE_AMPLITUDE_PX,
-} from './bgSceneLayout';
+import { getDeformationSegmentCount, getLineCount, getLineSpacingPx, HORIZONTAL_WAVE_AMPLITUDE_PX } from './bgSceneLayout';
 
 const RESIZE_DEBOUNCE_MS = 150;
 const ZERO_SIZE_RAF_MAX = 120;
@@ -281,16 +276,8 @@ export default function BgScene() {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="pointer-events-none absolute inset-0 z-0 min-h-0 min-w-0 h-full w-full max-h-none"
-    >
-      <svg
-        ref={svgRef}
-        className="block h-full w-full select-none"
-        aria-hidden="true"
-        focusable="false"
-      />
+    <div ref={containerRef} className="pointer-events-none absolute inset-0 z-0 h-full max-h-none min-h-0 w-full min-w-0">
+      <svg ref={svgRef} className="block h-full w-full select-none" aria-hidden="true" focusable="false" />
     </div>
   );
 }

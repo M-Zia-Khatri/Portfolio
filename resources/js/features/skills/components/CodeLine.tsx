@@ -14,14 +14,9 @@ const CodeLine = memo(function CodeLine({ line, index, isActiveLine, color }: Co
   const tokens = useMemo(() => tokenise(line), [line]);
 
   return (
-    <div
-      className={cn('code-line flex items-center group', isActiveLine && 'is-active')}
-      style={{ '--line-color': color } as React.CSSProperties}
-    >
+    <div className={cn('code-line group flex items-center', isActiveLine && 'is-active')} style={{ '--line-color': color } as React.CSSProperties}>
       {/* Line Number */}
-      <span className="line-num relative w-10 shrink-0 pr-4 text-right text-[11px] select-none">
-        {index + 1}
-      </span>
+      <span className="line-num relative w-10 shrink-0 pr-4 text-right text-[11px] select-none">{index + 1}</span>
 
       {/* Code Content */}
       <span className="relative text-[12.5px] leading-[1.6rem] tracking-tight whitespace-pre">

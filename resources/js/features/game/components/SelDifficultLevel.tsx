@@ -19,36 +19,36 @@ export default function SelDifficultLevel() {
   const customLevels = useGameSet((state) => state.customLevels);
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const selectedValue = useMemo(
-    () => customLevels.find((lvl) => lvl.name === difficultLevel)?.id ?? difficultLevel,
-    [customLevels, difficultLevel],
+  const selectedValue = useMemo(() => customLevels.find((lvl) => lvl.name === difficultLevel)?.id ?? difficultLevel, [customLevels, difficultLevel]);
+
+  const handleChange = useCallback(
+    (val: string) => {
+      // Special sentinel — open dialog instead of selecting
+      if (val === '__add_custom__') {
+        setDialogOpen(true);
+        return;
+      }
+
+      if (BUILTIN_PRESETS[val]) {
+        setDifficultLevel(val);
+        const { max, limit, time } = BUILTIN_PRESETS[val];
+        setMaxNumber(max);
+        setGuessLimit(limit);
+        setTimeLimit(time);
+        return;
+      }
+
+      // User-created custom level — val is lvl.id
+      const custom = customLevels.find((l) => l.id === val);
+      if (custom) {
+        setDifficultLevel(custom.name); // store readable name, not id
+        setMaxNumber(custom.maxNumber);
+        setGuessLimit(custom.guessLimit);
+        setTimeLimit(custom.totalSeconds);
+      }
+    },
+    [customLevels, setDifficultLevel, setGuessLimit, setMaxNumber, setTimeLimit],
   );
-
-  const handleChange = useCallback((val: string) => {
-    // Special sentinel — open dialog instead of selecting
-    if (val === '__add_custom__') {
-      setDialogOpen(true);
-      return;
-    }
-
-    if (BUILTIN_PRESETS[val]) {
-      setDifficultLevel(val);
-      const { max, limit, time } = BUILTIN_PRESETS[val];
-      setMaxNumber(max);
-      setGuessLimit(limit);
-      setTimeLimit(time);
-      return;
-    }
-
-    // User-created custom level — val is lvl.id
-    const custom = customLevels.find((l) => l.id === val);
-    if (custom) {
-      setDifficultLevel(custom.name); // store readable name, not id
-      setMaxNumber(custom.maxNumber);
-      setGuessLimit(custom.guessLimit);
-      setTimeLimit(custom.totalSeconds);
-    }
-  }, [customLevels, setDifficultLevel, setGuessLimit, setMaxNumber, setTimeLimit]);
 
   return (
     <Flex align="center" gap="1">

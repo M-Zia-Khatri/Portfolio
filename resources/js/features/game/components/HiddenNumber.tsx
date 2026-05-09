@@ -2,11 +2,7 @@ import { TEXT } from '@/shared/constants/style.constants';
 import { Button, Text, TextField } from '@radix-ui/themes';
 import { Timer } from 'lucide-react';
 import { memo, useRef } from 'react';
-import {
-  useGuessNumActions,
-  useGuessNumStatus,
-  useGuessNumTimer,
-} from '../context/GuessNumContext';
+import { useGuessNumActions, useGuessNumStatus, useGuessNumTimer } from '../context/GuessNumContext';
 import LevelSelector from './LevelSelector';
 
 const timerTextClassName = 'flex items-center font-extrabold';
@@ -112,24 +108,14 @@ const PostGameResult = memo(function PostGameResult() {
 
   if (!showNumber) return null;
 
-  const resultMessage = didWin
-    ? '🎉 You got it!'
-    : timeLeft === 0
-      ? "⏰ Time's up — try again"
-      : 'You lose — try again';
+  const resultMessage = didWin ? '🎉 You got it!' : timeLeft === 0 ? "⏰ Time's up — try again" : 'You lose — try again';
 
   return (
     <div className={centeredPanelClassName}>
       <Text size="4" weight="bold" style={{ color: didWin ? 'var(--green-11)' : 'var(--red-11)' }}>
         {resultMessage}
       </Text>
-      <Button
-        size="3"
-        variant="solid"
-        color={didWin ? 'green' : 'blue'}
-        onClick={restartGame}
-        style={{ minWidth: 140 }}
-      >
+      <Button size="3" variant="solid" color={didWin ? 'green' : 'blue'} onClick={restartGame} style={{ minWidth: 140 }}>
         Play Again
       </Button>
     </div>

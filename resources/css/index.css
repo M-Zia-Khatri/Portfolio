@@ -181,7 +181,7 @@
   }
 
   body {
-    @apply m-0 p-0 bg-(--color-background);
+    @apply m-0 bg-(--color-background) p-0;
     overflow-x: clip;
   }
 
@@ -258,8 +258,13 @@ html.lenis {
   transition: color 0.15s;
 }
 
-.code-line:hover .line-num { color: color-mix(in srgb, var(--line-color), white 20%); }
-.code-line.is-active .line-num { color: var(--line-color); opacity: 1; }
+.code-line:hover .line-num {
+  color: color-mix(in srgb, var(--line-color), white 20%);
+}
+.code-line.is-active .line-num {
+  color: var(--line-color);
+  opacity: 1;
+}
 
 /* The Cursor */
 .code-cursor {
@@ -273,6 +278,11 @@ html.lenis {
 }
 
 @keyframes code-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }

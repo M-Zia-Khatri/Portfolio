@@ -11,9 +11,7 @@ const LevelSelector = memo(function LevelSelector() {
   };
 
   return (
-    <div
-      style={selectorStyle}
-    >
+    <div style={selectorStyle}>
       <SelDifficultLevel />
     </div>
   );

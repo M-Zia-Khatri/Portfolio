@@ -11,9 +11,7 @@ export const breakpoints: Record<Exclude<BreakpointKey, 'desktop'>, number> = {
 } as const;
 
 // Pre-sorted descending at module load — paid once, not per call
-const SORTED_BREAKPOINT_ENTRIES = (
-  Object.entries(breakpoints) as [Exclude<BreakpointKey, 'desktop'>, number][]
-).sort(([, a], [, b]) => b - a);
+const SORTED_BREAKPOINT_ENTRIES = (Object.entries(breakpoints) as [Exclude<BreakpointKey, 'desktop'>, number][]).sort(([, a], [, b]) => b - a);
 
 function getWidth(): number {
   return typeof window !== 'undefined' ? window.innerWidth : 0;
@@ -51,10 +49,8 @@ export function resolveResponsive<T>(obj: ResponsiveValue<T>): T | undefined {
 
   // --- 1. Exact named breakpoint match ---
   if (obj.desktop !== undefined && width > breakpoints.laptop) return obj.desktop;
-  if (obj.laptop !== undefined && width > breakpoints.tablet && width <= breakpoints.laptop)
-    return obj.laptop;
-  if (obj.tablet !== undefined && width > breakpoints.mobile && width <= breakpoints.tablet)
-    return obj.tablet;
+  if (obj.laptop !== undefined && width > breakpoints.tablet && width <= breakpoints.laptop) return obj.laptop;
+  if (obj.tablet !== undefined && width > breakpoints.mobile && width <= breakpoints.tablet) return obj.tablet;
   if (obj.mobile !== undefined && width <= breakpoints.mobile) return obj.mobile;
 
   // --- 2. Cascade: nearest smaller defined breakpoint ---

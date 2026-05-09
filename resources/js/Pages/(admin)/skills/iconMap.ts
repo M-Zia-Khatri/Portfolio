@@ -5,10 +5,7 @@ import { SiDocker, SiExpress, SiGit, SiGithub, SiMongodb, SiMysql } from 'react-
 
 // Keys must exactly match the `icon` string stored in the database.
 // When adding a new icon: add it here AND pick the same key in the admin form.
-export const ICON_MAP: Record<
-  string,
-  React.ComponentType<{ size?: number; className?: string }>
-> = {
+export const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   FaHtml5,
   FaCss3Alt,
   BsTypescript,
