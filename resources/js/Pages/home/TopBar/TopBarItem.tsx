@@ -42,7 +42,7 @@ function TopBarItemImpl({ item, onNavigate }: TopBarItemProps) {
             onNavigate?.();
             void scrollToTarget(`#${item.sectionId}`);
           }}
-          className="relative inline-flex items-center pb-1"
+          className="relative inline-flex items-center pb-1 hover:no-underline"
         >
           <Text size={TEXT.base.size} className="text-white">
             {item.label}

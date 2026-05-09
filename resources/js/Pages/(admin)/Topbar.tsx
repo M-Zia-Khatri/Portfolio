@@ -68,6 +68,7 @@ export default function Topbar() {
                     key={item.link}
                     href={item.link}
                     className={cn('text-sm font-medium transition-colors hover:text-(--blue-11)', isActive ? 'text-(--blue-11)' : 'text-(--gray-10)')}
+                    prefetch
                   >
                     {item.label}
                   </Link>
