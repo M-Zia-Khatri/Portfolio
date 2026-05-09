@@ -1,6 +1,7 @@
 import { TextLoop } from '@/shared/components/motion-primitives/text-loop';
 import { cn } from '@/shared/utils/cn';
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy } from 'react';
+import { useHeroAnimatedBackground } from './useHeroAnimatedBackground';
 
 const BgScene = lazy(() => import('./BgScene'));
 
@@ -10,13 +11,7 @@ const headingBaseStyling = cn(
 );
 
 export default function HeroSection() {
-  const [showBgScene, setShowBgScene] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const media = window.matchMedia('(min-width: 1024px) and (prefers-reduced-motion: no-preference)');
-    setShowBgScene(media.matches);
-  }, []);
+  const showBgScene = useHeroAnimatedBackground();
 
   return (
     <div className="relative z-10 flex h-full w-full flex-col items-center justify-center overflow-x-clip text-center">

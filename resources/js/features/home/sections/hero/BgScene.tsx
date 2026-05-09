@@ -1,69 +1,142 @@
 import gsap from 'gsap';
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
+import { bgSceneDebug } from './bgSceneDebug';
+import { getDeformationSegmentCount, getLineCount, getLineSpacingPx } from './bgSceneLayout';
 
-type SVGWithCleanup = SVGSVGElement & {
-  _cleanup?: () => void;
-};
+const RESIZE_DEBOUNCE_MS = 150;
+const ZERO_SIZE_RAF_MAX = 120;
 
 export default function BgScene() {
-  const svgRef = useRef<SVGWithCleanup | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
   const linesRef = useRef<SVGPathElement[]>([]);
   const sizeRef = useRef({ w: 0, h: 0 });
   const mouseRef = useRef({ x: -9999, y: -9999 });
   const smoothMouseRef = useRef({ x: -9999, y: -9999 });
   const rectCacheRef = useRef<DOMRect | null>(null);
+  const teardownRef = useRef<(() => void) | null>(null);
+  const mountTimeRef = useRef(0);
 
-  useEffect(() => {
-    let animation: gsap.core.Tween | null = null;
+  useLayoutEffect(() => {
+    mountTimeRef.current = performance.now();
+    const container = containerRef.current;
+    const svg = svgRef.current;
+    if (!container || !svg) {
+      return;
+    }
 
-    const init = () => {
-      const svg = svgRef.current;
-      if (!svg) return;
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let zeroRafAttempts = 0;
+    let zeroRafId: number | null = null;
+    let scrollRafId: number | null = null;
 
+    const clearDebounce = (): void => {
+      if (debounceTimer !== null) {
+        clearTimeout(debounceTimer);
+        debounceTimer = null;
+      }
+    };
+
+    const cancelZeroRaf = (): void => {
+      if (zeroRafId !== null) {
+        cancelAnimationFrame(zeroRafId);
+        zeroRafId = null;
+      }
+    };
+
+    const fullTeardown = (): void => {
+      teardownRef.current?.();
+      teardownRef.current = null;
+      linesRef.current = [];
+    };
+
+    const refreshRectCache = (): void => {
+      rectCacheRef.current = svg.getBoundingClientRect();
+    };
+
+    const scheduleRectRefresh = (): void => {
+      if (scrollRafId !== null) {
+        return;
+      }
+      scrollRafId = requestAnimationFrame(() => {
+        scrollRafId = null;
+        refreshRectCache();
+      });
+    };
+
+    const runSetup = (): void => {
       const rect = svg.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
+      const w = Math.round(rect.width);
+      const h = Math.round(rect.height);
 
-      if (!w || !h) {
-        requestAnimationFrame(init);
+      bgSceneDebug('measure', {
+        w,
+        h,
+        cssWidth: rect.width,
+        cssHeight: rect.height,
+        containerW: container.getBoundingClientRect().width,
+        containerH: container.getBoundingClientRect().height,
+        sinceMountMs: Math.round(performance.now() - mountTimeRef.current),
+        dpr: window.devicePixelRatio,
+      });
+
+      if (w < 2 || h < 2) {
+        cancelZeroRaf();
+        if (zeroRafAttempts >= ZERO_SIZE_RAF_MAX) {
+          bgSceneDebug('zero-size-abort', { attempts: zeroRafAttempts });
+
+          return;
+        }
+        zeroRafAttempts += 1;
+        zeroRafId = requestAnimationFrame(() => {
+          zeroRafId = null;
+          runSetup();
+        });
+
         return;
       }
 
-      sizeRef.current = { w, h };
-      rectCacheRef.current = rect;
+      zeroRafAttempts = 0;
+      cancelZeroRaf();
 
-      while (svg.firstChild) svg.removeChild(svg.firstChild);
-      linesRef.current = [];
+      fullTeardown();
+
+      sizeRef.current = { w, h };
+      refreshRectCache();
+
+      const spacing = getLineSpacingPx(w);
+      const count = getLineCount(w, spacing);
+      const SEGMENTS = getDeformationSegmentCount(w);
+
+      bgSceneDebug('init-lines', { spacing, count, segments: SEGMENTS, lineTotalApprox: count * SEGMENTS });
+
+      while (svg.firstChild) {
+        svg.removeChild(svg.firstChild);
+      }
 
       svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-
-      const count = Math.ceil(w / 10);
-      const SEGMENTS = 160;
+      svg.setAttribute('preserveAspectRatio', 'none');
 
       const parts: string[] = new Array(SEGMENTS + 1);
-
       const yValues = new Float32Array(SEGMENTS + 1);
       for (let s = 0; s <= SEGMENTS; s++) {
         yValues[s] = (s / SEGMENTS) * h;
       }
 
       for (let i = 0; i < count; i++) {
-        const path = document.createElementNS(
-          'http://www.w3.org/2000/svg',
-          'path',
-        ) as SVGPathElement;
-
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path') as SVGPathElement;
         path.setAttribute('stroke', '#76c7eb');
         path.setAttribute('stroke-width', '1');
         path.setAttribute('opacity', '0.5');
         path.setAttribute('fill', 'none');
-
         svg.appendChild(path);
         linesRef.current[i] = path;
       }
 
       const baseXValues = new Float32Array(count);
-      for (let i = 0; i < count; i++) baseXValues[i] = i * 10.5;
+      for (let i = 0; i < count; i++) {
+        baseXValues[i] = i * spacing;
+      }
 
       const amplitude = 20;
       const frequency = 0.2;
@@ -72,111 +145,147 @@ export default function BgScene() {
       const carveStrength = 0.95;
       const pushDist = mouseRadius * carveStrength;
       const lerpFactor = 0.3;
-
       const state = { t: 0 };
 
-      animation = gsap.to(state, {
-        t: Math.PI * 2,
-        duration: 6,
-        repeat: -1,
-        ease: 'none',
-        onUpdate: () => {
-          const lines = linesRef.current;
-          const height = sizeRef.current.h;
-          const t = state.t;
+      const ctx = gsap.context(() => {
+        gsap.to(state, {
+          t: Math.PI * 2,
+          duration: 6,
+          repeat: -1,
+          ease: 'none',
+          onUpdate: () => {
+            const lines = linesRef.current;
+            const height = sizeRef.current.h;
+            const t = state.t;
 
-          // Smooth mouse
-          smoothMouseRef.current.x += (mouseRef.current.x - smoothMouseRef.current.x) * lerpFactor;
-          smoothMouseRef.current.y += (mouseRef.current.y - smoothMouseRef.current.y) * lerpFactor;
+            smoothMouseRef.current.x += (mouseRef.current.x - smoothMouseRef.current.x) * lerpFactor;
+            smoothMouseRef.current.y += (mouseRef.current.y - smoothMouseRef.current.y) * lerpFactor;
 
-          const mx = smoothMouseRef.current.x;
-          const my = smoothMouseRef.current.y;
-          const isActive = mouseRef.current.x !== -9999;
+            const mx = smoothMouseRef.current.x;
+            const my = smoothMouseRef.current.y;
+            const isActive = mouseRef.current.x !== -9999;
 
-          for (let i = 0; i < lines.length; i++) {
-            const baseX = baseXValues[i] + Math.sin(t + i * frequency) * amplitude;
+            for (let i = 0; i < lines.length; i++) {
+              const baseX = baseXValues[i] + Math.sin(t + i * frequency) * amplitude;
 
-            const dx0 = baseX - mx;
-            const lineNearMouse = isActive && Math.abs(dx0) < mouseRadius;
+              const dx0 = baseX - mx;
+              const lineNearMouse = isActive && Math.abs(dx0) < mouseRadius;
 
-            if (!lineNearMouse) {
-              parts[0] = `M${~~baseX} 0`;
-              parts[1] = `L${~~baseX} ${~~height}`;
-              lines[i].setAttribute('d', parts[0] + ' ' + parts[1]);
-              continue;
-            }
-
-            for (let s = 0; s <= SEGMENTS; s++) {
-              const y = yValues[s];
-              let x = baseX;
-
-              const dx = baseX - mx;
-              const dy = y - my;
-              const distSq = dx * dx + dy * dy;
-
-              if (distSq < mouseRadiusSq) {
-                const dist = Math.sqrt(distSq);
-                const angle = Math.atan2(dy, dx);
-                const blend = 1 - dist / mouseRadius;
-                const smooth = blend * blend * (3 - 2 * blend);
-
-                x = mx + Math.cos(angle) * (dist + (pushDist - dist) * smooth);
+              if (!lineNearMouse) {
+                parts[0] = `M${~~baseX} 0`;
+                parts[1] = `L${~~baseX} ${~~height}`;
+                lines[i].setAttribute('d', parts[0] + ' ' + parts[1]);
+                continue;
               }
 
-              parts[s] = s === 0 ? `M${~~x} ${~~y}` : `L${~~x} ${~~y}`;
+              for (let s = 0; s <= SEGMENTS; s++) {
+                const y = yValues[s];
+                let x = baseX;
+
+                const dx = baseX - mx;
+                const dy = y - my;
+                const distSq = dx * dx + dy * dy;
+
+                if (distSq < mouseRadiusSq) {
+                  const dist = Math.sqrt(distSq);
+                  const angle = Math.atan2(dy, dx);
+                  const blend = 1 - dist / mouseRadius;
+                  const smooth = blend * blend * (3 - 2 * blend);
+
+                  x = mx + Math.cos(angle) * (dist + (pushDist - dist) * smooth);
+                }
+
+                parts[s] = s === 0 ? `M${~~x} ${~~y}` : `L${~~x} ${~~y}`;
+              }
+
+              lines[i].setAttribute('d', parts.join(' '));
             }
+          },
+        });
+      }, svg);
 
-            lines[i].setAttribute('d', parts.join(' '));
-          }
-        },
-      });
-
-      const handleMouseMove = (e: MouseEvent) => {
+      const handlePointerMove = (e: PointerEvent): void => {
         const r = rectCacheRef.current;
-        if (!r) return;
-
+        if (!r) {
+          return;
+        }
         mouseRef.current = {
           x: e.clientX - r.left,
           y: e.clientY - r.top,
         };
       };
 
-      const handleMouseLeave = () => {
+      const resetPointer = (): void => {
         mouseRef.current = { x: -9999, y: -9999 };
       };
 
-      let resizeTimer: ReturnType<typeof setTimeout>;
-
-      const handleResize = () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-          animation?.kill();
-          init();
-        }, 200);
+      const handlePointerUp = (e: PointerEvent): void => {
+        if (e.pointerType === 'touch') {
+          resetPointer();
+        }
       };
 
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseleave', handleMouseLeave);
-      window.addEventListener('resize', handleResize);
+      window.addEventListener('pointermove', handlePointerMove, { passive: true });
+      window.addEventListener('pointerup', handlePointerUp, { passive: true });
+      window.addEventListener('mouseleave', resetPointer);
+      window.addEventListener('scroll', scheduleRectRefresh, { passive: true, capture: true });
+      window.visualViewport?.addEventListener('resize', scheduleRectRefresh, { passive: true });
+      window.visualViewport?.addEventListener('scroll', scheduleRectRefresh, { passive: true });
 
-      svg._cleanup = () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseleave', handleMouseLeave);
-        window.removeEventListener('resize', handleResize);
-        animation?.kill();
+      teardownRef.current = () => {
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerup', handlePointerUp);
+        window.removeEventListener('mouseleave', resetPointer);
+        window.removeEventListener('scroll', scheduleRectRefresh, { capture: true });
+        window.visualViewport?.removeEventListener('resize', scheduleRectRefresh);
+        window.visualViewport?.removeEventListener('scroll', scheduleRectRefresh);
+        ctx.revert();
       };
     };
 
-    requestAnimationFrame(init);
+    const scheduleSetup = (immediate: boolean): void => {
+      clearDebounce();
+      cancelZeroRaf();
+      if (immediate) {
+        runSetup();
+
+        return;
+      }
+      debounceTimer = window.setTimeout(() => {
+        debounceTimer = null;
+        runSetup();
+      }, RESIZE_DEBOUNCE_MS);
+    };
+
+    const ro = new ResizeObserver(() => {
+      scheduleSetup(false);
+    });
+    ro.observe(container);
+
+    scheduleSetup(true);
 
     return () => {
-      svgRef.current?._cleanup?.();
+      clearDebounce();
+      cancelZeroRaf();
+      if (scrollRafId !== null) {
+        cancelAnimationFrame(scrollRafId);
+      }
+      ro.disconnect();
+      fullTeardown();
     };
   }, []);
 
   return (
-    <div className="absolute inset-0 z-0 h-dvh w-full">
-      <svg ref={svgRef} className="h-full w-full" />
+    <div
+      ref={containerRef}
+      className="pointer-events-none absolute inset-0 z-0 min-h-0 min-w-0 h-full w-full max-h-none"
+    >
+      <svg
+        ref={svgRef}
+        className="block h-full w-full select-none"
+        aria-hidden="true"
+        focusable="false"
+      />
     </div>
   );
 }
