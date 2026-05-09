@@ -4,6 +4,7 @@ use App\Models\Admin;
 use App\Models\Skill;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Testing\AssertableInertia;
 
 uses(RefreshDatabase::class);
 
@@ -37,7 +38,7 @@ it('renders the skills index page with server-driven skills props', function () 
 
     $this->get(route('skills.index'))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
+        ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('(admin)/skills/index')
             ->has('skills', 1)
             ->where('skills.0.name', 'React')
@@ -71,4 +72,58 @@ it('stores a code skill with conditional validation', function () {
     ])->assertRedirect(route('skills.index'));
 
     expect(Skill::query()->where('lang', 'php')->exists())->toBeTrue();
+});
+
+it('persists skill code lines with indentation, blank lines, and whitespace verbatim', function () {
+    actingAdmin();
+
+    $code = [
+        '    <meta charset="UTF-8">',
+        '',
+        "hello\t",
+        '   ',
+    ];
+
+    $this->post(route('skills.store'), [
+        'name' => 'HTML',
+        'icon' => 'default',
+        'fileName' => 'index.html',
+        'lang' => 'html-skill-ws',
+        'color' => '#e34f26',
+        'mode' => 'code',
+        'code' => $code,
+    ])->assertRedirect(route('skills.index'));
+
+    $skill = Skill::query()->where('lang', 'html-skill-ws')->firstOrFail();
+
+    expect($skill->code)->toBe($code);
+});
+
+it('updates skill code without trimming or nulling empty lines', function () {
+    actingAdmin();
+
+    $skill = Skill::query()->create([
+        'name' => 'TS',
+        'icon' => 'default',
+        'file_name' => 'app.ts',
+        'lang' => 'ts-ws',
+        'color' => '#3178c6',
+        'mode' => 'code',
+        'code' => ['old'],
+        'commands' => null,
+    ]);
+
+    $code = ['  const x = 1;', '', "\t"];
+
+    $this->put(route('skills.update', $skill), [
+        'name' => 'TS',
+        'icon' => 'default',
+        'fileName' => 'app.ts',
+        'lang' => 'ts-ws',
+        'color' => '#3178c6',
+        'mode' => 'code',
+        'code' => $code,
+    ])->assertRedirect(route('skills.index'));
+
+    expect($skill->fresh()->code)->toBe($code);
 });
