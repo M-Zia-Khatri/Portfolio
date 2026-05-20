@@ -1,8 +1,8 @@
 import SkeletonBlock from "./SkeletonBlock";
 
 export default function PortfolioSkeleton() {
- const skeletonRowKeys = ["row-1", "row-2", "row-3", "row-4"];
-  
+  const skeletonRowKeys = ["row-1", "row-2", "row-3", "row-4"];
+
   return (
     <div className="flex w-full flex-col items-center gap-8 md:gap-10 lg:gap-12 xl:gap-14">
       <div className="space-y-2 text-center">
