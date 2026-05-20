@@ -26,9 +26,7 @@ const PortfolioLoader = () => (
   <div className="animate-pulse text-sm text-gray-11">Loading Portfolio...</div>
 );
 
-const GameLoader = () => (
-  <div className="animate-pulse text-sm text-gray-11">Loading Game...</div>
-);
+const GameLoader = () => <div className="animate-pulse text-sm text-gray-11">Loading Game...</div>;
 
 const ContactLoader = () => (
   <div className="animate-pulse text-sm text-gray-11">Loading Contact...</div>
