@@ -14,15 +14,13 @@ export default function HeroSection() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const media = window.matchMedia(
-      "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
-    );
+    const media = window.matchMedia("(prefers-reduced-motion: no-preference)");
     setShowBgScene(media.matches);
   }, []);
 
   return (
     <div className="relative z-10 flex h-full w-full overflow-x-clip flex-col items-center justify-center text-center">
-      <div className="absolute inset-0 -z-100 h-dvh w-full bg-linear-to-t from-transparent to-(--blue-4)/50" />
+      <div className="absolute inset-0 -z-100 h-full min-h-full w-full bg-linear-to-t from-transparent to-(--blue-4)/50" />
       {showBgScene ? (
         <Suspense fallback={null}>
           <BgScene />
