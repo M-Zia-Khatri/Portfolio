@@ -1,5 +1,11 @@
 import type { ComponentType } from "react";
 import { lazy } from "react";
+import AboutSkeleton from "./loaders/AboutSkeleton";
+import ContactSkeleton from "./loaders/ContactSkeleton";
+import GameSkeleton from "./loaders/GameSkeleton";
+import HeroSkeleton from "./loaders/HeroSkeleton";
+import PortfolioSkeleton from "./loaders/PortfolioSkeleton";
+import SkillsSkeleton from "./loaders/SkillsSkeleton";
 
 const AboutSection = lazy(() => import("./sections/AboutSection"));
 const ContactSection = lazy(() => import("./sections/ContactSection"));
@@ -14,31 +20,13 @@ export type SectionConfig = {
   Loader?: ComponentType;
 };
 
-const AboutLoader = () => (
-  <div className="animate-pulse text-sm text-gray-11">Loading About...</div>
-);
-
-const SkillsLoader = () => (
-  <div className="animate-pulse text-sm text-gray-11">Loading Skills...</div>
-);
-
-const PortfolioLoader = () => (
-  <div className="animate-pulse text-sm text-gray-11">Loading Portfolio...</div>
-);
-
-const GameLoader = () => <div className="animate-pulse text-sm text-gray-11">Loading Game...</div>;
-
-const ContactLoader = () => (
-  <div className="animate-pulse text-sm text-gray-11">Loading Contact...</div>
-);
-
 export const sections: SectionConfig[] = [
-  { id: "home", Component: HeroSection },
-  { id: "about", Component: AboutSection, Loader: AboutLoader },
-  { id: "skills", Component: SkillsSection, Loader: SkillsLoader },
-  { id: "portfolio", Component: PortfolioSection, Loader: PortfolioLoader },
-  { id: "game", Component: GameSection, Loader: GameLoader },
-  { id: "contact", Component: ContactSection, Loader: ContactLoader },
+  { id: "home", Component: HeroSection, Loader: HeroSkeleton },
+  { id: "about", Component: AboutSection, Loader: AboutSkeleton },
+  { id: "skills", Component: SkillsSection, Loader: SkillsSkeleton },
+  { id: "portfolio", Component: PortfolioSection, Loader: PortfolioSkeleton },
+  { id: "game", Component: GameSection, Loader: GameSkeleton },
+  { id: "contact", Component: ContactSection, Loader: ContactSkeleton },
 ];
 
 export const sectionClassName =
