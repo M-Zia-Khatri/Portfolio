@@ -13,9 +13,17 @@ const Home = lazy(() => import("@/features/home/Home"));
 const AppLayout = lazy(() => import("@/shared/components/layout/AppLayout"));
 
 const RouteLoader = () => (
-  <div className="flex min-h-[40vh] items-center justify-center">
-    <Spinner size="3" />
-  </div>
+    <div id="initial-loader">
+      <div className="loader">
+        <span className="bar"></span>
+        <span className="bar"></span>
+        <span className="bar"></span>
+        <span className="bar"></span>
+        <span className="bar"></span>
+        <span className="bar"></span>
+        <span className="bar"></span>
+      </div>
+    </div>
 );
 
 const withSuspense = (Component: ComponentType) => (
@@ -27,7 +35,7 @@ const withSuspense = (Component: ComponentType) => (
 const AppRoutes: RouteObject[] = [
   {
     path: "/",
-    element: withSuspense(AppLayout),
+    element: <AppLayout /> ,
     children: [
       {
         index: true,
