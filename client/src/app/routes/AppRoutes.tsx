@@ -13,17 +13,17 @@ const Home = lazy(() => import("@/features/home/Home"));
 const AppLayout = lazy(() => import("@/shared/components/layout/AppLayout"));
 
 const RouteLoader = () => (
-    <div id="initial-loader">
-      <div className="loader">
-        <span className="bar"></span>
-        <span className="bar"></span>
-        <span className="bar"></span>
-        <span className="bar"></span>
-        <span className="bar"></span>
-        <span className="bar"></span>
-        <span className="bar"></span>
-      </div>
+  <div id="initial-loader">
+    <div className="loader">
+      <span className="bar"></span>
+      <span className="bar"></span>
+      <span className="bar"></span>
+      <span className="bar"></span>
+      <span className="bar"></span>
+      <span className="bar"></span>
+      <span className="bar"></span>
     </div>
+  </div>
 );
 
 const withSuspense = (Component: ComponentType) => (
@@ -35,7 +35,7 @@ const withSuspense = (Component: ComponentType) => (
 const AppRoutes: RouteObject[] = [
   {
     path: "/",
-    element: <AppLayout /> ,
+    element: <AppLayout />,
     children: [
       {
         index: true,
