@@ -52,7 +52,7 @@ export function useGsapStagger(
   options: GsapStaggerOptions = {},
 ) {
   const hasAnimatedRef = useRef(false);
-  const { y = 20, duration = 0.6, stagger = 0.1, once = true } = options;
+  const { once = true } = options;
   useLayoutEffect(() => {
     if (!parentRef.current) return;
 

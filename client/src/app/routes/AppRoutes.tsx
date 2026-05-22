@@ -1,4 +1,3 @@
-import { Spinner } from "@radix-ui/themes";
 import { type ComponentType, lazy, Suspense } from "react";
 import { Navigate, type RouteObject } from "react-router";
 import { AppNavigation } from "@/shared/constants/navigation.constants";

@@ -129,8 +129,6 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
     if (el) el.scrollTop = el.scrollHeight;
   }, []);
 
-  const activeLineIndex = completedLines.length;
-
   const isTerminal = skill.mode === "terminal";
 
   return (

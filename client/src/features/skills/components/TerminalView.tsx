@@ -35,7 +35,7 @@ const DoneBlock = memo(({ block, bi, color }: { block: Block; bi: number; color:
     <TerminalLine line={block.command} isActive={false} cursor={false} color={color} index={bi} />
     {block.outputs.map((out) => (
       <TerminalLine
-        key={`${block.command.text}-${out.text}-${out.kind}`}
+        key={`${block.command.text}-${out.kind === "blank" ? "" : out.text}-${out.kind}`}
         line={out}
         isActive={false}
         cursor={false}
@@ -128,7 +128,7 @@ export default function TerminalView({
           />
           {activeOutputs.map((out) => (
             <TerminalLine
-              key={`active-${out.text}-${out.kind}`}
+              key={`active-${out.kind === "blank" ? "" : out.text}-${out.kind}`}
               line={out}
               isActive={false}
               cursor={false}

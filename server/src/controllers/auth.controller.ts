@@ -228,7 +228,12 @@ export async function logout(req: Request, res: Response): Promise<void> {
 
 export async function logoutAll(req: AuthRequest, res: Response): Promise<void> {
   try {
-    await revokeAllRefreshTokens(req.admin?.id);
+    if (!req.admin?.id) {
+      send(res, { success: false, status: 400, message: "Admin id is required" });
+      return;
+    }
+
+    await revokeAllRefreshTokens(req.admin.id);
     clearRefreshCookie(res);
 
     send(res, { success: true, status: 200, message: "All sessions revoked" });

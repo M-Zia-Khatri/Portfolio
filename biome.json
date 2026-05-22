@@ -2,7 +2,7 @@
   "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**/*.{js,jsx,ts,tsx,json,css,md,html,scss,sass,yaml,yml}"]
+    "includes": ["**/*.{js,jsx,ts,tsx,json,css,md,html,scss,sass,yaml,yml}", "!client/dist"]
   },
   "formatter": {
     "enabled": true,

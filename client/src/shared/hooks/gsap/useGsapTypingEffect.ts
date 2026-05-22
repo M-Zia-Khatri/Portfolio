@@ -6,7 +6,6 @@ interface GsapTypingOptions {
   speed?: number;
   cursorSelector?: string;
   lineSelector?: string;
-  replayKey?: string | number;
 }
 
 export function useGsapTypingEffect(
@@ -14,7 +13,7 @@ export function useGsapTypingEffect(
   options: GsapTypingOptions = {},
 ) {
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
-  const { speed = 0.05, cursorSelector, lineSelector = ".code-line", replayKey } = options;
+  const { speed = 0.05, cursorSelector, lineSelector = ".code-line" } = options;
 
   useLayoutEffect(() => {
     if (!containerRef.current) return;

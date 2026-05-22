@@ -40,7 +40,12 @@ const FormErrorMessage = memo(({ message }: { message?: string }) => {
   );
 });
 
-const ignoreRegisterRefChange = (prev: UseFormRegisterReturn, next: UseFormRegisterReturn) => {
+const ignoreRegisterRefChange = (
+  prevProps: { registration: UseFormRegisterReturn },
+  nextProps: { registration: UseFormRegisterReturn },
+) => {
+  const prev = prevProps.registration;
+  const next = nextProps.registration;
   return prev.name === next.name && prev.disabled === next.disabled;
 };
 
@@ -214,7 +219,7 @@ const ContactFormInner = memo(({ onSubmit, isLoading, mutation }: InnerFormProps
 function ContactFormCard() {
   const [isPendingTransition, startTransition] = useTransition();
 
-  const mutation = useMutation({
+  const mutation = useMutation<Contact, AxiosError, ContactFormData, unknown>({
     mutationFn: submitContactForm,
   });
 
