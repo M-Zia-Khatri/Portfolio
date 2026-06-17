@@ -30,6 +30,7 @@
 
 */generated/prisma
 
+.env
 .env.development
 .env.production
 
