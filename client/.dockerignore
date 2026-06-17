@@ -22,3 +22,6 @@ coverage
 .git
 .gitignore
 README.md
+
+logs
+*.log

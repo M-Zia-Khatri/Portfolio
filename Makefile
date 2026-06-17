@@ -133,13 +133,13 @@ rebuild: ## dev: Force rebuild all containers without cache and restart services
 	$(DOCKER_COMPOSE) up -d
 
 db-start: ## dev: Start isolated local DB using the specialized compose file
-	docker compose -f docker-compose.db.yml up -d
+	$(DOCKER_COMPOSE) -f docker-compose.db.yml up -d
 
 db-stop: ## dev: Stop isolated local DB
-	docker compose -f docker-compose.db.yml down
+	$(DOCKER_COMPOSE) -f docker-compose.db.yml down
 
 db-logs: ## dev: View isolated local DB logs
-	docker compose -f docker-compose.db.yml logs -f
+	$(DOCKER_COMPOSE) -f docker-compose.db.yml logs -f
 
 server: ## dev: Start local Node server on host machine in development mode
 	cd server && pnpm dev

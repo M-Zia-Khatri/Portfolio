@@ -30,6 +30,8 @@ The remediation focused on five production-safety goals:
 | `client/src/shared/api/axios.ts` | Removes the `localhost` API fallback and throws immediately when `VITE_API_URL` is missing. |
 | `client/vite.config.ts` | Fails production builds when `VITE_API_URL` is absent. |
 | `client/Dockerfile` | Accepts `VITE_API_URL` as a build argument and injects it for the Vite production build. |
+| `docker-compose.db.yml` | Keeps the local-only DB/Redis stack explicit, configurable through `LOCAL_*` variables, networked on a local bridge, and health-checked. |
+| `Makefile` | Uses the detected `DOCKER_COMPOSE` command consistently for local DB helper targets. |
 
 ## Secret Hygiene
 
@@ -193,6 +195,48 @@ Docker Compose also defines health checks for:
 - Backend
 - Frontend/nginx
 
+## Docker Audit Findings and Fixes
+
+### Critical
+
+- **Backend container startup override**: `docker-compose.yml` previously overrode the backend image command with `pnpm start`. The optimized runtime image does not install or activate pnpm, so the container could fail at startup even though the Dockerfile `CMD` was valid. The Compose override was removed so the image starts with `node dist/src/server.js`.
+
+### High
+
+- **Health checks targeting wildcard addresses**: service health checks used `0.0.0.0` as a destination address. That address is valid for binding but is not a precise service-discovery target. Health checks now use Docker service names (`server`, `client`) where Compose networking is available.
+- **Runtime container user**: the backend runtime image now runs as the non-root `node` user and copies runtime files with `node:node` ownership.
+
+### Medium
+
+- **No Compose resource guardrails**: production services lacked CPU/memory limits. Compose now defines conservative `cpus` and `mem_limit` values that operators can tune per VPS size.
+- **Unbounded container logs**: production services now use the `json-file` driver with size and file-count limits to avoid filling VPS disks.
+- **Local DB Compose hardcoded credentials and no Redis health check**: `docker-compose.db.yml` now uses `LOCAL_*` variable defaults, has a local-only bridge network, enables Redis append-only persistence, and adds a Redis health check.
+
+### Low
+
+- **Makefile Compose command drift**: local DB helper targets now use the detected `DOCKER_COMPOSE` command instead of hardcoded `docker compose`.
+- **Dockerignore typo**: the backend `.dockerignore` had a stray trailing character, which was removed.
+
+## Corrected Container Architecture
+
+Production startup order is health-check based:
+
+```text
+db healthy
+  -> migrator completes migrations and idempotent seed
+  -> redis healthy + migrator completed
+  -> server healthy
+  -> client healthy
+```
+
+Runtime traffic flow:
+
+- Browser traffic reaches the frontend through the published client port.
+- Browser API calls use `VITE_API_URL`, which must point to the externally reachable backend API.
+- The backend reaches MariaDB with Docker DNS name `db`.
+- The backend reaches Redis with Docker DNS name `redis`.
+- MariaDB and Redis remain internal-only in the production Compose file.
+
 ## Deployment Procedure
 
 1. Pull the latest code.
@@ -236,6 +280,8 @@ Before considering a production deployment complete, verify:
 - [ ] Docker images do not receive `.env` files through the build context.
 - [ ] MariaDB has no public host port mapping in production Compose.
 - [ ] Redis has no public host port mapping in production Compose.
+- [ ] Backend container starts with the Dockerfile `CMD`; there is no Compose `pnpm start` override.
+- [ ] Production services have log rotation and resource guardrails set or intentionally tuned.
 - [ ] `CORS_ORIGINS` includes every production browser origin.
 - [ ] `VITE_API_URL` points to the externally reachable backend API base URL.
 - [ ] `COOKIE_SECURE=true` for HTTPS deployments.

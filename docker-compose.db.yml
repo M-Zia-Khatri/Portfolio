@@ -4,14 +4,16 @@ services:
     container_name: portfolio-db-local
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: portfolio
-      MYSQL_USER: portfolio_user
-      MYSQL_PASSWORD: portfolio_pass
+      MYSQL_ROOT_PASSWORD: ${LOCAL_DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${LOCAL_DATABASE_NAME:-portfolio}
+      MYSQL_USER: ${LOCAL_DATABASE_USER:-portfolio_user}
+      MYSQL_PASSWORD: ${LOCAL_DATABASE_PASSWORD:-portfolio_pass}
     ports:
-      - '3306:3306'
+      - '${LOCAL_DATABASE_PORT:-3306}:3306'
     volumes:
       - db-data-local:/var/lib/mysql
+    networks:
+      - portfolio-local-network
     healthcheck:
       test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
       interval: 10s
@@ -23,13 +25,25 @@ services:
     image: redis:7-alpine
     container_name: portfolio-redis-local
     restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
     ports:
-      - '6379:6379'
+      - '${LOCAL_REDIS_PORT:-6379}:6379'
     volumes:
       - redis-data-local:/data
+    networks:
+      - portfolio-local-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db-data-local:
     name: portfolio-db-local
   redis-data-local:
     name: portfolio-redis-local
+
+networks:
+  portfolio-local-network:
+    driver: bridge
