@@ -26,10 +26,11 @@ const ACCESS_TOKEN_EXPIRES_IN = 15 * 60; // 15 min in seconds
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: config.isDev === false,
-  sameSite: "strict" as const,
+  secure: config.cookies.secure,
+  sameSite: config.cookies.sameSite,
   maxAge: REFRESH_TOKEN_MAX_AGE,
   path: "/",
+  ...(config.cookies.domain ? { domain: config.cookies.domain } : {}),
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -39,7 +40,12 @@ function setRefreshCookie(res: Response, token: string): void {
 }
 
 function clearRefreshCookie(res: Response): void {
-  res.clearCookie(REFRESH_TOKEN_COOKIE, { path: "/" });
+  res.clearCookie(REFRESH_TOKEN_COOKIE, {
+    path: "/",
+    sameSite: config.cookies.sameSite,
+    secure: config.cookies.secure,
+    ...(config.cookies.domain ? { domain: config.cookies.domain } : {}),
+  });
 }
 
 // ─── POST /auth/login ─────────────────────────────────────────────────────────

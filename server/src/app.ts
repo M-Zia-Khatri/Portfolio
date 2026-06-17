@@ -17,6 +17,19 @@ const allowedOrigins = new Set(
       : [config.client.url].filter((origin): origin is string => Boolean(origin?.trim())),
 );
 
+if (!config.isDev && allowedOrigins.size === 0) {
+  throw new Error("CORS_ORIGINS must include at least one production origin");
+}
+
+console.log(
+  JSON.stringify({
+    event: "startup.config",
+    port: config.port,
+    corsOrigins: [...allowedOrigins],
+    redisHost: config.redis.host,
+  }),
+);
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -40,6 +53,14 @@ app.use("/api", router);
 
 app.get("/", (_req, res) => {
   res.json({ status: "OK", message: "Server running" });
+});
+
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
+});
+
+app.get("/ready", (_req, res) => {
+  res.json({ status: "ready" });
 });
 
 export default app;

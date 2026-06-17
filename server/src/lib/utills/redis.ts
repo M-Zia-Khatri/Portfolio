@@ -4,7 +4,7 @@ import { getConfig } from "../../config/env.js";
 const { redis: redisConfig } = getConfig();
 
 const redis = new IORedis.Redis({
-  host: redisConfig.host || "localhost",
+  host: redisConfig.host,
   port: Number(redisConfig.port) || 6379,
 });
 
