@@ -42,9 +42,9 @@ services:
     command: >
       sh -c "
         echo '🚀 Running Prisma migrations...' &&
-        pnpm exec prisma migrate deploy &&
+        ./node_modules/.bin/prisma migrate deploy &&
         echo '🌱 Running idempotent database seed...' &&
-        pnpm exec prisma db seed &&
+        ./node_modules/.bin/prisma db seed &&
         echo '✅ Migrations and seeding completed'
       "
     depends_on:

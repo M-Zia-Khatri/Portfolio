@@ -218,21 +218,28 @@ Docker Compose also defines health checks for:
 - **Dockerignore typo**: the backend `.dockerignore` had a stray trailing character, which was removed.
 
 
-### Build Failure: `pnpm prisma generate`
+### Build Failure: Prisma CLI through pnpm in Docker
 
-The Docker build failed in the backend `builder` stage at `RUN pnpm prisma generate` with:
+The Docker build failed in the backend `builder` stage at both `RUN pnpm prisma generate` and `RUN pnpm exec prisma generate` with:
 
 ```text
 ERROR packages field missing or empty
 ```
 
-Root cause: invoking Prisma through `pnpm prisma generate` is ambiguous under pnpm in this package because `package.json` also contains a top-level `prisma` configuration object for seed metadata. In Docker, pnpm resolved the command path incorrectly instead of reliably executing the Prisma CLI binary. The Dockerfile now uses the unambiguous binary invocation:
+Root cause: invoking Prisma through pnpm inside the Docker build context is not reliable for this package. The server `package.json` contains Prisma seed metadata, and pnpm's command dispatch in the container resolves the Prisma invocation through pnpm before reaching the installed Prisma CLI. That causes pnpm to fail before Prisma can load `prisma.config.ts` or `prisma/schema.prisma`.
+
+The Dockerfile and migrator command now bypass pnpm command dispatch and call the installed Prisma binary directly:
 
 ```dockerfile
-RUN pnpm exec prisma generate
+RUN ./node_modules/.bin/prisma generate
 ```
 
-This matches the verified local command and ensures the Prisma CLI from `node_modules/.bin` is executed in the builder stage.
+```sh
+./node_modules/.bin/prisma migrate deploy
+./node_modules/.bin/prisma db seed
+```
+
+This uses the exact Prisma CLI installed by `pnpm install --frozen-lockfile`, avoids ambiguity in pnpm command resolution, and keeps the generated client deterministic in the builder stage.
 
 ## Corrected Container Architecture
 

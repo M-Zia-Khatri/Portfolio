@@ -10,7 +10,7 @@ FROM deps AS builder
 WORKDIR /app
 COPY . .
 ENV DATABASE_URL="mysql://dummy:dummy@db:3306/dummy"
-RUN pnpm exec prisma generate
+RUN ./node_modules/.bin/prisma generate
 RUN pnpm build
 
 # STAGE 3: Production dependencies
