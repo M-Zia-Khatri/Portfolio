@@ -217,6 +217,23 @@ Docker Compose also defines health checks for:
 - **Makefile Compose command drift**: local DB helper targets now use the detected `DOCKER_COMPOSE` command instead of hardcoded `docker compose`.
 - **Dockerignore typo**: the backend `.dockerignore` had a stray trailing character, which was removed.
 
+
+### Build Failure: `pnpm prisma generate`
+
+The Docker build failed in the backend `builder` stage at `RUN pnpm prisma generate` with:
+
+```text
+ERROR packages field missing or empty
+```
+
+Root cause: invoking Prisma through `pnpm prisma generate` is ambiguous under pnpm in this package because `package.json` also contains a top-level `prisma` configuration object for seed metadata. In Docker, pnpm resolved the command path incorrectly instead of reliably executing the Prisma CLI binary. The Dockerfile now uses the unambiguous binary invocation:
+
+```dockerfile
+RUN pnpm exec prisma generate
+```
+
+This matches the verified local command and ensures the Prisma CLI from `node_modules/.bin` is executed in the builder stage.
+
 ## Corrected Container Architecture
 
 Production startup order is health-check based:
