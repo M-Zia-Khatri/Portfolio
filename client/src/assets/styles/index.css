@@ -285,3 +285,19 @@ html.lenis {
     opacity: 0;
   }
 }
+
+/* Skills section scroll areas intentionally expose small contextual scrollbars. */
+.tab-scrollbar::-webkit-scrollbar,
+.content-scrollbar::-webkit-scrollbar {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  .code-cursor {
+    animation: none;
+  }
+}

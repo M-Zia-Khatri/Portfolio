@@ -69,7 +69,7 @@ export default function TerminalView({
   useGsapTypingEffect(
     rootRef,
     [skillName, blocks],
-    (timeline: any) => {
+    (timeline: gsap.core.Timeline) => {
       setDoneBlocks([]);
       setActiveCommand("");
       setActiveBlock(null);

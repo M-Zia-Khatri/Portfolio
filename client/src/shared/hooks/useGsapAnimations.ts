@@ -102,7 +102,7 @@ export function useGsapTypingEffect(
 
     const ctx = gsap.context(() => {
       tlRef.current?.kill();
-      const timeline = gsap.timeline({ paused: !!paused });
+      const timeline = gsap.timeline({ paused: !!paused, autoRemoveChildren: true });
       tlRef.current = timeline;
       setup(timeline);
       if (!paused) timeline.play(0);
