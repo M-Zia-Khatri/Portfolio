@@ -38,7 +38,7 @@ app.use(
       if (allowedOrigins.has(origin)) return callback(null, true);
 
       console.warn(`[cors] blocked origin: ${origin}`);
-      return callback(null, false);
+      return callback(new Error(`Origin not allowed: ${origin}`), false);
     },
     credentials: true,
     exposedHeaders: ["ETag"],
