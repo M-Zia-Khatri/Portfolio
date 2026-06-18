@@ -84,8 +84,12 @@ const CodeTabBar = memo(({ skill, openTabs, onTabClick, onTabClose }: CodeTabBar
               data-active={isActive}
               className="group/tab relative flex shrink-0 items-center overflow-hidden"
               style={{
-                background: isActive ? `${tab.color}16` : "transparent",
+                // Mixes the tab color with transparent to create a 15% opacity background
+                background: isActive
+                  ? `color-mix(in srgb, ${tab.color} 7.5%, transparent)`
+                  : "transparent",
                 borderRight: "1px solid rgba(255,255,255,0.06)",
+                // Both active and inactive states now reference tab.color or fallback opacity
                 color: isActive ? tab.color : "rgba(255,255,255,0.6)",
               }}
               role="presentation"
@@ -101,19 +105,25 @@ const CodeTabBar = memo(({ skill, openTabs, onTabClick, onTabClose }: CodeTabBar
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => onTabClick(tab)}
-                className="flex cursor-pointer items-center gap-[7px] px-3 py-[9px] text-[11px] leading-none select-none focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
-                style={{ outlineColor: tab.color }}
+                className="flex cursor-pointer appearance-none items-center gap-[7px] border-0 bg-transparent px-3 py-[9px] text-[11px] leading-none select-none outline-none"
+                // Sets the text color directly via inline styles to ensure it uses tab.color
+                style={{ color: tab.color }}
               >
-                <span className="shrink-0" aria-hidden="true">
+                <span className="shrink-0" aria-hidden="true" style={{ color: `color-mix(in srgb, ${tab.color} 80%, transparent)` }}>
+                  {/* TabIcon inherits the parent text color naturally */}
                   <TabIcon size={12} />
                 </span>
-                <span className="font-medium tracking-tight whitespace-nowrap">{tab.fileName}</span>
+                <span
+                  className="font-medium tracking-tight whitespace-nowrap"
+                >
+                  {tab.fileName}
+                </span>
               </button>
               <button
                 type="button"
                 onClick={() => onTabClose(tab)}
-                className="mr-2 h-5 w-5 shrink-0 rounded text-[10px] focus-visible:outline-2"
-                style={{ color: tab.color, outlineColor: tab.color }}
+                className="mr-2 h-5 w-5 shrink-0 appearance-none rounded border-0 bg-transparent text-[10px] outline-none"
+                style={{ color: `color-mix(in srgb, ${tab.color} 80%, transparent)` }}
                 aria-label={`Close ${tab.fileName}`}
               >
                 ✕
