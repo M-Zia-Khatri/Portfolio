@@ -84,8 +84,12 @@ const CodeTabBar = memo(({ skill, openTabs, onTabClick, onTabClose }: CodeTabBar
               data-active={isActive}
               className="group/tab relative flex shrink-0 items-center overflow-hidden"
               style={{
-                background: "transparent",
+                // Mixes the tab color with transparent to create a 15% opacity background
+                background: isActive
+                  ? `color-mix(in srgb, ${tab.color} 15%, transparent)`
+                  : "transparent",
                 borderRight: "1px solid rgba(255,255,255,0.06)",
+                // Both active and inactive states now reference tab.color or fallback opacity
                 color: isActive ? tab.color : "rgba(255,255,255,0.6)",
               }}
               role="presentation"
@@ -102,8 +106,11 @@ const CodeTabBar = memo(({ skill, openTabs, onTabClick, onTabClose }: CodeTabBar
                 aria-selected={isActive}
                 onClick={() => onTabClick(tab)}
                 className="flex cursor-pointer appearance-none items-center gap-[7px] border-0 bg-transparent px-3 py-[9px] text-[11px] leading-none select-none outline-none"
+                // Sets the text color directly via inline styles to ensure it uses tab.color
+                style={{ color: tab.color }}
               >
                 <span className="shrink-0" aria-hidden="true">
+                  {/* TabIcon inherits the parent text color naturally */}
                   <TabIcon size={12} />
                 </span>
                 <span className="font-medium tracking-tight whitespace-nowrap">{tab.fileName}</span>
