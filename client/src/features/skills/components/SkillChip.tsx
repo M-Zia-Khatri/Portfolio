@@ -16,6 +16,12 @@ const SkillChip = memo(function SkillChip({ skill, active, onClick }: SkillChipP
     const btn = btnRef.current;
     if (!btn) return onClick();
 
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      onClick();
+      return;
+    }
+
     const ripple = document.createElement("span");
     const rect = btn.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -49,15 +55,16 @@ const SkillChip = memo(function SkillChip({ skill, active, onClick }: SkillChipP
       type="button"
       ref={btnRef}
       onClick={handleClick}
+      aria-pressed={active}
       className={cn(
-        "relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg border px-3 py-[7px] text-[13px] font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.04] active:scale-95",
+        "relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg border px-3 py-[7px] text-[13px] font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.04] active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100",
       )}
       style={{
         background: active ? `${skill.color}16` : "rgba(255,255,255,0.03)",
         borderColor: active ? `${skill.color}55` : "rgba(255,255,255,0.08)",
         color: active ? skill.color : "rgba(255,255,255,0.45)",
         boxShadow: active ? `0 0 14px ${skill.color}28` : "none",
-        willChange: "transform",
+        outlineColor: skill.color,
       }}
     >
       <span className={cn("transition-transform duration-500", active && "rotate-[360deg]")}>

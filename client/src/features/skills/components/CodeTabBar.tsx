@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { memo, useLayoutEffect, useRef } from "react";
+import { memo, useEffect, useLayoutEffect, useRef } from "react";
 import type { Skill } from "../types";
 
 interface CodeTabBarProps {
@@ -14,20 +14,27 @@ const TAB_PADDING_PX = 12;
 const CodeTabBar = memo(({ skill, openTabs, onTabClick, onTabClose }: CodeTabBarProps) => {
   const tabBarRef = useRef<HTMLDivElement>(null);
 
+  const tabSignature = openTabs.map((tab) => tab.name).join("|");
+
   useLayoutEffect(() => {
+    void tabSignature;
     const bar = tabBarRef.current;
     if (!bar) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     const ctx = gsap.context(() => {
       gsap.fromTo(
         "[data-tab-item]",
         { autoAlpha: 0, x: -8 },
-        { autoAlpha: 1, x: 0, duration: 0.25, stagger: 0.04, ease: "power2.out" },
+        { autoAlpha: 1, x: 0, duration: 0.2, stagger: 0.03, ease: "power2.out" },
       );
     }, bar);
     return () => ctx.revert();
-  }, []);
+  }, [tabSignature]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
+    void tabSignature;
+    void skill.name;
     const bar = tabBarRef.current;
     if (!bar) return;
     const activeTab = bar.querySelector<HTMLElement>("[data-active='true']");
@@ -38,18 +45,19 @@ const CodeTabBar = memo(({ skill, openTabs, onTabClick, onTabClose }: CodeTabBar
     const overflowLeft = tabRect.left - barRect.left;
     const overflowRight = tabRect.right - barRect.right;
 
-    if (overflowLeft < 0)
+    if (overflowLeft < 0) {
       bar.scrollTo({ left: bar.scrollLeft + overflowLeft - TAB_PADDING_PX, behavior: "smooth" });
-    if (overflowRight > 0)
+    } else if (overflowRight > 0) {
       bar.scrollTo({ left: bar.scrollLeft + overflowRight + TAB_PADDING_PX, behavior: "smooth" });
-  }, []);
+    }
+  }, [skill.name, tabSignature]);
 
   return (
     <div
-      className="flex shrink-0 items-stretch min-h-8.5"
+      className="flex min-h-8.5 shrink-0 items-stretch"
       style={{ background: "rgba(0,0,0,0.5)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
     >
-      <div className="flex shrink-0 items-center gap-[6px] px-3">
+      <div className="flex shrink-0 items-center gap-[6px] px-3" aria-hidden="true">
         {(["#ff5f57", "#febc2e", "#28c840"] as const).map((c) => (
           <span
             key={c}
@@ -59,24 +67,28 @@ const CodeTabBar = memo(({ skill, openTabs, onTabClick, onTabClose }: CodeTabBar
         ))}
       </div>
       <div className="my-2 w-px shrink-0 bg-white/10" />
-      <div ref={tabBarRef} className="tab-scrollbar flex min-w-0 flex-1 items-stretch">
+      <div
+        ref={tabBarRef}
+        className="tab-scrollbar flex min-w-0 flex-1 items-stretch"
+        role="tablist"
+        aria-label="Open skill files"
+        data-lenis-prevent
+      >
         {openTabs.map((tab) => {
           const isActive = tab.name === skill.name;
           const TabIcon = tab.iconComponent;
           return (
-            <button
+            <div
               key={tab.name}
-              type="button"
               data-tab-item
               data-active={isActive}
-              onClick={() => onTabClick(tab)}
-              className="group/tab relative flex shrink-0 items-center gap-[7px] overflow-hidden px-3 py-[9px] text-[11px] leading-none select-none"
+              className="group/tab relative flex shrink-0 items-center overflow-hidden"
               style={{
-                background: isActive ? `${tab.color}16` : "transparent",
+                background: "transparent",
                 borderRight: "1px solid rgba(255,255,255,0.06)",
-                color: isActive ? tab.color : "rgba(255,255,255,0.38)",
-                cursor: "pointer",
+                color: isActive ? tab.color : "rgba(255,255,255,0.6)",
               }}
+              role="presentation"
             >
               {isActive && (
                 <span
@@ -84,27 +96,32 @@ const CodeTabBar = memo(({ skill, openTabs, onTabClick, onTabClose }: CodeTabBar
                   style={{ background: tab.color }}
                 />
               )}
-              <span className="shrink-0">
-                <TabIcon size={12} />
-              </span>
-              <span className="font-medium tracking-tight whitespace-nowrap">{tab.fileName}</span>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onTabClose(tab);
-                }}
-                className="ml-0.5 h-[14px] w-[14px] shrink-0 text-[10px]"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => onTabClick(tab)}
+                className="flex cursor-pointer appearance-none items-center gap-[7px] border-0 bg-transparent px-3 py-[9px] text-[11px] leading-none select-none outline-none"
+              >
+                <span className="shrink-0" aria-hidden="true">
+                  <TabIcon size={12} />
+                </span>
+                <span className="font-medium tracking-tight whitespace-nowrap">{tab.fileName}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onTabClose(tab)}
+                className="mr-2 h-5 w-5 shrink-0 appearance-none rounded border-0 bg-transparent text-[10px] outline-none"
                 style={{ color: tab.color }}
                 aria-label={`Close ${tab.fileName}`}
               >
                 ✕
               </button>
-            </button>
+            </div>
           );
         })}
       </div>
-      <div className="flex shrink-0 items-center px-4 text-[10px] tracking-widest text-white uppercase opacity-25">
+      <div className="hidden shrink-0 items-center px-4 text-[10px] tracking-widest text-white uppercase opacity-45 sm:flex">
         {skill.lang}
       </div>
     </div>
