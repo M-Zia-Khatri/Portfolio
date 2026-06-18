@@ -66,9 +66,7 @@ export const getConfig = () => {
     },
 
     cookies: {
-      secure: process.env.COOKIE_SECURE
-        ? process.env.COOKIE_SECURE === "true"
-        : isProduction,
+      secure: process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === "true" : isProduction,
       sameSite: (process.env.COOKIE_SAMESITE || (isProduction ? "none" : "lax")) as
         | "lax"
         | "strict"

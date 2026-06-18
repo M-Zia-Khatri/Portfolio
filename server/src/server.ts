@@ -1,7 +1,7 @@
 import app from "./app.js";
 import { getConfig } from "./config/env.js";
-import { redis } from "./lib/utills/redis.js";
 import { prisma } from "./lib/prisma.js";
+import { redis } from "./lib/utills/redis.js";
 
 const config = getConfig();
 const PORT = config.port || 5000;
