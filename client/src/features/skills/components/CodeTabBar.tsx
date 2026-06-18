@@ -109,15 +109,15 @@ const CodeTabBar = memo(({ skill, openTabs, onTabClick, onTabClose }: CodeTabBar
                 // Sets the text color directly via inline styles to ensure it uses tab.color
                 style={{ color: tab.color }}
               >
-                <span className="shrink-0" aria-hidden="true" style={{ color: `color-mix(in srgb, ${tab.color} 80%, transparent)` }}>
+                <span
+                  className="shrink-0"
+                  aria-hidden="true"
+                  style={{ color: `color-mix(in srgb, ${tab.color} 80%, transparent)` }}
+                >
                   {/* TabIcon inherits the parent text color naturally */}
                   <TabIcon size={12} />
                 </span>
-                <span
-                  className="font-medium tracking-tight whitespace-nowrap"
-                >
-                  {tab.fileName}
-                </span>
+                <span className="font-medium tracking-tight whitespace-nowrap">{tab.fileName}</span>
               </button>
               <button
                 type="button"
