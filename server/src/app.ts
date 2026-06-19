@@ -6,6 +6,8 @@ import "./lib/utills/redis.js";
 import router from "./routes/index.js";
 
 const app = express();
+app.set("trust proxy", 1);
+
 const config = getConfig();
 
 const DEV_DEFAULT_ORIGINS = ["http://localhost:3000", "http://localhost:5173"];
