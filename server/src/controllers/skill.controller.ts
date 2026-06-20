@@ -150,6 +150,21 @@ export async function create(req: Request, res: Response): Promise<void> {
       return;
     }
 
+    const isSkillAllreadyExists = await prisma.skill.findFirst({
+      where: { name: parsed.data.name },
+      select: { id: true },
+    });
+
+    if (isSkillAllreadyExists) {
+      send(res, {
+        success: false,
+        status: 409,
+        message: "A skill with this name already exists",
+        error: { field: "name", detail: "name must be unique" },
+      });
+      return;
+    }
+
     const input = parsed.data;
 
     const row = await prisma.skill.create({

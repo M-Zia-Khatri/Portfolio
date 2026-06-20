@@ -67,10 +67,10 @@ enum SkillMode {
 
 model Skill {
   id         String    @id @default(cuid())
-  name       String
+  name       String    @unique
   icon       String
   file_name  String
-  lang       String    @unique
+  lang       String
   color      String
   mode       SkillMode
   code       Json?     // String[]        — present only when mode = code
