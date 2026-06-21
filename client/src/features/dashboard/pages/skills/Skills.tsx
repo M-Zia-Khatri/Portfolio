@@ -23,6 +23,7 @@ import { useCreateSkill, useDeleteSkill, useSkillsData, useUpdateSkill } from ".
 
 // B3 fixed: proper type for a skill that has been mapped (iconComponent resolved)
 type MappedSkill = Skill & { id: string };
+type TerminalCommand = NonNullable<SkillFormValues["commands"]>[number];
 
 // B1 + B2 + B3 fixed: resolves the string icon key from the API into the real component.
 function toMappedSkill(s: ApiSkill): MappedSkill {
@@ -31,6 +32,26 @@ function toMappedSkill(s: ApiSkill): MappedSkill {
     console.warn(`[Skills] No icon found for key "${s.icon}", using default.`);
   }
   return { ...s, iconComponent } as MappedSkill;
+}
+
+function normalizeTerminalCommands(commands: SkillFormValues["commands"]): TerminalCommand[] {
+  if (!commands) return [];
+
+  return commands.flatMap<TerminalCommand>((cmd) => {
+    if (cmd.kind !== "output") {
+      return [cmd];
+    }
+
+    return (cmd.text ?? "")
+      .split("\n")
+      .filter((line) => line.trim().length > 0)
+      .map(
+        (line): TerminalCommand => ({
+          kind: "output",
+          text: line,
+        }),
+      );
+  });
 }
 
 export default function Skills() {
@@ -85,19 +106,21 @@ export default function Skills() {
     setIsDialogOpen(true);
   };
 
-  // B8 + B9 fixed:
-  //   B8 — `content` is destructured out and never sent to the API.
-  //   B9 — terminal commands preserve kind:'output' / 'comment' / 'blank' by tagging all
-  //         as 'command' only when actually submitted. For now the textarea only supports
-  //         plain command lines; the kind is always 'command' by design.
-  //         Extend to a structured editor if richer kinds are needed.
   const onFormSubmit = async (values: SkillFormValues) => {
     const { content, mode, commands, ...rest } = values;
 
     const payload =
       mode === "code"
-        ? { ...rest, mode, code: content?.split("\n") || [] }
-        : { ...rest, mode, commands: commands || [] };
+        ? {
+            ...rest,
+            mode,
+            code: content?.split("\n") ?? [],
+          }
+        : {
+            ...rest,
+            mode,
+            commands: normalizeTerminalCommands(commands),
+          };
 
     // B10 fixed: mutateAsync errors are caught here so the dialog stays open on failure.
     // The onError callback on the mutation handles user-facing feedback.

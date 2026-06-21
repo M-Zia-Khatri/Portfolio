@@ -176,12 +176,23 @@ export default function SkillDialog({
                             </Select.Content>
                           </Select.Root>
 
-                          {watch(`commands.${index}.kind`) !== "blank" && (
+                          {watch(`commands.${index}.kind`) === "output" ? (
+                            <TextArea
+                              className="flex-1"
+                              rows={4}
+                              placeholder="Paste terminal output..."
+                              {...register(`commands.${index}.text` as const)}
+                            />
+                          ) : watch(`commands.${index}.kind`) !== "blank" ? (
                             <TextField.Root
                               className="flex-1"
                               placeholder="Text content..."
                               {...register(`commands.${index}.text` as const)}
                             />
+                          ) : (
+                            <Text size="1" color="gray" className="flex-1 italic">
+                              Spacing line
+                            </Text>
                           )}
 
                           {watch(`commands.${index}.kind`) === "blank" && (
