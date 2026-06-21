@@ -33,6 +33,25 @@ function toMappedSkill(s: ApiSkill): MappedSkill {
   return { ...s, iconComponent } as MappedSkill;
 }
 
+function normalizeTerminalCommands(commands: SkillFormValues["commands"]) {
+  if (!commands) return [];
+
+  return commands.flatMap((cmd) => {
+    if (cmd.kind !== "output") {
+      return [cmd];
+    }
+
+    return (cmd.text ?? "")
+      .split("\n")
+      .map((line) => line.trimEnd())
+      .filter((line) => line.length > 0)
+      .map((line) => ({
+        kind: "output" as const,
+        text: line,
+      }));
+  });
+}
+
 export default function Skills() {
   const { data: apiSkills, isLoading, isError } = useSkillsData();
 
@@ -85,19 +104,21 @@ export default function Skills() {
     setIsDialogOpen(true);
   };
 
-  // B8 + B9 fixed:
-  //   B8 — `content` is destructured out and never sent to the API.
-  //   B9 — terminal commands preserve kind:'output' / 'comment' / 'blank' by tagging all
-  //         as 'command' only when actually submitted. For now the textarea only supports
-  //         plain command lines; the kind is always 'command' by design.
-  //         Extend to a structured editor if richer kinds are needed.
   const onFormSubmit = async (values: SkillFormValues) => {
     const { content, mode, commands, ...rest } = values;
 
     const payload =
       mode === "code"
-        ? { ...rest, mode, code: content?.split("\n") || [] }
-        : { ...rest, mode, commands: commands || [] };
+        ? {
+            ...rest,
+            mode,
+            code: content?.split("\n") ?? [],
+          }
+        : {
+            ...rest,
+            mode,
+            commands: normalizeTerminalCommands(commands),
+          };
 
     // B10 fixed: mutateAsync errors are caught here so the dialog stays open on failure.
     // The onError callback on the mutation handles user-facing feedback.
