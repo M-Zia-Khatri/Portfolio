@@ -23,6 +23,7 @@ import { useCreateSkill, useDeleteSkill, useSkillsData, useUpdateSkill } from ".
 
 // B3 fixed: proper type for a skill that has been mapped (iconComponent resolved)
 type MappedSkill = Skill & { id: string };
+type TerminalCommand = NonNullable<SkillFormValues["commands"]>[number];
 
 // B1 + B2 + B3 fixed: resolves the string icon key from the API into the real component.
 function toMappedSkill(s: ApiSkill): MappedSkill {
@@ -33,22 +34,23 @@ function toMappedSkill(s: ApiSkill): MappedSkill {
   return { ...s, iconComponent } as MappedSkill;
 }
 
-function normalizeTerminalCommands(commands: SkillFormValues["commands"]) {
+function normalizeTerminalCommands(commands: SkillFormValues["commands"]): TerminalCommand[] {
   if (!commands) return [];
 
-  return commands.flatMap((cmd) => {
+  return commands.flatMap<TerminalCommand>((cmd) => {
     if (cmd.kind !== "output") {
       return [cmd];
     }
 
     return (cmd.text ?? "")
       .split("\n")
-      .map((line) => line.trimEnd())
-      .filter((line) => line.length > 0)
-      .map((line) => ({
-        kind: "output" as const,
-        text: line,
-      }));
+      .filter((line) => line.trim().length > 0)
+      .map(
+        (line): TerminalCommand => ({
+          kind: "output",
+          text: line,
+        }),
+      );
   });
 }
 
