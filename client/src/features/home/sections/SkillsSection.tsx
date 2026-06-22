@@ -1,10 +1,18 @@
 import { Box, Flex, Heading, Spinner, Text } from "@radix-ui/themes";
 import type { RefObject } from "react";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ICON_MAP } from "@/features/dashboard/pages/skills/iconMap";
 import { useSkillsData } from "@/features/dashboard/pages/skills/useSkillActions";
 import CodeEmptyState from "@/features/skills/components/CodeEmptyState";
 import SkillChip from "@/features/skills/components/SkillChip";
+import {
+  type CodeTypingProgress,
+  DEFAULT_SKILLS_SECTION_PROGRESS,
+  patchSkillsSectionProgress,
+  readSkillsSectionProgress,
+  type SkillsSectionProgress,
+  type TerminalTypingProgress,
+} from "@/features/skills/skillsProgress.storage";
 import type { ApiSkill, Skill } from "@/features/skills/types";
 import CodeCard from "@/shared/components/CodeCard";
 import SecComponent from "@/shared/components/SecContainer";
@@ -79,6 +87,27 @@ function SkillsSection() {
 
   const [activeName, setActiveName] = useState<string | null>(null);
   const [openTabNames, setOpenTabNames] = useState<string[]>([]);
+  const [restoredProgress, setRestoredProgress] = useState<SkillsSectionProgress | null>(null);
+
+  useEffect(() => {
+    setRestoredProgress(readSkillsSectionProgress());
+  }, []);
+
+  useEffect(() => {
+    if (!restoredProgress || mappedSkills.length === 0) return;
+
+    const validTabNames = restoredProgress.openTabNames.filter((tabName) =>
+      mappedSkills.some((skill) => skill.name === tabName),
+    );
+    const activeSkillName =
+      restoredProgress.activeSkillName &&
+      mappedSkills.some((skill) => skill.name === restoredProgress.activeSkillName)
+        ? restoredProgress.activeSkillName
+        : validTabNames[0];
+
+    if (validTabNames.length > 0) setOpenTabNames(validTabNames);
+    if (activeSkillName) setActiveName(activeSkillName);
+  }, [mappedSkills, restoredProgress]);
 
   const openTabs = useMemo<Skill[]>(() => {
     if (mappedSkills.length === 0) return [];
@@ -96,16 +125,49 @@ function SkillsSection() {
     );
   }, [activeName, mappedSkills, openTabs]);
 
+  const persistSelection = useCallback((skill: Skill, nextOpenTabNames?: string[]) => {
+    patchSkillsSectionProgress((current) => ({
+      ...current,
+      activeMode: skill.mode,
+      activeSkillName: skill.name,
+      openTabNames: nextOpenTabNames ?? current.openTabNames,
+    }));
+  }, []);
+
   const handleChipClick = useCallback((skill: Skill) => {
     setOpenTabNames((prev) => (prev.includes(skill.name) ? prev : [...prev, skill.name]));
     setActiveName(skill.name);
+    const nextProgress = patchSkillsSectionProgress((current) => ({
+      ...current,
+      activeMode: skill.mode,
+      activeSkillName: skill.name,
+      openTabNames: current.openTabNames.includes(skill.name)
+        ? current.openTabNames
+        : [...current.openTabNames, skill.name],
+    }));
+    setRestoredProgress(nextProgress);
   }, []);
 
-  const handleTabClick = useCallback((skill: Skill) => setActiveName(skill.name), []);
+  const handleTabClick = useCallback(
+    (skill: Skill) => {
+      setActiveName(skill.name);
+      persistSelection(skill);
+      setRestoredProgress(readSkillsSectionProgress());
+    },
+    [persistSelection],
+  );
 
   const handleTabClose = useCallback((skill: Skill) => {
     setOpenTabNames((prev) => {
       const next = prev.filter((name) => name !== skill.name);
+      patchSkillsSectionProgress((current) => ({
+        ...current,
+        activeSkillName:
+          current.activeSkillName === skill.name ? (next[0] ?? null) : current.activeSkillName,
+        openTabNames: next,
+      }));
+      setRestoredProgress(readSkillsSectionProgress());
+
       if (next.length === 0) setActiveName(null);
       else {
         setActiveName((currentName) => {
@@ -117,6 +179,38 @@ function SkillsSection() {
       return next;
     });
   }, []);
+
+  const handleCodeProgressChange = useCallback((progress: CodeTypingProgress) => {
+    patchSkillsSectionProgress((current) => ({
+      ...current,
+      activeMode: "code",
+      activeSkillName: progress.skillName,
+      code: progress,
+    }));
+  }, []);
+
+  const handleTerminalProgressChange = useCallback((progress: TerminalTypingProgress) => {
+    patchSkillsSectionProgress((current) => ({
+      ...current,
+      activeMode: "terminal",
+      activeSkillName: progress.skillName,
+      terminal: progress,
+    }));
+  }, []);
+
+  useEffect(() => {
+    if (!resolvedSkill || isSectionActive) return;
+
+    patchSkillsSectionProgress((current) => ({
+      ...current,
+      activeMode: resolvedSkill.mode,
+      activeSkillName: resolvedSkill.name,
+      openTabNames,
+    }));
+  }, [isSectionActive, openTabNames, resolvedSkill]);
+
+  const codeProgress = restoredProgress?.code ?? DEFAULT_SKILLS_SECTION_PROGRESS.code;
+  const terminalProgress = restoredProgress?.terminal ?? DEFAULT_SKILLS_SECTION_PROGRESS.terminal;
 
   const chipHandlers = useMemo<Record<string, () => void>>(
     () => Object.fromEntries(mappedSkills.map((s) => [s.name, () => handleChipClick(s)])),
@@ -178,6 +272,10 @@ function SkillsSection() {
               openTabs={openTabs}
               onTabClick={handleTabClick}
               onTabClose={handleTabClose}
+              codeProgress={codeProgress}
+              terminalProgress={terminalProgress}
+              onCodeProgressChange={handleCodeProgressChange}
+              onTerminalProgressChange={handleTerminalProgressChange}
               codeContainerRef={codeRef}
             />
           )}
