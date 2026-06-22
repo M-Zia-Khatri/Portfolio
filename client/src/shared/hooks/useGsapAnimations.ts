@@ -96,16 +96,21 @@ export function useGsapTypingEffect(
   paused?: boolean,
 ) {
   const tlRef = useRef<gsap.core.Timeline | null>(null);
+  const pausedRef = useRef(paused);
+
+  useLayoutEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   useLayoutEffect(() => {
     if (!scopeRef.current) return;
 
     const ctx = gsap.context(() => {
       tlRef.current?.kill();
-      const timeline = gsap.timeline({ paused: !!paused, autoRemoveChildren: true });
+      const timeline = gsap.timeline({ paused: true, autoRemoveChildren: true });
       tlRef.current = timeline;
       setup(timeline);
-      if (!paused) timeline.play(0);
+      if (!pausedRef.current) timeline.play(0);
     }, scopeRef);
 
     return () => {
@@ -113,7 +118,7 @@ export function useGsapTypingEffect(
       tlRef.current = null;
       ctx.revert();
     };
-  }, [scopeRef, paused, ...deps, setup]);
+  }, [scopeRef, ...deps, setup]);
 
   useLayoutEffect(() => {
     if (!tlRef.current) return;
