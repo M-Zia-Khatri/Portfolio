@@ -29,6 +29,12 @@ const ContentScrollbarStyle = memo(function ContentScrollbarStyle({ color }: { c
 });
 
 const CARD_STYLE = { transformStyle: "preserve-3d" } as const;
+const CONTENT_PANEL_STYLE = {
+  height: 300,
+  maxHeight: 300,
+  overflowY: "auto",
+  overflowX: "auto",
+} as const;
 
 type CompletedCodeLine = { id: string; text: string };
 
@@ -285,9 +291,9 @@ const CodeCardBase = forwardRef<CodeCardHandle, CodeCardProps>(function CodeCard
 
           <div
             ref={contentRef}
-            className="content-scrollbar flex-1 py-3"
+            className="content-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-auto py-3"
             data-lenis-prevent
-            style={{ height: 300, overflowY: "auto", overflowX: "auto" }}
+            style={CONTENT_PANEL_STYLE}
           >
             {openTabs.length === 0 ? (
               <CodeEmptyState />
