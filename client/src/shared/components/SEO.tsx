@@ -9,9 +9,9 @@ const DEFAULT_VALUES = {
   siteName: "Mohammad Zia Khatri",
   siteDescription:
     "Full Stack Developer specializing in React, Node.js, and modern web technologies. Building scalable applications with clean code.",
-  siteUrl: "https://zia-khatri.vercel.app",
+  siteUrl: "https://ziakhatri.site",
   twitterHandle: "@ZiaKhatri",
-  defaultImage: "https://zia-khatri.vercel.app/og-image.png",
+  defaultImage: "https://ziakhatri.site/og-image.png",
 };
 
 /**

@@ -27,7 +27,7 @@ const socialMedia: {
     label: "LinkedIn",
   },
   { icon: FaGithub, href: "https://github.com/M-Zia-Khatri", label: "GitHub" },
-  { icon: FaWhatsapp, href: "https://wa.me/923121070936", label: "WhatsApp" },
+  { icon: FaWhatsapp, href: "https://wa.me/923712335337", label: "WhatsApp" },
 ];
 
 export default function Footer() {

@@ -68,7 +68,7 @@ export default function ContactPage() {
       <SEO
         title="Contact Submissions | Admin Dashboard"
         description="View and manage contact form submissions from your portfolio visitors. Admin dashboard for reviewing messages and contacting leads."
-        canonical="https://zia-khatri.vercel.app/admin/contact"
+        canonical="https://ziakhatri.site/admin/contact"
         robots="noindex, nofollow"
       />
       <Box p="6">

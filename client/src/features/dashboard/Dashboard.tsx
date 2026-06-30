@@ -5,9 +5,9 @@ export default function Dashboard() {
   return (
     <Section>
       <SEO
-        title="Admin - Dasboard"
-        description="This the dashboard only accessable by admin."
-        canonical="https://zia-khatri.vercel.app/dashboard"
+        title="Admin - Dashboard"
+        description="This is the dashboard only accessible by admin."
+        canonical="https://ziakhatri.site/dashboard"
       />
       <Container size="4">
         <Heading mb="4">Dashboard Overview</Heading>
