@@ -14,9 +14,9 @@ router
     rateLimit({
       action: "skill-get-all",
       tiers: [
-        { limit: 2, interval: 300 },
+        { limit: 5, interval: 300 },
         {
-          limit: 10,
+          limit: 25,
           interval: 1800, // 1/2 hour
         },
       ],
@@ -29,9 +29,9 @@ router
     rateLimit({
       action: "skill-get-one",
       tiers: [
-        { limit: 2, interval: 300 },
+        { limit: 5, interval: 300 },
         {
-          limit: 10,
+          limit: 25,
           interval: 1800, // 1/2 hour
         },
       ],
