@@ -83,10 +83,10 @@ model Portfolio_item {
   id             String   @id @default(uuid())
   site_name      String
   site_role      String
-  site_url       String
-  site_image_url String
+  site_url       String @db.VarChar(500)
+  site_image_url String @db.VarChar(500)
   use_tech       Json
-  description    String
+  description    String @db.Text
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
  
@@ -97,7 +97,7 @@ model ContactMessage {
   id         String   @id @default(cuid())
   full_name  String
   email      String
-  message    String
+  message    String   @db.Text
   is_read    Boolean  @default(false)
   created_at DateTime @default(now())
  

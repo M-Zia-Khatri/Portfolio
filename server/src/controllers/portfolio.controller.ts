@@ -190,7 +190,7 @@ export async function createPortfolioItem(req: Request, res: Response): Promise<
 
     const validationError = validateCreate(body);
     if (validationError) {
-      await deleteFromCloudinary(req.body.site_image_url);
+      await deleteFromCloudinary(req.body.site_image_url).catch(() => undefined);
       send(res, {
         success: false,
         status: 400,
@@ -228,7 +228,7 @@ export async function createPortfolioItem(req: Request, res: Response): Promise<
       data: newItem,
     });
   } catch (err) {
-    await deleteFromCloudinary(req.body.site_image_url);
+    await deleteFromCloudinary(req.body.site_image_url).catch(() => undefined);
     catchError(res, err);
   }
 }
