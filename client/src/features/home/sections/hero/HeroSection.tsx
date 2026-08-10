@@ -1,7 +1,10 @@
-import { Suspense, useEffect, useState } from "react";
-import BgScene from "@/features/home/sections/hero/BgScene.tsx";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { TextLoop } from "@/shared/components/motion-primitives/text-loop.tsx";
 import { cn } from "@/shared/utils/cn.ts";
+
+const BgScene = lazy(
+  () => import("@/features/home/sections/hero/BgScene.tsx"),
+);
 
 const headingBaseStyling = cn(
   "font-black uppercase text-white w-full drop-shadow-[0_0_2.5px_color-mix(in_srgb,var(--blue-10)_80%,transparent),0_0_5px_color-mix(in_srgb,var(--blue-10)_90%,transparent)]",
@@ -13,8 +16,22 @@ export default function HeroSection() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
     const media = window.matchMedia("(prefers-reduced-motion: no-preference)");
-    setShowBgScene(media.matches);
+    if (!media.matches) return;
+
+    const loadBgScene = () => setShowBgScene(true);
+
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(loadBgScene, {
+        timeout: 2500,
+      });
+
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(loadBgScene, 1500);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   return (
