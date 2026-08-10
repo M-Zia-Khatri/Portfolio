@@ -1,16 +1,18 @@
 import type { ComponentType } from "react";
 import { lazy } from "react";
-import AboutSkeleton from "./loaders/AboutSkeleton";
-import ContactSkeleton from "./loaders/ContactSkeleton";
-import GameSkeleton from "./loaders/GameSkeleton";
-import HeroSkeleton from "./loaders/HeroSkeleton";
-import PortfolioSkeleton from "./loaders/PortfolioSkeleton";
-import SkillsSkeleton from "./loaders/SkillsSkeleton";
+import { HeroSection } from "./sections";
+import {
+  AboutSkeleton,
+  ContactSkeleton,
+  GameSkeleton,
+  HeroSkeleton,
+  PortfolioSkeleton,
+  SkillsSkeleton,
+} from "./loaders";
 
 const AboutSection = lazy(() => import("./sections/AboutSection"));
 const ContactSection = lazy(() => import("./sections/ContactSection"));
 const GameSection = lazy(() => import("./sections/GameSection"));
-const HeroSection = lazy(() => import("./sections/hero/HeroSection"));
 const PortfolioSection = lazy(() => import("./sections/PortfolioSection"));
 const SkillsSection = lazy(() => import("./sections/SkillsSection"));
 

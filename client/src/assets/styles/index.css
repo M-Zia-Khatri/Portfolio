@@ -1,19 +1,31 @@
 /* 1. All imports first */
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900");
-
 @import "tailwindcss/theme";
 @import "@radix-ui/themes/styles.css" layer(radix-themes);
 @import "tailwindcss/utilities";
 
-/* 2. Then external font imports */
+/* 2. Font faces */
+@font-face {
+  font-family: "Inter";
+  src: url("../fonts/Inter-VariableFont_opsz,wght.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
-/* 3. Font faces */
+@font-face {
+  font-family: "Inter";
+  src: url("../fonts/Inter-Italic-VariableFont_opsz,wght.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 @font-face {
   font-family: "Special Gothic Expanded One";
   src: url("../fonts/SpecialGothicExpandedOne-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
-  font-display: swap; /* Recommended for better performance */
+  font-display: swap;
 }
 
 /* -------------------------------------------------------
@@ -218,6 +230,7 @@ html.lenis {
     opacity: 0;
     transform: translate3d(0, 12px, 0);
   }
+
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
@@ -260,6 +273,7 @@ html.lenis {
 .code-line:hover .line-num {
   color: color-mix(in srgb, var(--line-color), white 20%);
 }
+
 .code-line.is-active .line-num {
   color: var(--line-color);
   opacity: 1;
@@ -281,6 +295,7 @@ html.lenis {
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0;
   }

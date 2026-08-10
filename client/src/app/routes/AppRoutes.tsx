@@ -1,15 +1,16 @@
 import { type ComponentType, lazy, Suspense } from "react";
 import { Navigate, type RouteObject } from "react-router";
 import { AppNavigation } from "@/shared/constants/navigation.constants";
+import Home from "@/features/home/Home";
+import AppLayout from "@/shared/components/layout/AppLayout";
 
+// Admin & Non-critical routes (Split into separate chunks)
 const Auth = lazy(() => import("@/features/auth/Auth"));
 const ContactPage = lazy(() => import("@/features/contact/admin/ContactPage"));
 const Dashboard = lazy(() => import("@/features/dashboard/Dashboard"));
 const DashboardLayout = lazy(() => import("@/features/dashboard/layout/DashboardLayout"));
 const Portfolio = lazy(() => import("@/features/dashboard/pages/portfolio/Portfolio"));
 const Skills = lazy(() => import("@/features/dashboard/pages/skills/Skills"));
-const Home = lazy(() => import("@/features/home/Home"));
-const AppLayout = lazy(() => import("@/shared/components/layout/AppLayout"));
 
 const RouteLoader = () => (
   <div id="initial-loader">
@@ -38,7 +39,7 @@ const AppRoutes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: withSuspense(Home),
+        element: <Home />,
       },
     ],
   },
@@ -46,7 +47,10 @@ const AppRoutes: RouteObject[] = [
     path: AppNavigation.AUTH,
     element: withSuspense(Auth),
   },
-  { path: "/login", element: <Navigate to={AppNavigation.AUTH} /> },
+  {
+    path: "/login",
+    element: <Navigate to={AppNavigation.AUTH} />,
+  },
   {
     path: "/admin",
     element: <Navigate to={AppNavigation.DASHBOARD} />,

@@ -55,8 +55,8 @@ export default function Home() {
     <>
       <SEO
         title="Muhammad Zia khatri | Full Stack Developer"
-        description="Mohammad Zia Khatri - Full Stack Developer specializing in React, Node.js, TypeScript, and modern web technologies. Building scalable, performant applications with clean code. Hire me for your next project."
-        canonical="https://ziakhatri.site/home"
+        description="Muhammad Zia Khatri - Full Stack Developer specializing in React, Node.js, TypeScript, and modern web technologies. Building scalable, performant applications with clean code. Hire me for your next project."
+        canonical="https://ziakhatri.site/"
       />
       <div className="absolute top-0 left-0 -z-100 h-full w-full bg-[url(@/assets/images/bg-noise.png)] opacity-2.5" />
       <div className="absolute top-0 left-0 -z-90 h-full w-full bg-(--blue-3)/15" />

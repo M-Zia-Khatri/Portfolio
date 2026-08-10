@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react({
         babel: {
-          plugins: ["babel-plugin-react-compiler"], // ✅ correct usage
+          plugins: ["babel-plugin-react-compiler"],
         },
       }),
       tailwindcss(),
@@ -36,7 +36,85 @@ export default defineConfig(({ mode }) => {
       minify: "esbuild",
       sourcemap: !isProd,
       cssCodeSplit: true,
-      chunkSizeWarningLimit: 700,
+
+      // Keep warnings useful while we analyze the actual bundle.
+      chunkSizeWarningLimit: 500,
+
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes("node_modules")) {
+              return;
+            }
+
+            // React runtime
+            if (
+              id.includes("/react/") ||
+              id.includes("/react-dom/") ||
+              id.includes("/scheduler/")
+            ) {
+              return "react-vendor";
+            }
+
+            // Routing
+            if (id.includes("/react-router")) {
+              return "router";
+            }
+
+            // Animation libraries.
+            // Keep them separate so we can see exactly how much
+            // animation code is being shipped.
+            if (
+              id.includes("/gsap/") ||
+              id.includes("/framer-motion/") ||
+              id.includes("/motion/") ||
+              id.includes("/lenis/")
+            ) {
+              return "animation";
+            }
+
+            // Radix/UI libraries
+            if (
+              id.includes("/@radix-ui/") ||
+              id.includes("/radix-ui/") ||
+              id.includes("/@radix-ui")
+            ) {
+              return "radix";
+            }
+
+            // Data fetching / HTTP
+            if (id.includes("/@tanstack/react-query/") || id.includes("/axios/")) {
+              return "data";
+            }
+
+            // Forms / validation
+            if (
+              id.includes("/react-hook-form/") ||
+              id.includes("/@hookform/") ||
+              id.includes("/zod/")
+            ) {
+              return "forms";
+            }
+
+            // State management
+            if (id.includes("/zustand/")) {
+              return "state";
+            }
+
+            // Icon libraries
+            if (
+              id.includes("/lucide-react/") ||
+              id.includes("/react-icons/") ||
+              id.includes("/@radix-ui/react-icons/")
+            ) {
+              return "icons";
+            }
+
+            // Remaining third-party dependencies.
+            return "vendor";
+          },
+        },
+      },
     },
   };
 });

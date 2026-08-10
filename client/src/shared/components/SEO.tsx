@@ -5,13 +5,15 @@ import { Helmet } from "react-helmet-async";
  * Default values for SEO meta tags
  * These are used as fallbacks when props are not provided
  */
+const SITE_URL = (import.meta.env.VITE_SITE_URL ?? "https://ziakhatri.site").replace(/\/+$/, "");
+
 const DEFAULT_VALUES = {
-  siteName: "Mohammad Zia Khatri",
+  siteName: "Muhammad Zia Khatri",
   siteDescription:
     "Full Stack Developer specializing in React, Node.js, and modern web technologies. Building scalable applications with clean code.",
-  siteUrl: "https://ziakhatri.site",
+  siteUrl: SITE_URL,
   twitterHandle: "@ZiaKhatri",
-  defaultImage: "https://ziakhatri.site/og-image.png",
+  defaultImage: `${SITE_URL}/og-image.png`,
 };
 
 /**

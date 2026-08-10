@@ -40,4 +40,8 @@
 .env
 .env.*
 !.env.example
+
+# Auto-generated at build time, see client/scripts/generate-seo-files.mjs
+client/public/robots.txt
+client/public/sitemap.xml
 !**/.env.example

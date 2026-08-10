@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "generate:seo": "node scripts/generate-seo-files.mjs",
+    "build": "pnpm generate:seo && tsc -b && vite build",
     "lint": "biome check .",
     "format": "biome format . --write",
     "preview": "vite preview"
