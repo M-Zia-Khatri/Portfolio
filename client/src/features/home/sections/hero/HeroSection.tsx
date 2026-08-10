@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useState } from "react";
+import BgScene from "@/features/home/sections/hero/BgScene.tsx";
 import { TextLoop } from "@/shared/components/motion-primitives/text-loop.tsx";
 import { cn } from "@/shared/utils/cn.ts";
-import BgScene from "@/features/home/sections/hero/BgScene.tsx";
 
 const headingBaseStyling = cn(
   "font-black uppercase text-white w-full drop-shadow-[0_0_2.5px_color-mix(in_srgb,var(--blue-10)_80%,transparent),0_0_5px_color-mix(in_srgb,var(--blue-10)_90%,transparent)]",

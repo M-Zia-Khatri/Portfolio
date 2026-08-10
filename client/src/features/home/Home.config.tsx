@@ -1,6 +1,5 @@
 import type { ComponentType } from "react";
 import { lazy } from "react";
-import { HeroSection } from "./sections";
 import {
   AboutSkeleton,
   ContactSkeleton,
@@ -9,6 +8,7 @@ import {
   PortfolioSkeleton,
   SkillsSkeleton,
 } from "./loaders";
+import { HeroSection } from "./sections";
 
 const AboutSection = lazy(() => import("./sections/AboutSection"));
 const ContactSection = lazy(() => import("./sections/ContactSection"));
