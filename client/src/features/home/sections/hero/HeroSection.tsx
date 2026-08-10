@@ -2,6 +2,15 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { TextLoop } from "@/shared/components/motion-primitives/text-loop.tsx";
 import { cn } from "@/shared/utils/cn.ts";
 
+type IdleWindow = Window &
+  typeof globalThis & {
+    requestIdleCallback?: (
+      callback: () => void,
+      options?: { timeout: number },
+    ) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  };
+
 const BgScene = lazy(
   () => import("@/features/home/sections/hero/BgScene.tsx"),
 );
@@ -20,18 +29,19 @@ export default function HeroSection() {
     const media = window.matchMedia("(prefers-reduced-motion: no-preference)");
     if (!media.matches) return;
 
+    const idleWindow = window as IdleWindow;
     const loadBgScene = () => setShowBgScene(true);
 
-    if ("requestIdleCallback" in window) {
-      const idleId = window.requestIdleCallback(loadBgScene, {
+    if (idleWindow.requestIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(loadBgScene, {
         timeout: 2500,
       });
 
-      return () => window.cancelIdleCallback(idleId);
+      return () => idleWindow.cancelIdleCallback?.(idleId);
     }
 
-    const timeoutId = window.setTimeout(loadBgScene, 1500);
-    return () => window.clearTimeout(timeoutId);
+    const timeoutId = setTimeout(loadBgScene, 1500);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
