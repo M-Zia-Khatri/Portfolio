@@ -122,7 +122,6 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-
     .dark,
     .dark-theme {
       --blue-1: oklch(11.5% 0.0215 228.6);
@@ -161,7 +160,6 @@
 ------------------------------------------------------- */
 
 @layer base {
-
   *,
   ::after,
   ::before,
@@ -293,7 +291,6 @@ html.lenis {
 }
 
 @keyframes code-blink {
-
   0%,
   100% {
     opacity: 1;
@@ -336,9 +333,7 @@ html.lenis {
   --magnetic-y: 0px;
   --glow-opacity: 0.4;
 
-  transform: translate3d(var(--magnetic-x),
-      var(--magnetic-y),
-      0);
+  transform: translate3d(var(--magnetic-x), var(--magnetic-y), 0);
 
   transition:
     transform 180ms cubic-bezier(0.22, 1, 0.36, 1),

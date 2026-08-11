@@ -1,9 +1,9 @@
 import { type ComponentType, lazy, Suspense } from "react";
 import { Navigate, type RouteObject } from "react-router";
+import { AuthProvider } from "@/features/auth/context/AuthContext";
 import Home from "@/features/home/Home";
 import AppLayout from "@/shared/components/layout/AppLayout";
 import { AppNavigation } from "@/shared/constants/navigation.constants";
-import { AuthProvider } from "@/features/auth/context/AuthContext";
 
 // Admin & Non-critical routes (Split into separate chunks)
 const Auth = lazy(() => import("@/features/auth/Auth"));

@@ -23,10 +23,7 @@ export const MagneticShinyButton = () => {
       const deltaX = (e.clientX - centerX) * 0.2;
       const deltaY = (e.clientY - centerY) * 0.3;
 
-      const glow = Math.max(
-        0.2,
-        Math.min(0.4, 0.4 - Math.abs(deltaY) * 0.01),
-      );
+      const glow = Math.max(0.2, Math.min(0.4, 0.4 - Math.abs(deltaY) * 0.01));
 
       element.style.setProperty("--magnetic-x", `${deltaX}px`);
       element.style.setProperty("--magnetic-y", `${deltaY}px`);
@@ -96,11 +93,7 @@ export const MagneticShinyButton = () => {
 
         {/* Text */}
         <span className="relative z-30 flex h-full w-full items-center justify-center text-center">
-          <Text
-            size={TEXT.lg.size}
-            weight="bold"
-            className="leading-none text-white"
-          >
+          <Text size={TEXT.lg.size} weight="bold" className="leading-none text-white">
             Let&apos;s Talk
           </Text>
         </span>

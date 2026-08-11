@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Outlet, useLocation } from "react-router";
+import { AuthProvider } from "@/features/auth/context/AuthContext";
 import ProtectedRoute from "@/shared/components/ProtectedRoute";
 import { AppNavigation } from "@/shared/constants/navigation.constants";
 import Topbar from "./topbar/Topbar";
-import { AuthProvider } from "@/features/auth/context/AuthContext";
 
 export default function DashboardLayout() {
   const location = useLocation();
