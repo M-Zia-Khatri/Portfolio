@@ -13,7 +13,7 @@ ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_CLOUDINARY_CLOUD_NAME=$VITE_CLOUDINARY_CLOUD_NAME
 ENV VITE_CLOUDINARY_UPLOAD_PRESET=$VITE_CLOUDINARY_UPLOAD_PRESET
 ENV VITE_SITE_URL=$VITE_SITE_URL
-RUN pnpm build
+RUN node scripts/generate-seo-files.mjs && ./node_modules/.bin/tsc -b && ./node_modules/.bin/vite build
 
 # Production stage
 FROM nginx:alpine
