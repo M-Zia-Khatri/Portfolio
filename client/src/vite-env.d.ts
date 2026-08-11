@@ -1,6 +1,2 @@
 /// <reference types="vite/client" />
-
-declare module "*?*" {
-  const src: string;
-  export default src;
-}
+/// <reference types="vite-imagetools/client" />

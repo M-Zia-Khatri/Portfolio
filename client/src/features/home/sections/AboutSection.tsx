@@ -1,8 +1,9 @@
 import { AspectRatio, Box, Grid, Heading, Strong, Text } from "@radix-ui/themes";
 import { motion } from "motion/react";
-import ziaImgFallback from "@/assets/images/zia.png";
-import ziaImg from "@/assets/images/zia.png?w=480;768;1200&format=avif&as=srcset";
-import ziaImgWebp from "@/assets/images/zia.png?w=480;768;1200&format=webp&as=srcset";
+import ziaAvif from "@/assets/images/zia.png?w=480;768;1200&format=avif&as=srcset";
+import ziaWebp from "@/assets/images/zia.png?w=480;768;1200&format=webp&as=srcset";
+import ziaFallback from "@/assets/images/zia.png";
+import OptimizedImage from "@/shared/components/OptimizedImage";
 import SecComponent from "@/shared/components/SecContainer";
 import { HEADING, TEXT } from "@/shared/constants/style.constants";
 
@@ -23,29 +24,24 @@ export default function AboutSection() {
           className="order-2 px-4 md:px-0"
         >
           <AspectRatio ratio={4 / 5}>
-            <picture>
-              <source type="image/avif" srcSet={ziaImg} sizes="(max-width: 768px) 100vw, 33vw" />
-
-              <source
-                type="image/webp"
-                srcSet={ziaImgWebp}
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-
-              <motion.img
-                initial={{ scale: 0.95 }}
-                whileInView={{ scale: 1 }}
-                transition={{ duration: 0.6 }}
-                className="h-full w-full object-cover drop-shadow-[0_0_15px_color-mix(in_srgb,var(--blue-3),transparent_10%)]"
-                src={ziaImgFallback}
+            <motion.div
+              initial={{ scale: 0.95 }}
+              whileInView={{ scale: 1 }}
+              transition={{ duration: 0.6 }}
+              className="h-full w-full"
+            >
+              <OptimizedImage
+                avifSrcSet={ziaAvif}
+                webpSrcSet={ziaWebp}
+                fallbackSrc={ziaFallback}
                 width={1200}
                 height={1500}
-                loading="lazy"
-                decoding="async"
-                title="Portrait"
+                sizes="(max-width: 768px) 100vw, 33vw"
                 alt="Portrait of Zia"
+                title="Portrait"
+                className="h-full w-full object-cover drop-shadow-[0_0_15px_color-mix(in_srgb,var(--blue-3),transparent_10%)]"
               />
-            </picture>
+            </motion.div>
           </AspectRatio>
         </MotionBox>
 

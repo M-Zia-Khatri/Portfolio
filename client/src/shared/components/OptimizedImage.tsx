@@ -1,20 +1,20 @@
 import type { ImgHTMLAttributes } from "react";
 
-interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "srcSet"> {
+interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "srcSet"> {
   avifSrcSet: string;
   webpSrcSet: string;
   fallbackSrc: string;
-  sizes?: string;
+  sizes: string;
   width: number;
   height: number;
   priority?: boolean;
 }
 
-export function OptimizedImage({
+export default function OptimizedImage({
   avifSrcSet,
   webpSrcSet,
   fallbackSrc,
-  sizes = "100vw",
+  sizes,
   width,
   height,
   priority = false,
