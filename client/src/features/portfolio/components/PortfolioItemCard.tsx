@@ -7,6 +7,7 @@ import { BorderTrail } from "@/shared/components/motion-primitives/border-trail"
 import { HEADING, TEXT } from "@/shared/constants/style.constants";
 import { cn } from "@/shared/utils/cn";
 import type { PortfolioItem } from "../types";
+import { optimizedCloudinaryUrl } from "@/shared/utils/cloudinaryUrl";
 
 interface PortfolioItemCardProps {
   item: PortfolioItem;
@@ -179,7 +180,7 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
           >
             <motion.img
               className="absolute -top-[5%] left-[0%] h-[110%] w-[110%] object-cover"
-              src={item.siteImageUrl}
+              src={optimizedCloudinaryUrl({ url: item.siteImageUrl, width: 800 })}
               alt={item.siteName}
               style={{ x: imgX, y: imgY, willChange: "transform" }}
             />

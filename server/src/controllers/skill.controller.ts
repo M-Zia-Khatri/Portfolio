@@ -75,7 +75,7 @@ export async function getAll(req: Request, res: Response): Promise<void> {
     });
 
     res.setHeader("ETag", result.etag);
-    res.setHeader("Cache-Control", "private, must-revalidate");
+    res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
 
     if (result.status === 304) {
       res.status(304).end();

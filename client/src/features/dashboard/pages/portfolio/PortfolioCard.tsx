@@ -3,6 +3,7 @@ import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { motion, type Variants } from "motion/react";
 import { cn } from "@/shared/utils/cn";
 import type { PortfolioItem } from "./portfolio.types";
+import { optimizedCloudinaryUrl } from "@/shared/utils/cloudinaryUrl";
 
 // ─── Animation Variants ───────────────────────────────────────────────────────
 
@@ -40,7 +41,7 @@ export function PortfolioCard({ item, onEdit, onDelete }: PortfolioCardProps) {
         {/* Image */}
         <div className={cn("relative w-full overflow-hidden", "h-44 rounded-t-(--radius-3)")}>
           <img
-            src={item.site_image_url}
+            src={optimizedCloudinaryUrl({ url: item.site_image_url, width: 600 })}
             alt={item.site_name}
             className={cn(
               "w-full h-full object-cover",

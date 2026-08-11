@@ -119,7 +119,7 @@ export async function getAllPortfolioItems(req: Request, res: Response): Promise
     });
 
     res.setHeader("ETag", result.etag);
-    res.setHeader("Cache-Control", "private, must-revalidate");
+    res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
 
     // FIX: HTTP 304 must have no body — use res.status(304).end()
     if (result.status === 304) {

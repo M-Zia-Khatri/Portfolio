@@ -46,6 +46,9 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             "react-vendor": ["react", "react-dom"],
+            "gsap-vendor": ["gsap", "gsap/ScrollTrigger"],
+            "motion-vendor": ["motion/react"],
+            "radix-vendor": ["@radix-ui/themes"],
           },
         },
       },
