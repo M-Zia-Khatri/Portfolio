@@ -1,8 +1,8 @@
 import { AspectRatio, Box, Grid, Heading, Strong, Text } from "@radix-ui/themes";
 import { motion } from "motion/react";
+import ziaFallback from "@/assets/images/zia.png";
 import ziaAvif from "@/assets/images/zia.png?w=480;768;1200&format=avif&as=srcset";
 import ziaWebp from "@/assets/images/zia.png?w=480;768;1200&format=webp&as=srcset";
-import ziaFallback from "@/assets/images/zia.png";
 import OptimizedImage from "@/shared/components/OptimizedImage";
 import SecComponent from "@/shared/components/SecContainer";
 import { HEADING, TEXT } from "@/shared/constants/style.constants";
