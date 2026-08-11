@@ -1,6 +1,8 @@
 import { AspectRatio, Box, Grid, Heading, Strong, Text } from "@radix-ui/themes";
 import { motion } from "motion/react";
-import ziaImg from "@/assets/images/zia.png";
+import ziaImg from "@/assets/images/zia.png?w=480;768;1200&format=avif&as=srcset";
+import ziaImgWebp from "@/assets/images/zia.png?w=480;768;1200&format=webp&as=srcset";
+import ziaImgFallback from "@/assets/images/zia.png";
 import SecComponent from "@/shared/components/SecContainer";
 import { HEADING, TEXT } from "@/shared/constants/style.constants";
 
@@ -11,12 +13,7 @@ const MotionText = motion(Text);
 export default function AboutSection() {
   return (
     <SecComponent>
-      <Grid
-        columns={{ sm: "3" }}
-        rows={{ sm: "1" }}
-        // flow={{ initial: "column", lg: "row" }}
-        gap={{ initial: "6", sm: "4", lg: "6" }}
-      >
+      <Grid columns={{ sm: "3" }} rows={{ sm: "1" }} gap={{ initial: "6", sm: "4", lg: "6" }}>
         {/* Image */}
         <MotionBox
           initial={{ opacity: 0, y: 20 }}
@@ -26,15 +23,29 @@ export default function AboutSection() {
           className="order-2 px-4 md:px-0"
         >
           <AspectRatio ratio={4 / 5}>
-            <motion.img
-              initial={{ scale: 0.95 }}
-              whileInView={{ scale: 1 }}
-              transition={{ duration: 0.6 }}
-              className="h-full  w-full drop-shadow-[0_0_15px_color-mix(in_srgb,var(--blue-3),transparent_10%)]"
-              src={ziaImg}
-              title="Portrait"
-              alt="Portrait of Zia"
-            />
+            <picture>
+              <source type="image/avif" srcSet={ziaImg} sizes="(max-width: 768px) 100vw, 33vw" />
+
+              <source
+                type="image/webp"
+                srcSet={ziaImgWebp}
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+
+              <motion.img
+                initial={{ scale: 0.95 }}
+                whileInView={{ scale: 1 }}
+                transition={{ duration: 0.6 }}
+                className="h-full w-full object-cover drop-shadow-[0_0_15px_color-mix(in_srgb,var(--blue-3),transparent_10%)]"
+                src={ziaImgFallback}
+                width={1200}
+                height={1500}
+                loading="lazy"
+                decoding="async"
+                title="Portrait"
+                alt="Portrait of Zia"
+              />
+            </picture>
           </AspectRatio>
         </MotionBox>
 
@@ -69,8 +80,7 @@ export default function AboutSection() {
             <Strong className="text-(--blue-a12)">PHP</Strong>, and&nbsp;
             <Strong className="text-(--blue-a12)">Laravel</Strong> to create modern digital
             products. My focus is on&nbsp;
-            <Strong className="text-(--blue-a12)">clean architecture</Strong>
-            ,&nbsp;
+            <Strong className="text-(--blue-a12)">clean architecture</Strong>,&nbsp;
             <Strong className="text-(--blue-a12)">performance optimization</Strong>, and&nbsp;
             <Strong className="text-(--blue-a12)">maintainable code</Strong>. I enjoy&nbsp;
             <Strong className="text-(--blue-a12)">solving complex problems</Strong>
