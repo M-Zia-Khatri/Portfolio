@@ -6,7 +6,7 @@
 /* 2. Font faces */
 @font-face {
   font-family: "Inter";
-  src: url("../fonts/Inter-VariableFont_opsz,wght.ttf") format("truetype-variations");
+  src: url("../fonts/inter-latin-ext-standard-normal.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -14,7 +14,7 @@
 
 @font-face {
   font-family: "Inter";
-  src: url("../fonts/Inter-Italic-VariableFont_opsz,wght.ttf") format("truetype-variations");
+  src: url("../fonts/inter-latin-ext-standard-italic.woff2") format("woff2");
   font-weight: 100 900;
   font-style: italic;
   font-display: swap;
@@ -122,6 +122,7 @@
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
+
     .dark,
     .dark-theme {
       --blue-1: oklch(11.5% 0.0215 228.6);
@@ -160,6 +161,7 @@
 ------------------------------------------------------- */
 
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -291,6 +293,7 @@ html.lenis {
 }
 
 @keyframes code-blink {
+
   0%,
   100% {
     opacity: 1;
@@ -315,4 +318,47 @@ html.lenis {
   .code-cursor {
     animation: none;
   }
+}
+
+@keyframes magnetic-shiny-button-shine {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+
+  35%,
+  100% {
+    transform: translateX(500%) skewX(-18deg);
+  }
+}
+
+.magnetic-shiny-button {
+  --magnetic-x: 0px;
+  --magnetic-y: 0px;
+  --glow-opacity: 0.4;
+
+  transform: translate3d(var(--magnetic-x),
+      var(--magnetic-y),
+      0);
+
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    scale 160ms ease;
+
+  will-change: transform;
+}
+
+.magnetic-shiny-button:hover {
+  scale: 1.02;
+}
+
+.magnetic-shiny-button:active {
+  scale: 0.96;
+}
+
+.magnetic-shiny-button__glow {
+  opacity: var(--glow-opacity);
+}
+
+.magnetic-shiny-button__shine {
+  animation: magnetic-shiny-button-shine 3.4s ease-in-out infinite;
 }

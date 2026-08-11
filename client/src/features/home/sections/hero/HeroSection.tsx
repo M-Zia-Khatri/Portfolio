@@ -4,16 +4,11 @@ import { cn } from "@/shared/utils/cn.ts";
 
 type IdleWindow = Window &
   typeof globalThis & {
-    requestIdleCallback?: (
-      callback: () => void,
-      options?: { timeout: number },
-    ) => number;
+    requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
     cancelIdleCallback?: (handle: number) => void;
   };
 
-const BgScene = lazy(
-  () => import("@/features/home/sections/hero/BgScene.tsx"),
-);
+const BgScene = lazy(() => import("@/features/home/sections/hero/BgScene.tsx"));
 
 const headingBaseStyling = cn(
   "font-black uppercase text-white w-full drop-shadow-[0_0_2.5px_color-mix(in_srgb,var(--blue-10)_80%,transparent),0_0_5px_color-mix(in_srgb,var(--blue-10)_90%,transparent)]",
@@ -34,7 +29,7 @@ export default function HeroSection() {
 
     if (idleWindow.requestIdleCallback) {
       const idleId = idleWindow.requestIdleCallback(loadBgScene, {
-        timeout: 2500,
+        timeout: 5000,
       });
 
       return () => idleWindow.cancelIdleCallback?.(idleId);
@@ -58,7 +53,7 @@ export default function HeroSection() {
         <h1 className={headingBaseStyling}>MODERN WEB</h1>
 
         <TextLoop
-          className="overflow-y-clip"
+          className="overflow-y-clip animate-[fadeUp_ease_forwards]"
           transition={{
             type: "spring",
             stiffness: 900,

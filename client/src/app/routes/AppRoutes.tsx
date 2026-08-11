@@ -3,6 +3,7 @@ import { Navigate, type RouteObject } from "react-router";
 import Home from "@/features/home/Home";
 import AppLayout from "@/shared/components/layout/AppLayout";
 import { AppNavigation } from "@/shared/constants/navigation.constants";
+import { AuthProvider } from "@/features/auth/context/AuthContext";
 
 // Admin & Non-critical routes (Split into separate chunks)
 const Auth = lazy(() => import("@/features/auth/Auth"));
@@ -45,7 +46,7 @@ const AppRoutes: RouteObject[] = [
   },
   {
     path: AppNavigation.AUTH,
-    element: withSuspense(Auth),
+    element: <AuthProvider>{withSuspense(Auth)}</AuthProvider>,
   },
   {
     path: "/login",

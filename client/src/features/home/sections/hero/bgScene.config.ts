@@ -117,10 +117,10 @@ export const BG_SCENE_CONFIG: BgSceneConfig = {
   responsive: {
     mobile: {
       layout: {
-        baseXStep: 10,
-        horizontalOverscanLines: 4,
-        lineSpacingDivisor: 10,
-        segments: 88,
+        baseXStep: 14,
+        horizontalOverscanLines: 2,
+        lineSpacingDivisor: 14,
+        segments: 60,
       },
       wave: {
         driftAmplitude: 12,
@@ -142,10 +142,10 @@ export const BG_SCENE_CONFIG: BgSceneConfig = {
     },
     tablet: {
       layout: {
-        baseXStep: 10.25,
-        horizontalOverscanLines: 4,
-        lineSpacingDivisor: 10,
-        segments: 120,
+        baseXStep: 13,
+        horizontalOverscanLines: 3,
+        lineSpacingDivisor: 13,
+        segments: 80,
       },
       wave: {
         driftAmplitude: 15,
@@ -167,10 +167,10 @@ export const BG_SCENE_CONFIG: BgSceneConfig = {
     },
     desktop: {
       layout: {
-        baseXStep: 10.5,
-        horizontalOverscanLines: 4,
-        lineSpacingDivisor: 10,
-        segments: 160,
+        baseXStep: 13,
+        horizontalOverscanLines: 3,
+        lineSpacingDivisor: 13,
+        segments: 96,
       },
       wave: {
         driftAmplitude: 18,

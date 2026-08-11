@@ -6,103 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Muhammad Zia Khatri | Full Stack developer</title>
     <style>
-      #root {
-        opacity: 1;
-        visibility: visible;
-        transition: opacity 0.3s ease;
-      }
-
-      #initial-loader {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #050505;
-        z-index: 9999;
-        transition: opacity 0.3s ease;
-      }
-
-      .loader {
-        display: flex;
-        align-items: flex-end;
-        gap: 10px;
-        height: 44px;
-      }
-
-      .bar {
-        --bar-height: 26.4px;
-        --delay: 0s;
-        width: 8px;
-        height: var(--bar-height);
-        border-radius: 999px;
-        background: #86a8b7;
-        transform-origin: bottom center;
-        animation: barWave 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        animation-delay: var(--delay);
-        will-change: transform, background-color;
-      }
-
-      .bar:nth-child(1) {
-        --delay: 0s;
-      }
-
-      .bar:nth-child(2) {
-        --delay: 0.1s;
-      }
-
-      .bar:nth-child(3) {
-        --bar-height: 31.2px;
-        --delay: 0.2s;
-      }
-
-      .bar:nth-child(4) {
-        --bar-height: 36px;
-        --delay: 0.3s;
-      }
-
-      .bar:nth-child(5) {
-        --bar-height: 31.2px;
-        --delay: 0.4s;
-      }
-
-      .bar:nth-child(6) {
-        --delay: 0.5s;
-      }
-
-      .bar:nth-child(7) {
-        --delay: 0.6s;
-      }
-
-      @keyframes barWave {
-        0%,
-        100% {
-          transform: scaleY(0.5);
-          background: #c6efff;
-        }
-
-        50% {
-          transform: scaleY(1.08);
-          background: #7cd6fee5;
-        }
-      }
+    body{
+      background-color: hsl(0, 0%, 0.5%);
+    }
     </style>
   </head>
   <body>
-    <div id="initial-loader">
-      <div class="loader" aria-hidden="true">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-      </div>
-    </div>
-
-    <div id="root"></div>
-
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 </html>
