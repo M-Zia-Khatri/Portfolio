@@ -1,6 +1,6 @@
-export * from './analytics.types';
-export * from './analytics.events';
-export * from './analytics.config';
-export * from './analytics.session';
-export * from './analytics.queue';
-export { analytics } from './analytics';
+export { analytics } from "./analytics";
+export * from "./analytics.config";
+export * from "./analytics.events";
+export * from "./analytics.queue";
+export * from "./analytics.session";
+export * from "./analytics.types";

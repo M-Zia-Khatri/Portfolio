@@ -1,6 +1,10 @@
-import type { AnalyticsEventType, AnalyticsEventMetadata, BaseAnalyticsEvent } from './analytics.types';
-import { AnalyticsQueue } from './analytics.queue';
-import { hitSession, getSession } from './analytics.session';
+import { AnalyticsQueue } from "./analytics.queue";
+import { getSession, hitSession } from "./analytics.session";
+import type {
+  AnalyticsEventMetadata,
+  AnalyticsEventType,
+  BaseAnalyticsEvent,
+} from "./analytics.types";
 
 class Analytics {
   private queue: AnalyticsQueue | null = null;
@@ -9,7 +13,7 @@ class Analytics {
   public start() {
     if (this.isStarted) return;
     this.isStarted = true;
-    
+
     // Ensure session is initialized
     getSession();
 
@@ -25,7 +29,7 @@ class Analytics {
     hitSession(); // update session timestamp
 
     // Ensure path is relatively robust even if called during unmounting
-    const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+    const path = typeof window !== "undefined" ? window.location.pathname : "/";
 
     const queueEvent: BaseAnalyticsEvent<T> = {
       type: event,
@@ -38,9 +42,11 @@ class Analytics {
   }
 
   public page(path: string, title?: string) {
-    this.track('page_view', { title: title || (typeof document !== 'undefined' ? document.title : '') });
+    this.track("page_view", {
+      title: title || (typeof document !== "undefined" ? document.title : ""),
+    });
   }
-  
+
   public flush() {
     if (this.queue) {
       this.queue.flush();

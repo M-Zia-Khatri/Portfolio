@@ -1,10 +1,10 @@
-import type { AnalyticsSession } from './analytics.types';
-import { analyticsConfig } from './analytics.config';
+import { analyticsConfig } from "./analytics.config";
+import type { AnalyticsSession } from "./analytics.types";
 
-const STORAGE_KEY = 'portfolio_analytics_session';
+const STORAGE_KEY = "portfolio_analytics_session";
 
 export function generateId(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
   }
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -28,7 +28,7 @@ export function getSession(): AnalyticsSession {
         saveSession(newSession);
         return newSession;
       }
-      
+
       return session;
     }
   } catch (e) {

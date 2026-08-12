@@ -1,20 +1,20 @@
 export type AnalyticsEventType =
-  | 'page_view'
-  | 'section_view'
-  | 'project_view'
-  | 'project_demo_click'
-  | 'project_github_click'
-  | 'contact_open'
-  | 'contact_form_start'
-  | 'contact_submit'
-  | 'contact_success'
-  | 'game_open'
-  | 'game_start'
-  | 'game_level_selected'
-  | 'game_complete'
-  | 'game_abandon'
-  | 'performance'
-  | 'client_error';
+  | "page_view"
+  | "section_view"
+  | "project_view"
+  | "project_demo_click"
+  | "project_github_click"
+  | "contact_open"
+  | "contact_form_start"
+  | "contact_submit"
+  | "contact_success"
+  | "game_open"
+  | "game_start"
+  | "game_level_selected"
+  | "game_complete"
+  | "game_abandon"
+  | "performance"
+  | "client_error";
 
 export interface AnalyticsEventMetadata {
   page_view: { title: string };
