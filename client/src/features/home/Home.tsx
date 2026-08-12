@@ -1,6 +1,7 @@
 import { Spinner } from "@radix-ui/themes";
 import { type ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import SEO from "@/shared/components/SEO";
+import { useSectionTracking } from "@/shared/analytics/useSectionTracking";
 import { cn } from "@/shared/utils/cn";
 import { sectionClassName, sections } from "./Home.config";
 
@@ -19,6 +20,9 @@ function DeferredSection({
 }) {
   const [shouldRender, setShouldRender] = useState(eager);
   const ref = useRef<HTMLElement | null>(null);
+
+  // Section visibility analytics — fires section_view at 50% threshold, once per session
+  useSectionTracking(id, ref);
 
   useEffect(() => {
     if (eager || shouldRender) return;
@@ -49,6 +53,7 @@ function DeferredSection({
     </section>
   );
 }
+
 
 export default function Home() {
   return (
