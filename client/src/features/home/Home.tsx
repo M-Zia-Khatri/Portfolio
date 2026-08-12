@@ -1,7 +1,7 @@
 import { Spinner } from "@radix-ui/themes";
 import { type ReactNode, Suspense, useEffect, useRef, useState } from "react";
-import SEO from "@/shared/components/SEO";
 import { useSectionTracking } from "@/shared/analytics/useSectionTracking";
+import SEO from "@/shared/components/SEO";
 import { cn } from "@/shared/utils/cn";
 import { sectionClassName, sections } from "./Home.config";
 
@@ -53,7 +53,6 @@ function DeferredSection({
     </section>
   );
 }
-
 
 export default function Home() {
   return (
