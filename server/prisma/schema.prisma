@@ -103,3 +103,103 @@ model ContactMessage {
  
   @@map("contact_messages")
 }
+
+// ─── ANALYTICS ───────────────────────────────────────────────────────────────
+
+model Visitor {
+  id          String   @id @default(cuid())
+  anonymousId String   @unique @map("anonymous_id")
+  firstSeenAt DateTime @default(now()) @map("first_seen_at")
+  lastSeenAt  DateTime @default(now()) @map("last_seen_at")
+  visitCount  Int      @default(1) @map("visit_count")
+
+  sessions Session[]
+
+  @@map("visitor")
+}
+
+model Session {
+  id           String    @id @default(cuid())
+  visitorId    String    @map("visitor_id")
+  startedAt    DateTime  @default(now()) @map("started_at")
+  lastSeenAt   DateTime  @default(now()) @map("last_seen_at")
+  endedAt      DateTime? @map("ended_at")
+  landingPage  String?   @map("landing_page")
+  exitPage     String?   @map("exit_page")
+  referrer     String?
+  country      String?
+  region       String?
+  city         String?
+  deviceType   String?   @map("device_type")
+  browser      String?
+  os           String?
+  screenWidth  Int?      @map("screen_width")
+  screenHeight Int?      @map("screen_height")
+
+  visitor   Visitor          @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  pageViews PageView[]
+  events    AnalyticsEvent[]
+
+  @@index([visitorId])
+  @@index([startedAt])
+  @@map("session")
+}
+
+model PageView {
+  id         String    @id @default(cuid())
+  sessionId  String    @map("session_id")
+  path       String
+  title      String?
+  startedAt  DateTime  @default(now()) @map("started_at")
+  endedAt    DateTime? @map("ended_at")
+  durationMs Int?      @map("duration_ms")
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([path])
+  @@index([startedAt])
+  @@map("page_view")
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  sessionId String   @map("session_id")
+  type      String
+  path      String?
+  timestamp DateTime @default(now())
+  metadata  Json?
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([type])
+  @@index([timestamp])
+  @@map("analytics_event")
+}
+
+model AnalyticsDaily {
+  id              String   @id @default(cuid())
+  date            DateTime @unique @db.Date
+  visitors        Int      @default(0)
+  sessions        Int      @default(0)
+  pageViews       Int      @default(0) @map("page_views")
+  contactOpens    Int      @default(0) @map("contact_opens")
+  contactSubmits  Int      @default(0) @map("contact_submits")
+  gameStarts      Int      @default(0) @map("game_starts")
+  gameCompletions Int      @default(0) @map("game_completions")
+
+  @@map("analytics_daily")
+}
+
+model AnalyticsProjectDaily {
+  id           String   @id @default(cuid())
+  date         DateTime @db.Date
+  projectId    String   @map("project_id")
+  views        Int      @default(0)
+  demoClicks   Int      @default(0) @map("demo_clicks")
+  githubClicks Int      @default(0) @map("github_clicks")
+
+  @@unique([date, projectId])
+  @@map("analytics_project_daily")
+}

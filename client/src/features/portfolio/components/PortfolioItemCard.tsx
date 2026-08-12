@@ -5,9 +5,9 @@ import { animate, motion, useMotionValue, useTransform, type Variants } from "mo
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BorderTrail } from "@/shared/components/motion-primitives/border-trail";
 import { HEADING, TEXT } from "@/shared/constants/style.constants";
+import { optimizedCloudinaryUrl } from "@/shared/utils/cloudinaryUrl";
 import { cn } from "@/shared/utils/cn";
 import type { PortfolioItem } from "../types";
-import { optimizedCloudinaryUrl } from "@/shared/utils/cloudinaryUrl";
 
 interface PortfolioItemCardProps {
   item: PortfolioItem;
