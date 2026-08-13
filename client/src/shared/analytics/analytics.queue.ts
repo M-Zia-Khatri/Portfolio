@@ -11,11 +11,15 @@ export class AnalyticsQueue {
   private queue: QueueItem[] = [];
   private flushTimer: number | null = null;
   private isFlushing = false;
+  private readonly getSessionData: () => { visitorId: string; sessionId: string };
+  private readonly config: typeof analyticsConfig;
 
   constructor(
-    private readonly getSessionData: () => { visitorId: string; sessionId: string },
-    private readonly config = analyticsConfig,
+    getSessionData: () => { visitorId: string; sessionId: string },
+    config = analyticsConfig,
   ) {
+    this.getSessionData = getSessionData;
+    this.config = config;
     this.setupBeacon();
   }
 

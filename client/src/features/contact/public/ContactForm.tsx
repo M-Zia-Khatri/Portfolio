@@ -15,10 +15,12 @@ import {
 import { type UseMutationResult, useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import type React from "react";
-import { memo, useOptimistic, useTransition } from "react";
+import { memo, useEffect, useOptimistic, useRef, useTransition } from "react";
 import { type UseFormRegisterReturn, useForm } from "react-hook-form";
 
 import { submitContactForm } from "@/features/contact/api";
+import { useSectionActive } from "@/features/home/hooks/useSectionActive";
+import { analytics } from "@/shared/analytics";
 import { HEADING, TEXT } from "@/shared/constants/style.constants";
 import { type ContactFormData, contactSchema } from "../schema/contact.schema";
 import type { Contact } from "../types";
@@ -165,13 +167,34 @@ const ContactFormInner = memo(({ onSubmit, isLoading, mutation }: InnerFormProps
     resolver: zodResolver(contactSchema),
     defaultValues: { fullName: "", email: "", message: "" },
   });
+  const formStartedRef = useRef(false);
+
+  const handleFormInteraction = () => {
+    if (formStartedRef.current) return;
+    formStartedRef.current = true;
+
+    if (typeof window === "undefined") return;
+    try {
+      if (window.sessionStorage.getItem("analytics-contact-form-start") === "1") return;
+      window.sessionStorage.setItem("analytics-contact-form-start", "1");
+      analytics.track("contact_form_start", {});
+    } catch {
+      // analytics should fail silently
+    }
+  };
 
   const submitError = mutation.error as AxiosError<{ message?: string }> | null;
   const errorMessage =
     submitError?.response?.data?.message ?? "Something went wrong. Please try again.";
 
   return (
-    <form className="animate-in fade-in duration-200" onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form
+      className="animate-in fade-in duration-200"
+      onSubmit={handleSubmit(onSubmit)}
+      onFocusCapture={handleFormInteraction}
+      onChangeCapture={handleFormInteraction}
+      noValidate
+    >
       <Flex direction="column" gap="4">
         <Flex direction={{ initial: "column", sm: "row" }} gap="4">
           <FormInput
@@ -218,10 +241,26 @@ const ContactFormInner = memo(({ onSubmit, isLoading, mutation }: InnerFormProps
 
 function ContactFormCard() {
   const [isPendingTransition, startTransition] = useTransition();
+  const isContactOpen = useSectionActive("contact");
+  const contactOpenedRef = useRef(false);
 
   const mutation = useMutation<Contact, AxiosError, ContactFormData, unknown>({
     mutationFn: submitContactForm,
   });
+
+  useEffect(() => {
+    if (!isContactOpen || contactOpenedRef.current) return;
+    contactOpenedRef.current = true;
+
+    if (typeof window === "undefined") return;
+    try {
+      if (window.sessionStorage.getItem("analytics-contact-open") === "1") return;
+      window.sessionStorage.setItem("analytics-contact-open", "1");
+      analytics.track("contact_open", {});
+    } catch {
+      // analytics should fail silently
+    }
+  }, [isContactOpen]);
 
   const [optimisticSuccess, setOptimisticSuccess] = useOptimistic(
     false,
@@ -229,6 +268,8 @@ function ContactFormCard() {
   );
 
   const onSubmit = (data: ContactFormData) => {
+    analytics.track("contact_submit", {});
+
     startTransition(async () => {
       try {
         setOptimisticSuccess(true);
@@ -245,6 +286,13 @@ function ContactFormCard() {
 
   const isLoading = mutation.isPending || isPendingTransition;
   const showSuccess = (optimisticSuccess && !mutation.isError) || mutation.isSuccess;
+  const successTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (!mutation.isSuccess || successTrackedRef.current) return;
+    successTrackedRef.current = true;
+    analytics.track("contact_success", {});
+  }, [mutation.isSuccess]);
 
   return (
     <Card size="3">

@@ -42,6 +42,7 @@ class Analytics {
   }
 
   public page(path: string, title?: string) {
+    void path;
     this.track("page_view", {
       title: title || (typeof document !== "undefined" ? document.title : ""),
     });

@@ -2,6 +2,7 @@ import { memo, startTransition, useCallback, useEffect, useMemo, useRef, useStat
 import { ICON_MAP } from "@/features/dashboard/pages/skills/iconMap";
 import { useSkillsCodeData } from "@/features/dashboard/pages/skills/useSkillActions";
 import type { ApiSkill, Skill } from "@/features/skills/types";
+import { analytics } from "@/shared/analytics";
 import type { CodeCardHandle } from "@/shared/components/CodeCard";
 import CodeCard from "@/shared/components/CodeCard";
 import { useGsapReveal } from "@/shared/hooks/useGsapAnimations";
@@ -85,6 +86,19 @@ function ProgressRail({
 
 const MemoizedStatusBadge = memo(StatusBadge);
 const MemoizedProgressRail = memo(ProgressRail);
+const CONTACT_OPEN_SESSION_KEY = "analytics-contact-open";
+
+function markSessionOnce(key: string) {
+  if (typeof window === "undefined") return false;
+
+  try {
+    if (window.sessionStorage.getItem(key) === "1") return false;
+    window.sessionStorage.setItem(key, "1");
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export default function ContactCodeCard({ isActive }: { isActive: boolean }) {
   const { data: apiSkills, isLoading, isError } = useSkillsCodeData();
@@ -105,6 +119,12 @@ export default function ContactCodeCard({ isActive }: { isActive: boolean }) {
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useGsapReveal(wrapRef, "[data-contact-card]", { y: 16, duration: 0.45 });
+
+  useEffect(() => {
+    if (isActive && markSessionOnce(CONTACT_OPEN_SESSION_KEY)) {
+      analytics.track("contact_open", {});
+    }
+  }, [isActive]);
 
   // Initialize activeSkill when contactSkills are available
   useEffect(() => {

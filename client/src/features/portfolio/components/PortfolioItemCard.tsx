@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { ArrowUpRight } from "lucide-react";
 import { animate, motion, useMotionValue, useTransform, type Variants } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { analytics } from "@/shared/analytics";
 import { BorderTrail } from "@/shared/components/motion-primitives/border-trail";
 import { HEADING, TEXT } from "@/shared/constants/style.constants";
 import { optimizedCloudinaryUrl } from "@/shared/utils/cloudinaryUrl";
@@ -28,9 +29,15 @@ const backItemVariants: Variants = {
 };
 
 export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
+  const projectId =
+    item.siteName
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-") || item.siteUrl;
   const rotateY = useMotionValue(0);
   const isFlipped = useRef(false);
   const [flipped, setFlipped] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
 
   // Grid refs
   const gridBaseRef = useRef<HTMLDivElement>(null);
@@ -138,11 +145,57 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
     });
   }, [rotateY]);
 
+  useEffect(() => {
+    const node = cardRef.current;
+    if (!node) return;
+
+    const key = `analytics-project-view:${projectId}`;
+    const hasViewed = () => {
+      if (typeof window === "undefined") return true;
+      try {
+        return window.sessionStorage.getItem(key) === "1";
+      } catch {
+        return true;
+      }
+    };
+
+    if (hasViewed()) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const observedEntry = entries.find((entry) => entry.isIntersecting);
+        if (!observedEntry) return;
+
+        try {
+          window.sessionStorage.setItem(key, "1");
+        } catch {
+          // ignore storage failures, analytics should fail silently
+        }
+
+        analytics.track("project_view", { projectId });
+        observer.disconnect();
+      },
+      { threshold: 0.5 },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [projectId]);
+
   const faceBase =
     "absolute inset-0 flex flex-col [backface-visibility:hidden] overflow-hidden rounded-xl";
 
+  const handleDemoClick = () => {
+    analytics.track("project_demo_click", { projectId });
+  };
+
+  const handleGitHubClick = () => {
+    analytics.track("project_github_click", { projectId });
+  };
+
   return (
     <motion.div
+      ref={cardRef}
       className="group cursor-pointer perspective-distant"
       onClick={flip}
       onMouseMove={handleMouseMove}
@@ -207,7 +260,10 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
               href={item.siteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDemoClick();
+              }}
               className="absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-(--blue-12)/30 bg-(--blue-12)/10 backdrop-blur-sm"
               variants={{
                 idle: { opacity: 0, scale: 0.75, y: -4 },
@@ -346,7 +402,10 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
                   href={item.siteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleGitHubClick();
+                  }}
                   className="z-20 flex h-8 w-8 items-center justify-center rounded-full border border-(--blue-12)/30 bg-(--blue-12)/10 backdrop-blur-sm"
                 >
                   <motion.div

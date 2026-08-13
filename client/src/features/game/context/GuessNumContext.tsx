@@ -8,6 +8,7 @@ import React, {
   useRef,
   useTransition,
 } from "react";
+import { analytics } from "@/shared/analytics";
 import useGameTimer from "../hooks/useGameTimer";
 import { generateId } from "../services/idGenerator";
 import useGameSet, { type ScoreRecord } from "../store/GameSetStore";
@@ -77,6 +78,18 @@ const GuessNumActionsContext = createContext<GuessNumActionsContextType | undefi
 
 type Props = { children: ReactNode };
 
+function rememberSessionOnce(key: string) {
+  if (typeof window === "undefined") return false;
+
+  try {
+    if (window.sessionStorage.getItem(key) === "1") return false;
+    window.sessionStorage.setItem(key, "1");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const GuessNumProvider: React.FC<Props> = ({ children }) => {
   const maxNumber = useGameSet((state) => state.maxNumber);
   const guessLimit = useGameSet((state) => state.guessLimit);
@@ -87,6 +100,8 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
 
   const [state, dispatch] = useReducer(gameReducer, initialGameState(guessLimit));
   const { randomNumber, guessResults, showNumber, guessTurn, started, playerName, didWin } = state;
+  const completionTrackedRef = useRef(false);
+  const abandonTrackedRef = useRef(false);
 
   const [_, startTransition] = useTransition();
 
@@ -110,12 +125,19 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
         if (typeof name === "string") {
           dispatch({ type: "SET_PLAYER_NAME", payload: name.trim() });
         }
+        completionTrackedRef.current = false;
+        abandonTrackedRef.current = false;
+
         const num = Math.floor(Math.random() * maxNumber) + 1;
         dispatch({
           type: "RESET_GAME",
           payload: { randomNumber: num, guessLimit },
         });
         resetTimer();
+
+        if (typeof name === "string" && name.trim().length > 0) {
+          analytics.track("game_start", {});
+        }
       },
       makeGuess: (guess: number) => {
         const currentNumber = randomNumberRef.current;
@@ -131,6 +153,9 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
         dispatch({ type: "MAKE_GUESS", payload: { guess, message, ts: Date.now() } });
       },
       restartGame: () => {
+        completionTrackedRef.current = false;
+        abandonTrackedRef.current = false;
+
         const num = Math.floor(Math.random() * maxNumber) + 1;
         dispatch({
           type: "RESET_GAME",
@@ -138,6 +163,7 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
         });
         dispatch({ type: "SET_STARTED", payload: true });
         resetTimer();
+        analytics.track("game_start", {});
       },
       setStarted: (val: boolean) => dispatch({ type: "SET_STARTED", payload: val }),
       clearHistory: clearScoreHistory,
@@ -201,10 +227,45 @@ export const GuessNumProvider: React.FC<Props> = ({ children }) => {
   ]);
 
   useEffect(() => {
+    if (rememberSessionOnce("analytics-game-open")) {
+      analytics.track("game_open", {});
+    }
+
     actionsValue.startGame();
     // run only on initial mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actionsValue.startGame]);
+
+  useEffect(() => {
+    if (!showNumber) return;
+
+    const durationMs = Math.max(0, (initialTimeLimit - timeLeft) * 1000);
+    const score = calculateScore({
+      guessResults,
+      guessLimit,
+      initialTimeLimit,
+      timeLeft,
+      difficultLevel,
+    });
+
+    if (didWin && !completionTrackedRef.current) {
+      completionTrackedRef.current = true;
+      analytics.track("game_complete", {
+        score,
+        attempts: guessResults.length,
+        durationMs,
+      });
+      return;
+    }
+
+    if (!didWin && !abandonTrackedRef.current) {
+      abandonTrackedRef.current = true;
+      analytics.track("game_abandon", {
+        durationMs,
+        level: difficultLevel,
+      });
+    }
+  }, [difficultLevel, didWin, guessResults, guessLimit, initialTimeLimit, showNumber, timeLeft]);
 
   const statusValue = useMemo(
     () => ({ randomNumber, showNumber, started, playerName, didWin }),

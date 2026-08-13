@@ -1,5 +1,6 @@
 import { Flex, Select } from "@radix-ui/themes";
 import { useCallback, useMemo, useState } from "react";
+import { analytics } from "@/shared/analytics";
 import useGameSet from "../store/GameSetStore";
 import CustomLevelDialog from "./CustomLevelDialog";
 
@@ -32,23 +33,28 @@ export default function SelDifficultLevel() {
         return;
       }
 
+      let difficulty = val;
+
       if (BUILTIN_PRESETS[val]) {
-        setDifficultLevel(val);
         const { max, limit, time } = BUILTIN_PRESETS[val];
+        difficulty = val;
+        setDifficultLevel(val);
         setMaxNumber(max);
         setGuessLimit(limit);
         setTimeLimit(time);
-        return;
+      } else {
+        // User-created custom level — val is lvl.id
+        const custom = customLevels.find((l) => l.id === val);
+        if (custom) {
+          difficulty = custom.name;
+          setDifficultLevel(custom.name); // store readable name, not id
+          setMaxNumber(custom.maxNumber);
+          setGuessLimit(custom.guessLimit);
+          setTimeLimit(custom.totalSeconds);
+        }
       }
 
-      // User-created custom level — val is lvl.id
-      const custom = customLevels.find((l) => l.id === val);
-      if (custom) {
-        setDifficultLevel(custom.name); // store readable name, not id
-        setMaxNumber(custom.maxNumber);
-        setGuessLimit(custom.guessLimit);
-        setTimeLimit(custom.totalSeconds);
-      }
+      analytics.track("game_level_selected", { difficulty });
     },
     [customLevels, setDifficultLevel, setGuessLimit, setMaxNumber, setTimeLimit],
   );
