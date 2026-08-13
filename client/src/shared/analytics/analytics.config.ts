@@ -1,5 +1,5 @@
 export const analyticsConfig = {
-  enabled: import.meta.env.PROD || import.meta.env.VITE_ENABLE_ANALYTICS === "true",
+  enabled: import.meta.env.VITE_ENABLE_ANALYTICS !== "false",
   endpoint: import.meta.env.VITE_ANALYTICS_ENDPOINT || "/api/analytics/events",
   batchSize: 10,
   flushIntervalMs: 5000,
