@@ -1,20 +1,29 @@
 import { Prisma } from "../../generated/prisma/client.js";
 import { RETENTION_DAYS, SESSION_TIMEOUT_MS } from "../lib/analytics/analytics.constants.js";
-import type { AnalyticsIngestRequest } from "../lib/analytics/analytics.types.js";
+import type {
+  AnalyticsEventPayload,
+  AnalyticsIngestRequest,
+} from "../lib/analytics/analytics.types.js";
 import { prisma } from "../lib/prisma.js";
 import { redis } from "../lib/utills/redis.js";
+
+const ONE_DAY_SECONDS = 24 * 60 * 60;
 
 export class AnalyticsService {
   static async processEvents(payload: AnalyticsIngestRequest): Promise<void> {
     const visitor = await AnalyticsService.getOrCreateVisitor(payload.visitorId);
-    const session = await AnalyticsService.getOrCreateSession(payload.sessionId, visitor.id, {
-      referrer: payload.referrer ?? null,
-      deviceType: payload.deviceType ?? null,
-      browser: payload.browser ?? null,
-      os: payload.os ?? null,
-      screenWidth: payload.screenWidth ?? null,
-      screenHeight: payload.screenHeight ?? null,
-    });
+    const { session, isNewSession } = await AnalyticsService.getOrCreateSession(
+      payload.sessionId,
+      visitor.id,
+      {
+        referrer: payload.referrer ?? null,
+        deviceType: payload.deviceType ?? null,
+        browser: payload.browser ?? null,
+        os: payload.os ?? null,
+        screenWidth: payload.screenWidth ?? null,
+        screenHeight: payload.screenHeight ?? null,
+      },
+    );
 
     if (payload.events.length === 0) return;
 
@@ -43,7 +52,10 @@ export class AnalyticsService {
       })),
     });
 
-    // 3. Mark live visitor in Redis (approx 5 minute sliding window for "Live Now")
+    // 3. Update durable daily aggregates used by the admin dashboard.
+    await AnalyticsService.recordAggregates(payload.events, visitor.id, isNewSession);
+
+    // 4. Mark live visitor in Redis (approx 5 minute sliding window for "Live Now")
     try {
       await redis.setex(`analytics:live:visitors:${visitor.id}`, 300, session.id);
     } catch {
@@ -84,6 +96,7 @@ export class AnalyticsService {
     let session = await prisma.session.findUnique({
       where: { id: sessionId },
     });
+    let isNewSession = false;
 
     const now = new Date();
     const validReferrers = new Set([
@@ -134,6 +147,7 @@ export class AnalyticsService {
           screenHeight: screenHeight ?? undefined,
         },
       });
+      isNewSession = true;
     } else {
       const isExpired = now.getTime() - session.lastSeenAt.getTime() > SESSION_TIMEOUT_MS;
       if (isExpired) {
@@ -158,7 +172,155 @@ export class AnalyticsService {
       });
     }
 
-    return session;
+    return { session, isNewSession };
+  }
+
+  private static getUtcDay(date: Date): Date {
+    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  }
+
+  private static async shouldCountDailyVisitor(date: Date, visitorId: string): Promise<boolean> {
+    try {
+      const dateKey = date.toISOString().slice(0, 10);
+      const result = await redis.set(
+        `analytics:daily:${dateKey}:visitor:${visitorId}`,
+        "1",
+        "EX",
+        ONE_DAY_SECONDS,
+        "NX",
+      );
+      return result === "OK";
+    } catch {
+      return false;
+    }
+  }
+
+  private static async recordAggregates(
+    events: AnalyticsEventPayload[],
+    visitorId: string,
+    isNewSession: boolean,
+  ): Promise<void> {
+    const dailyCounts = new Map<
+      string,
+      {
+        date: Date;
+        pageViews: number;
+        contactOpens: number;
+        contactSubmits: number;
+        gameStarts: number;
+        gameCompletions: number;
+      }
+    >();
+    const projectCounts = new Map<
+      string,
+      {
+        date: Date;
+        projectId: string;
+        views: number;
+        demoClicks: number;
+        githubClicks: number;
+      }
+    >();
+
+    for (const event of events) {
+      const date = AnalyticsService.getUtcDay(new Date(event.timestamp));
+      const dateKey = date.toISOString().slice(0, 10);
+      const daily = dailyCounts.get(dateKey) ?? {
+        date,
+        pageViews: 0,
+        contactOpens: 0,
+        contactSubmits: 0,
+        gameStarts: 0,
+        gameCompletions: 0,
+      };
+
+      if (event.type === "page_view") daily.pageViews += 1;
+      if (event.type === "contact_open") daily.contactOpens += 1;
+      if (event.type === "contact_submit") daily.contactSubmits += 1;
+      if (event.type === "game_start") daily.gameStarts += 1;
+      if (event.type === "game_complete") daily.gameCompletions += 1;
+
+      dailyCounts.set(dateKey, daily);
+
+      if (
+        event.type === "project_view" ||
+        event.type === "project_demo_click" ||
+        event.type === "project_github_click"
+      ) {
+        const projectId =
+          typeof event.metadata?.projectId === "string" ? event.metadata.projectId.trim() : "";
+        if (!projectId) continue;
+
+        const projectKey = `${dateKey}:${projectId}`;
+        const project = projectCounts.get(projectKey) ?? {
+          date,
+          projectId,
+          views: 0,
+          demoClicks: 0,
+          githubClicks: 0,
+        };
+
+        if (event.type === "project_view") project.views += 1;
+        if (event.type === "project_demo_click") project.demoClicks += 1;
+        if (event.type === "project_github_click") project.githubClicks += 1;
+
+        projectCounts.set(projectKey, project);
+      }
+    }
+
+    const dailyUpserts = [...dailyCounts.values()].map(async (counts) => {
+      const visitors = (await AnalyticsService.shouldCountDailyVisitor(counts.date, visitorId))
+        ? 1
+        : 0;
+
+      return prisma.analyticsDaily.upsert({
+        where: { date: counts.date },
+        create: {
+          date: counts.date,
+          visitors,
+          sessions: isNewSession ? 1 : 0,
+          pageViews: counts.pageViews,
+          contactOpens: counts.contactOpens,
+          contactSubmits: counts.contactSubmits,
+          gameStarts: counts.gameStarts,
+          gameCompletions: counts.gameCompletions,
+        },
+        update: {
+          visitors: { increment: visitors },
+          sessions: { increment: isNewSession ? 1 : 0 },
+          pageViews: { increment: counts.pageViews },
+          contactOpens: { increment: counts.contactOpens },
+          contactSubmits: { increment: counts.contactSubmits },
+          gameStarts: { increment: counts.gameStarts },
+          gameCompletions: { increment: counts.gameCompletions },
+        },
+      });
+    });
+
+    const projectUpserts = [...projectCounts.values()].map((counts) =>
+      prisma.analyticsProjectDaily.upsert({
+        where: {
+          date_projectId: {
+            date: counts.date,
+            projectId: counts.projectId,
+          },
+        },
+        create: {
+          date: counts.date,
+          projectId: counts.projectId,
+          views: counts.views,
+          demoClicks: counts.demoClicks,
+          githubClicks: counts.githubClicks,
+        },
+        update: {
+          views: { increment: counts.views },
+          demoClicks: { increment: counts.demoClicks },
+          githubClicks: { increment: counts.githubClicks },
+        },
+      }),
+    );
+
+    await Promise.all([...dailyUpserts, ...projectUpserts]);
   }
 
   static async getOverview(start: Date, end: Date) {
