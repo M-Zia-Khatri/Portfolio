@@ -19,17 +19,30 @@ class Analytics {
 
     this.queue = new AnalyticsQueue(() => {
       const session = getSession();
-      return { visitorId: session.visitorId, sessionId: session.sessionId };
+      return {
+        visitorId: session.visitorId,
+        sessionId: session.sessionId,
+        referrer: session.referrer,
+        deviceType: session.deviceType,
+        browser: session.browser,
+        os: session.os,
+        screenWidth: session.screenWidth,
+        screenHeight: session.screenHeight,
+      };
     });
   }
 
-  public track<T extends AnalyticsEventType>(event: T, metadata: AnalyticsEventMetadata[T]) {
+  public track<T extends AnalyticsEventType>(
+    event: T,
+    metadata: AnalyticsEventMetadata[T],
+    pathOverride?: string,
+  ) {
     if (!this.isStarted || !this.queue) return;
 
     hitSession(); // update session timestamp
 
     // Ensure path is relatively robust even if called during unmounting
-    const path = typeof window !== "undefined" ? window.location.pathname : "/";
+    const path = pathOverride ?? (typeof window !== "undefined" ? window.location.pathname : "/");
 
     const queueEvent: BaseAnalyticsEvent<T> = {
       type: event,
@@ -42,10 +55,13 @@ class Analytics {
   }
 
   public page(path: string, title?: string) {
-    void path;
-    this.track("page_view", {
-      title: title || (typeof document !== "undefined" ? document.title : ""),
-    });
+    this.track(
+      "page_view",
+      {
+        title: title || (typeof document !== "undefined" ? document.title : ""),
+      },
+      path,
+    );
   }
 
   public flush() {
