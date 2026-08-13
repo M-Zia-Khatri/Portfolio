@@ -12,9 +12,11 @@ import { HeroSection } from "./sections";
 
 const AboutSection = lazy(() => import("./sections/AboutSection"));
 const ContactSection = lazy(() => import("./sections/ContactSection"));
+const ExperienceSection = lazy(() => import("./sections/ExperienceSection"));
 const GameSection = lazy(() => import("./sections/GameSection"));
 const PortfolioSection = lazy(() => import("./sections/PortfolioSection"));
 const SkillsSection = lazy(() => import("./sections/SkillsSection"));
+const TestimonialsSection = lazy(() => import("./sections/TestimonialsSection"));
 
 export type SectionConfig = {
   id: string;
@@ -25,8 +27,10 @@ export type SectionConfig = {
 export const sections: SectionConfig[] = [
   { id: "home", Component: HeroSection, Loader: HeroSkeleton },
   { id: "about", Component: AboutSection, Loader: AboutSkeleton },
+  { id: "experience", Component: ExperienceSection },
   { id: "skills", Component: SkillsSection, Loader: SkillsSkeleton },
   { id: "portfolio", Component: PortfolioSection, Loader: PortfolioSkeleton },
+  { id: "testimonials", Component: TestimonialsSection },
   { id: "game", Component: GameSection, Loader: GameSkeleton },
   { id: "contact", Component: ContactSection, Loader: ContactSkeleton },
 ];

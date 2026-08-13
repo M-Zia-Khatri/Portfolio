@@ -3,21 +3,31 @@ import type {
   AnalyticsBatchPayload,
   AnalyticsEventType,
   BaseAnalyticsEvent,
+  DeviceType,
 } from "./analytics.types";
 
 type QueueItem = BaseAnalyticsEvent<AnalyticsEventType>;
+
+type SessionData = {
+  visitorId: string;
+  sessionId: string;
+  referrer?: string;
+  deviceType?: DeviceType;
+  browser?: string;
+  os?: string;
+  screenWidth?: number;
+  screenHeight?: number;
+};
 
 export class AnalyticsQueue {
   private queue: QueueItem[] = [];
   private flushTimer: number | null = null;
   private isFlushing = false;
-  private readonly getSessionData: () => { visitorId: string; sessionId: string };
+  private sentSessionMetadata = false;
+  private readonly getSessionData: () => SessionData;
   private readonly config: typeof analyticsConfig;
 
-  constructor(
-    getSessionData: () => { visitorId: string; sessionId: string },
-    config = analyticsConfig,
-  ) {
+  constructor(getSessionData: () => SessionData, config = analyticsConfig) {
     this.getSessionData = getSessionData;
     this.config = config;
     this.setupBeacon();
@@ -62,11 +72,23 @@ export class AnalyticsQueue {
       visitorId: sessionData.visitorId,
       sessionId: sessionData.sessionId,
       events: batch,
+      ...(this.sentSessionMetadata
+        ? {}
+        : {
+            referrer: sessionData.referrer,
+            deviceType: sessionData.deviceType,
+            browser: sessionData.browser,
+            os: sessionData.os,
+            screenWidth: sessionData.screenWidth,
+            screenHeight: sessionData.screenHeight,
+          }),
     };
+
+    this.sentSessionMetadata = true;
 
     try {
       await this.sendBatch(payload, 0);
-    } catch (e) {
+    } catch {
       // Retries exhausted, drop batch silently.
     } finally {
       this.isFlushing = false;
@@ -122,14 +144,26 @@ export class AnalyticsQueue {
       visitorId: sessionData.visitorId,
       sessionId: sessionData.sessionId,
       events: [...this.queue],
+      ...(this.sentSessionMetadata
+        ? {}
+        : {
+            referrer: sessionData.referrer,
+            deviceType: sessionData.deviceType,
+            browser: sessionData.browser,
+            os: sessionData.os,
+            screenWidth: sessionData.screenWidth,
+            screenHeight: sessionData.screenHeight,
+          }),
     };
+
+    this.sentSessionMetadata = true;
 
     try {
       if (navigator.sendBeacon) {
         const blob = new Blob([JSON.stringify(payload)], { type: "text/plain" }); // text/plain to avoid CORS preflights often blocking beacon
         navigator.sendBeacon(this.config.endpoint, blob);
       }
-    } catch (e) {
+    } catch {
       // fail silently
     }
 

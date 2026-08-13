@@ -7,7 +7,14 @@ import { redis } from "../lib/utills/redis.js";
 export class AnalyticsService {
   static async processEvents(payload: AnalyticsIngestRequest): Promise<void> {
     const visitor = await AnalyticsService.getOrCreateVisitor(payload.visitorId);
-    const session = await AnalyticsService.getOrCreateSession(payload.sessionId, visitor.id);
+    const session = await AnalyticsService.getOrCreateSession(payload.sessionId, visitor.id, {
+      referrer: payload.referrer ?? null,
+      deviceType: payload.deviceType ?? null,
+      browser: payload.browser ?? null,
+      os: payload.os ?? null,
+      screenWidth: payload.screenWidth ?? null,
+      screenHeight: payload.screenHeight ?? null,
+    });
 
     if (payload.events.length === 0) return;
 
@@ -39,7 +46,7 @@ export class AnalyticsService {
     // 3. Mark live visitor in Redis (approx 5 minute sliding window for "Live Now")
     try {
       await redis.setex(`analytics:live:visitors:${visitor.id}`, 300, session.id);
-    } catch (e) {
+    } catch {
       /* ignore redis best-effort failure */
     }
   }
@@ -62,12 +69,48 @@ export class AnalyticsService {
     return visitor;
   }
 
-  private static async getOrCreateSession(sessionId: string, visitorId: string) {
+  private static async getOrCreateSession(
+    sessionId: string,
+    visitorId: string,
+    metadata: {
+      referrer?: string | null;
+      deviceType?: string | null;
+      browser?: string | null;
+      os?: string | null;
+      screenWidth?: number | null;
+      screenHeight?: number | null;
+    } = {},
+  ) {
     let session = await prisma.session.findUnique({
       where: { id: sessionId },
     });
 
     const now = new Date();
+    const validReferrers = new Set([
+      "Direct",
+      "Google",
+      "GitHub",
+      "LinkedIn",
+      "YouTube",
+      "Reddit",
+      "Other",
+    ]);
+    const validDevices = new Set(["desktop", "tablet", "mobile"]);
+
+    const referrer =
+      metadata.referrer && validReferrers.has(metadata.referrer) ? metadata.referrer : null;
+    const deviceType =
+      metadata.deviceType && validDevices.has(metadata.deviceType) ? metadata.deviceType : null;
+    const browser = metadata.browser?.trim() ? metadata.browser.trim().slice(0, 64) : null;
+    const os = metadata.os?.trim() ? metadata.os.trim().slice(0, 64) : null;
+    const screenWidth =
+      typeof metadata.screenWidth === "number" && Number.isFinite(metadata.screenWidth)
+        ? Math.max(0, Math.min(10000, Math.trunc(metadata.screenWidth)))
+        : null;
+    const screenHeight =
+      typeof metadata.screenHeight === "number" && Number.isFinite(metadata.screenHeight)
+        ? Math.max(0, Math.min(10000, Math.trunc(metadata.screenHeight)))
+        : null;
 
     if (!session) {
       // First session for returning visitor? Increment counter.
@@ -83,6 +126,12 @@ export class AnalyticsService {
         data: {
           id: sessionId,
           visitorId,
+          referrer: referrer ?? undefined,
+          deviceType: deviceType ?? undefined,
+          browser: browser ?? undefined,
+          os: os ?? undefined,
+          screenWidth: screenWidth ?? undefined,
+          screenHeight: screenHeight ?? undefined,
         },
       });
     } else {
@@ -97,7 +146,15 @@ export class AnalyticsService {
 
       session = await prisma.session.update({
         where: { id: session.id },
-        data: { lastSeenAt: now },
+        data: {
+          lastSeenAt: now,
+          ...(referrer ? { referrer } : {}),
+          ...(deviceType ? { deviceType } : {}),
+          ...(browser ? { browser } : {}),
+          ...(os ? { os } : {}),
+          ...(screenWidth !== null ? { screenWidth } : {}),
+          ...(screenHeight !== null ? { screenHeight } : {}),
+        },
       });
     }
 
@@ -227,7 +284,7 @@ export class AnalyticsService {
     try {
       const keys = await redis.keys("analytics:live:visitors:*");
       return keys.length;
-    } catch (e) {
+    } catch {
       return 0; // Fail open
     }
   }

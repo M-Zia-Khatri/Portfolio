@@ -26,5 +26,11 @@ export interface AnalyticsEventPayload {
 export interface AnalyticsIngestRequest {
   visitorId: string;
   sessionId: string;
+  referrer?: string | null;
+  deviceType?: string | null;
+  browser?: string | null;
+  os?: string | null;
+  screenWidth?: number | null;
+  screenHeight?: number | null;
   events: AnalyticsEventPayload[];
 }

@@ -37,6 +37,14 @@ export const analyticsEventSchema = z.object({
 export const analyticsIngestSchema = z.object({
   visitorId: z.string().min(5).max(128, "Invalid visitorId format"),
   sessionId: z.string().min(5).max(128, "Invalid sessionId format"),
+  referrer: z
+    .enum(["Direct", "Google", "GitHub", "LinkedIn", "YouTube", "Reddit", "Other"])
+    .optional(),
+  deviceType: z.enum(["desktop", "tablet", "mobile"]).optional(),
+  browser: z.string().max(64).optional(),
+  os: z.string().max(64).optional(),
+  screenWidth: z.number().int().min(0).max(10000).optional(),
+  screenHeight: z.number().int().min(0).max(10000).optional(),
   events: z
     .array(analyticsEventSchema)
     .min(1, "At least one event is required")

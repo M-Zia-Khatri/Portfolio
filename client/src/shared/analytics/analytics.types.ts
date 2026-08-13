@@ -46,13 +46,24 @@ export interface BaseAnalyticsEvent<T extends AnalyticsEventType> {
   metadata: AnalyticsEventMetadata[T];
 }
 
-export interface AnalyticsBatchPayload {
+export interface AnalyticsBatchPayload extends AnalyticsSessionMetadata {
   visitorId: string;
   sessionId: string;
   events: BaseAnalyticsEvent<AnalyticsEventType>[];
 }
 
-export interface AnalyticsSession {
+export type DeviceType = "desktop" | "tablet" | "mobile";
+
+export interface AnalyticsSessionMetadata {
+  referrer?: string;
+  deviceType?: DeviceType;
+  browser?: string;
+  os?: string;
+  screenWidth?: number;
+  screenHeight?: number;
+}
+
+export interface AnalyticsSession extends AnalyticsSessionMetadata {
   visitorId: string;
   sessionId: string;
   startedAt: number;

@@ -2,7 +2,16 @@ import { useEffect, useRef } from "react";
 import { analytics } from "@/shared/analytics";
 
 // Sections that should never fire analytics (e.g. "home" maps to hero which is always visible)
-const TRACKED_SECTIONS = new Set(["home", "about", "skills", "portfolio", "game", "contact"]);
+const TRACKED_SECTIONS = new Set([
+  "home",
+  "about",
+  "experience",
+  "skills",
+  "portfolio",
+  "testimonials",
+  "game",
+  "contact",
+]);
 
 // In-memory set of sections already tracked in this session.
 // These reset on hard nav (page reload), which correctly creates a new session.
