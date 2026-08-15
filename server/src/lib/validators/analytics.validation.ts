@@ -3,7 +3,7 @@ import {
   MAX_EVENTS_PER_BATCH,
   MAX_METADATA_SIZE_BYTES,
   VALID_ANALYTICS_EVENT_TYPES,
-} from "@/lib/analytics/analytics.constants.js";
+} from "../analytics/analytics.constants.js";
 
 const FORBIDDEN_METADATA_KEYS = new Set(
   [
