@@ -71,7 +71,12 @@ export async function fetchVisitors(range: AnalyticsRange): Promise<VisitorSumma
   return unwrap(res.data);
 }
 
-export async function fetchVisitorDetail(visitorId: string): Promise<VisitorDetail> {
-  const res = await api.get<ApiEnvelope<VisitorDetail>>(`/analytics/visitors/${visitorId}`);
+export async function fetchVisitorDetail(
+  visitorId: string,
+  options: { limit?: number; offset?: number } = {},
+): Promise<VisitorDetail> {
+  const res = await api.get<ApiEnvelope<VisitorDetail>>(`/analytics/visitors/${visitorId}`, {
+    params: options,
+  });
   return unwrap(res.data);
 }

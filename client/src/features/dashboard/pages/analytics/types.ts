@@ -76,4 +76,11 @@ export type VisitorDetail = {
   pageViews: number;
   totalDurationMs: number;
   timeline: { id: string; type: string; path: string | null; timestamp: string }[];
+  pagination?: {
+    limit: number;
+    offset: number;
+    total: number;
+    hasMore: boolean;
+    nextOffset: number | null;
+  };
 };

@@ -14,8 +14,8 @@ import {
   Text,
 } from "@radix-ui/themes";
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { Activity, BarChart3, Globe2, Laptop, MousePointerClick, Users } from "lucide-react";
-import { useState } from "react";
+import { Activity, Globe2, Laptop, Users } from "lucide-react";
+import { useMemo, useState } from "react";
 import SEO from "@/shared/components/SEO";
 import {
   fetchAnalyticsOverview,
@@ -27,13 +27,16 @@ import {
   fetchVisitorDetail,
   fetchVisitors,
 } from "./api";
-import type { AnalyticsRange, BreakdownItem, VisitorSummary } from "./types";
+import type { AnalyticsRange, BreakdownItem, VisitorDetail, VisitorSummary } from "./types";
 
-const ranges: { label: string; value: AnalyticsRange }[] = [
+const TIMELINE_PAGE_SIZE = 30;
+const BOUNCE_RATE_MIN_SESSIONS = 5;
+
+const ranges: { label: string; value: AnalyticsRange; days?: number }[] = [
   { label: "Today", value: "today" },
-  { label: "7 days", value: "7d" },
-  { label: "30 days", value: "30d" },
-  { label: "90 days", value: "90d" },
+  { label: "7 days", value: "7d", days: 7 },
+  { label: "30 days", value: "30d", days: 30 },
+  { label: "90 days", value: "90d", days: 90 },
 ];
 
 const eventLabels: Record<string, string> = {
@@ -53,6 +56,7 @@ const eventLabels: Record<string, string> = {
   game_abandon: "Game Abandoned",
   performance: "Performance",
   client_error: "Client Error",
+  session_start: "Session Started",
 };
 
 function formatNumber(value?: number) {
@@ -81,8 +85,49 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function BarRow({ label, value, max }: { label: string; value: number; max: number }) {
+function formatShortDate(value: Date) {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(value);
+}
+
+function getAppliedRangeLabel(range: AnalyticsRange) {
+  const end = new Date();
+  const start = new Date(end);
+  if (range === "today") {
+    start.setHours(0, 0, 0, 0);
+  } else {
+    const selected = ranges.find((item) => item.value === range);
+    start.setDate(end.getDate() - (selected?.days ?? 30));
+  }
+  return `${formatShortDate(start)} – ${formatShortDate(end)}`;
+}
+
+function BarRow({
+  label,
+  value,
+  max,
+  showBar = true,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  showBar?: boolean;
+}) {
   const width = max > 0 ? Math.max(4, (value / max) * 100) : 0;
+  if (!showBar) {
+    return (
+      <Flex align="center" justify="between" gap="3" className="rounded-md bg-(--gray-2) px-3 py-2">
+        <Text truncate size="2">
+          {label}
+        </Text>
+        <Text weight="bold">{formatNumber(value)}</Text>
+      </Flex>
+    );
+  }
+
   return (
     <div className="grid grid-cols-[minmax(110px,1fr)_2fr_70px] items-center gap-3 text-sm">
       <Text truncate>{label}</Text>
@@ -96,8 +141,21 @@ function BarRow({ label, value, max }: { label: string; value: number; max: numb
   );
 }
 
+function EmptyState({ children = "No data yet." }: { children?: string }) {
+  return (
+    <Text
+      size="2"
+      color="gray"
+      className="rounded-md border border-dashed border-(--gray-5) px-3 py-2"
+    >
+      {children}
+    </Text>
+  );
+}
+
 function BreakdownCard({ title, items }: { title: string; items: BreakdownItem[] }) {
   const max = Math.max(...items.map((item) => item.count), 0);
+  const showBars = items.length > 1;
   return (
     <Card>
       <Heading size="4" mb="3">
@@ -106,22 +164,51 @@ function BreakdownCard({ title, items }: { title: string; items: BreakdownItem[]
       <Flex direction="column" gap="3">
         {items.length ? (
           items.map((item) => (
-            <BarRow key={item.label} label={item.label} value={item.count} max={max} />
+            <BarRow
+              key={item.label}
+              label={item.label}
+              value={item.count}
+              max={max}
+              showBar={showBars}
+            />
           ))
         ) : (
-          <Text color="gray">No populated data for this range.</Text>
+          <EmptyState />
         )}
       </Flex>
     </Card>
   );
 }
 
+type CollapsedTimelineItem = VisitorDetail["timeline"][number] & { count: number };
+
+function collapseTimeline(items: VisitorDetail["timeline"]): CollapsedTimelineItem[] {
+  return items.reduce<CollapsedTimelineItem[]>((acc, item) => {
+    const previous = acc.at(-1);
+    if (previous && previous.type === item.type && previous.path === item.path) {
+      previous.count += 1;
+      return acc;
+    }
+    acc.push({ ...item, count: 1 });
+    return acc;
+  }, []);
+}
+
+function TimelineBullet({ type }: { type: string }) {
+  const color = type === "session_start" ? "bg-(--blue-9)" : "bg-(--gray-9)";
+  return <span className={`mt-1.5 size-2 shrink-0 rounded-full ${color}`} aria-hidden="true" />;
+}
+
 function VisitorDetailPanel({ visitor }: { visitor: VisitorSummary | null }) {
-  const { data, isLoading } = useQuery({
-    queryKey: ["analytics", "visitor", visitor?.id],
-    queryFn: () => fetchVisitorDetail(visitor?.id ?? ""),
+  const [timelineLimit, setTimelineLimit] = useState(TIMELINE_PAGE_SIZE);
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["analytics", "visitor", visitor?.id, timelineLimit],
+    queryFn: () => fetchVisitorDetail(visitor?.id ?? "", { limit: timelineLimit, offset: 0 }),
     enabled: Boolean(visitor?.id),
   });
+
+  const collapsedTimeline = useMemo(() => collapseTimeline(data?.timeline ?? []), [data?.timeline]);
 
   if (!visitor) {
     return (
@@ -176,23 +263,65 @@ function VisitorDetailPanel({ visitor }: { visitor: VisitorSummary | null }) {
       </Grid>
       <Separator my="3" />
       <Flex direction="column" gap="2" className="max-h-80 overflow-auto">
-        {data.timeline.map((item) => (
+        {collapsedTimeline.map((item) => (
           <Flex
-            key={item.id}
+            key={`${item.id}-${item.count}`}
             justify="between"
             gap="3"
             className="rounded-md bg-(--gray-2) px-3 py-2"
           >
-            <Text size="2">
-              {eventLabels[item.type] ?? item.type}
-              {item.path ? ` · ${item.path}` : ""}
-            </Text>
-            <Text size="2" color="gray">
+            <Flex gap="2" align="start">
+              <TimelineBullet type={item.type} />
+              <Text size="2">
+                {eventLabels[item.type] ?? item.type}
+                {item.path ? ` · ${item.path}` : ""}
+                {item.count > 1 ? ` ×${item.count}` : ""}
+              </Text>
+            </Flex>
+            <Text size="2" color="gray" className="shrink-0">
               {formatDate(item.timestamp)}
             </Text>
           </Flex>
         ))}
       </Flex>
+      {data.pagination?.hasMore ? (
+        <Button
+          mt="3"
+          variant="soft"
+          loading={isFetching}
+          onClick={() => setTimelineLimit((limit) => limit + TIMELINE_PAGE_SIZE)}
+        >
+          Load more activity
+        </Button>
+      ) : null}
+    </Card>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  helper,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  helper?: string;
+  accent?: boolean;
+}) {
+  return (
+    <Card className={accent ? "border-(--blue-7) bg-(--blue-2)" : undefined}>
+      <Text color="gray" size="2">
+        {label}
+      </Text>
+      <Heading size="6" mt="2">
+        {value}
+      </Heading>
+      {helper ? (
+        <Text size="2" color="gray" mt="1">
+          {helper}
+        </Text>
+      ) : null}
     </Card>
   );
 }
@@ -223,8 +352,20 @@ export default function Analytics() {
     (query) => query.isLoading,
   );
   const topTimeline = traffic.data?.timeseries ?? [];
+  const sources = traffic.data?.sources ?? [];
+  const eventCounts = events.data ?? [];
   const maxTimeline = Math.max(...topTimeline.map((point) => point.pageViews), 0);
-  const maxEvents = Math.max(...(events.data ?? []).map((event) => event.count), 0);
+  const maxSources = Math.max(...sources.map((item) => item.sessions), 0);
+  const maxEvents = Math.max(...eventCounts.map((event) => event.count), 0);
+  const overviewData = overview.data;
+  const bounceRateValue =
+    (overviewData?.totalSessions ?? 0) >= BOUNCE_RATE_MIN_SESSIONS
+      ? formatPercent(overviewData?.bounceRate)
+      : "N/A";
+  const bounceRateHelper =
+    (overviewData?.totalSessions ?? 0) >= BOUNCE_RATE_MIN_SESSIONS
+      ? `${formatNumber(overviewData?.totalSessions)} sessions sampled`
+      : `Insufficient data — needs ${BOUNCE_RATE_MIN_SESSIONS}+ sessions`;
 
   return (
     <Container size="4" py="6">
@@ -240,16 +381,21 @@ export default function Analytics() {
             Privacy-conscious visitor, traffic, content, event, device, and geography reporting.
           </Text>
         </Box>
-        <Select.Root value={range} onValueChange={(value) => setRange(value as AnalyticsRange)}>
-          <Select.Trigger />
-          <Select.Content>
-            {ranges.map((item) => (
-              <Select.Item key={item.value} value={item.value}>
-                {item.label}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+        <Flex direction="column" align="end" gap="1">
+          <Select.Root value={range} onValueChange={(value) => setRange(value as AnalyticsRange)}>
+            <Select.Trigger />
+            <Select.Content>
+              {ranges.map((item) => (
+                <Select.Item key={item.value} value={item.value}>
+                  {item.label}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+          <Text size="2" color="gray">
+            Applied range: {getAppliedRangeLabel(range)}
+          </Text>
+        </Flex>
       </Flex>
 
       {isLoading ? (
@@ -260,31 +406,50 @@ export default function Analytics() {
 
       {!isLoading && (
         <Flex direction="column" gap="6">
-          <Grid columns={{ initial: "1", sm: "2", lg: "5" }} gap="4">
-            {[
-              ["Total Visitors", overview.data?.totalVisitors, Users],
-              ["Unique Visitors", overview.data?.uniqueVisitors, Users],
-              ["Visitors Today", overview.data?.visitorsToday, Activity],
-              ["Visitors This Week", overview.data?.visitorsThisWeek, Activity],
-              ["Visitors This Month", overview.data?.visitorsThisMonth, Activity],
-              ["Total Sessions", overview.data?.totalSessions, BarChart3],
-              ["Avg. Session", formatDuration(overview.data?.averageSessionDurationMs), BarChart3],
-              ["Page Views", overview.data?.totalPageViews, MousePointerClick],
-              ["Bounce Rate", formatPercent(overview.data?.bounceRate), BarChart3],
-            ].map(([label, value, Icon]) => (
-              <Card key={String(label)}>
-                <Flex justify="between" align="center">
-                  <Text color="gray" size="2">
-                    {label}
-                  </Text>
-                  {typeof Icon !== "number" && <Icon size={18} />}
-                </Flex>
-                <Heading size="6" mt="2">
-                  {typeof value === "number" ? formatNumber(value) : value}
-                </Heading>
-              </Card>
-            ))}
-          </Grid>
+          <Card>
+            <Flex align="center" gap="2" mb="4">
+              <Users size={18} />
+              <Heading size="4">Overview</Heading>
+            </Flex>
+            <Grid columns={{ initial: "1", sm: "2", lg: "5" }} gap="4">
+              <StatCard
+                label="Total Visitors"
+                value={formatNumber(overviewData?.totalVisitors)}
+                helper={`${formatNumber(overviewData?.uniqueVisitors)} unique · ${formatNumber(overviewData?.totalSessions)} sessions`}
+                accent
+              />
+              <StatCard
+                label="Unique Visitors"
+                value={formatNumber(overviewData?.uniqueVisitors)}
+                helper={`${formatNumber(overviewData?.visitorsToday)} today`}
+              />
+              <StatCard label="Visitors Today" value={formatNumber(overviewData?.visitorsToday)} />
+              <StatCard
+                label="Visitors This Week"
+                value={formatNumber(overviewData?.visitorsThisWeek)}
+              />
+              <StatCard
+                label="Visitors This Month"
+                value={formatNumber(overviewData?.visitorsThisMonth)}
+              />
+            </Grid>
+          </Card>
+
+          <Card>
+            <Flex align="center" gap="2" mb="4">
+              <Activity size={18} />
+              <Heading size="4">Engagement</Heading>
+            </Flex>
+            <Grid columns={{ initial: "1", sm: "2", lg: "4" }} gap="4">
+              <StatCard label="Total Sessions" value={formatNumber(overviewData?.totalSessions)} />
+              <StatCard
+                label="Avg. Session"
+                value={formatDuration(overviewData?.averageSessionDurationMs)}
+              />
+              <StatCard label="Page Views" value={formatNumber(overviewData?.totalPageViews)} />
+              <StatCard label="Bounce Rate" value={bounceRateValue} helper={bounceRateHelper} />
+            </Grid>
+          </Card>
 
           <Grid columns={{ initial: "1", lg: "2" }} gap="5">
             <Card>
@@ -292,14 +457,18 @@ export default function Analytics() {
                 Traffic Over Time
               </Heading>
               <Flex direction="column" gap="3">
-                {topTimeline.map((point) => (
-                  <BarRow
-                    key={point.date}
-                    label={new Date(point.date).toLocaleDateString()}
-                    value={point.pageViews}
-                    max={maxTimeline}
-                  />
-                ))}
+                {topTimeline.length ? (
+                  topTimeline.map((point) => (
+                    <BarRow
+                      key={point.date}
+                      label={new Date(point.date).toLocaleDateString()}
+                      value={point.pageViews}
+                      max={maxTimeline}
+                    />
+                  ))
+                ) : (
+                  <EmptyState />
+                )}
               </Flex>
             </Card>
             <Card>
@@ -307,23 +476,26 @@ export default function Analytics() {
                 Traffic Sources
               </Heading>
               <Flex direction="column" gap="3">
-                {(traffic.data?.sources ?? []).map((source) => (
-                  <BarRow
-                    key={source.referrer}
-                    label={source.referrer}
-                    value={source.sessions}
-                    max={Math.max(...(traffic.data?.sources ?? []).map((item) => item.sessions), 0)}
-                  />
-                ))}
+                {sources.length ? (
+                  sources.map((source) => (
+                    <BarRow
+                      key={source.referrer}
+                      label={source.referrer}
+                      value={source.sessions}
+                      max={maxSources}
+                      showBar={sources.length > 1}
+                    />
+                  ))
+                ) : (
+                  <EmptyState />
+                )}
                 <Separator />
                 <Text size="2">
                   New visitors: <strong>{formatNumber(traffic.data?.newVisitors)}</strong> ·
                   Returning visitors:{" "}
                   <strong>{formatNumber(traffic.data?.returningVisitors)}</strong>
                 </Text>
-                <Text size="2" color="gray">
-                  UTM campaigns require schema/ingest support and are not stubbed.
-                </Text>
+                <EmptyState>No UTM campaign data yet.</EmptyState>
               </Flex>
             </Card>
           </Grid>
@@ -359,14 +531,19 @@ export default function Analytics() {
                 Top Interactions
               </Heading>
               <Flex direction="column" gap="3">
-                {(events.data ?? []).map((event) => (
-                  <BarRow
-                    key={event.type}
-                    label={eventLabels[event.type] ?? event.type}
-                    value={event.count}
-                    max={maxEvents}
-                  />
-                ))}
+                {eventCounts.length ? (
+                  eventCounts.map((event) => (
+                    <BarRow
+                      key={event.type}
+                      label={eventLabels[event.type] ?? event.type}
+                      value={event.count}
+                      max={maxEvents}
+                      showBar={eventCounts.length > 1}
+                    />
+                  ))
+                ) : (
+                  <EmptyState />
+                )}
               </Flex>
             </Card>
           </Grid>
@@ -388,31 +565,31 @@ export default function Analytics() {
             </Flex>
             {geography.data?.isPopulated ? (
               <Grid columns={{ initial: "1", md: "3" }} gap="4">
-                {(["countries", "regions", "cities"] as const).map((key) => (
-                  <Box key={key}>
-                    <Heading size="3" mb="2" className="capitalize">
-                      {key}
-                    </Heading>
-                    <Flex direction="column" gap="2">
-                      {geography.data?.[key].map((item) => (
-                        <BarRow
-                          key={`${key}-${item.label}`}
-                          label={item.label}
-                          value={item.visitors}
-                          max={Math.max(
-                            ...(geography.data?.[key] ?? []).map((entry) => entry.visitors),
-                            0,
-                          )}
-                        />
-                      ))}
-                    </Flex>
-                  </Box>
-                ))}
+                {(["countries", "regions", "cities"] as const).map((key) => {
+                  const items = geography.data?.[key] ?? [];
+                  const max = Math.max(...items.map((entry) => entry.visitors), 0);
+                  return (
+                    <Box key={key}>
+                      <Heading size="3" mb="2" className="capitalize">
+                        {key}
+                      </Heading>
+                      <Flex direction="column" gap="2">
+                        {items.map((item) => (
+                          <BarRow
+                            key={`${key}-${item.label}`}
+                            label={item.label}
+                            value={item.visitors}
+                            max={max}
+                            showBar={items.length > 1}
+                          />
+                        ))}
+                      </Flex>
+                    </Box>
+                  );
+                })}
               </Grid>
             ) : (
-              <Text color="gray">
-                No populated country, region, or city session fields were found for this range.
-              </Text>
+              <EmptyState>No geography data yet.</EmptyState>
             )}
           </Card>
 
@@ -456,11 +633,9 @@ export default function Analytics() {
                   ))}
                 </Table.Body>
               </Table.Root>
-              <Text size="2" color="gray" mt="3">
-                Online/offline status is deferred until realtime heartbeat semantics are approved.
-              </Text>
+              <EmptyState>Online status data is not available yet.</EmptyState>
             </Card>
-            <VisitorDetailPanel visitor={selectedVisitor} />
+            <VisitorDetailPanel key={selectedVisitor?.id ?? "empty"} visitor={selectedVisitor} />
           </Grid>
         </Flex>
       )}

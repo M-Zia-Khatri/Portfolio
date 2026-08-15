@@ -214,7 +214,12 @@ export async function getVisitorsDashboard(req: Request, res: Response) {
 
 export async function getVisitorDetail(req: Request, res: Response) {
   try {
-    const data = await AnalyticsService.getVisitorDetail(String(req.params.visitorId));
+    const limit = typeof req.query.limit === "string" ? Number(req.query.limit) : undefined;
+    const offset = typeof req.query.offset === "string" ? Number(req.query.offset) : undefined;
+    const data = await AnalyticsService.getVisitorDetail(String(req.params.visitorId), {
+      limit,
+      offset,
+    });
     if (!data) {
       res.status(404).json({ success: false, message: "Visitor not found" });
       return;

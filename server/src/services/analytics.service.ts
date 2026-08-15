@@ -704,7 +704,10 @@ export class AnalyticsService {
     });
   }
 
-  static async getVisitorDetail(visitorId: string) {
+  static async getVisitorDetail(
+    visitorId: string,
+    options: { limit?: number; offset?: number } = {},
+  ) {
     const visitor = await prisma.visitor.findFirst({
       where: { OR: [{ id: visitorId }, { anonymousId: visitorId }] },
       select: {
@@ -742,7 +745,7 @@ export class AnalyticsService {
         sum + Math.max(0, session.lastSeenAt.getTime() - session.startedAt.getTime()),
       0,
     );
-    const timeline = visitor.sessions
+    const fullTimeline = visitor.sessions
       .flatMap((session) => [
         {
           id: `session-${session.id}`,
@@ -766,6 +769,10 @@ export class AnalyticsService {
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, 150);
 
+    const limit = Math.max(1, Math.min(100, Math.trunc(options.limit ?? 30)));
+    const offset = Math.max(0, Math.trunc(options.offset ?? 0));
+    const timeline = fullTimeline.slice(offset, offset + limit);
+
     return {
       id: visitor.id,
       visitorId: visitor.anonymousId,
@@ -775,6 +782,14 @@ export class AnalyticsService {
       pageViews: pageViews.length,
       totalDurationMs,
       timeline,
+      pagination: {
+        limit,
+        offset,
+        total: fullTimeline.length,
+        hasMore: offset + timeline.length < fullTimeline.length,
+        nextOffset:
+          offset + timeline.length < fullTimeline.length ? offset + timeline.length : null,
+      },
     };
   }
 
