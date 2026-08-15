@@ -129,7 +129,7 @@ export class AnalyticsQueue {
       }
     };
 
-    window.addEventListener("visibilitychange", onHide);
+    document.addEventListener("visibilitychange", onHide);
     window.addEventListener("pagehide", () => {
       if (this.queue.length > 0) {
         this.beaconFlush();
@@ -160,7 +160,9 @@ export class AnalyticsQueue {
 
     try {
       if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(payload)], { type: "text/plain" }); // text/plain to avoid CORS preflights often blocking beacon
+        const blob = new Blob([JSON.stringify(payload)], {
+          type: "application/json",
+        });
         navigator.sendBeacon(this.config.endpoint, blob);
       }
     } catch {

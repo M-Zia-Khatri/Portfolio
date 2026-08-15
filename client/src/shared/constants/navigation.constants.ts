@@ -12,4 +12,5 @@ export const AppNavigation = {
   A_SKILLS: "/dashboard/skills",
   A_CONTACT: "/dashboard/contact",
   A_PORTFOLIO: "/dashboard/portfolio",
+  A_ANALYTICS: "/dashboard/analytics",
 } as const;

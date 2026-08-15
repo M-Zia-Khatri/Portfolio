@@ -10,6 +10,7 @@ const Auth = lazy(() => import("@/features/auth/Auth"));
 const ContactPage = lazy(() => import("@/features/contact/admin/ContactPage"));
 const Dashboard = lazy(() => import("@/features/dashboard/Dashboard"));
 const DashboardLayout = lazy(() => import("@/features/dashboard/layout/DashboardLayout"));
+const Analytics = lazy(() => import("@/features/dashboard/pages/analytics/Analytics"));
 const Portfolio = lazy(() => import("@/features/dashboard/pages/portfolio/Portfolio"));
 const Skills = lazy(() => import("@/features/dashboard/pages/skills/Skills"));
 
@@ -63,6 +64,10 @@ const AppRoutes: RouteObject[] = [
       {
         index: true,
         element: withSuspense(Dashboard),
+      },
+      {
+        path: AppNavigation.A_ANALYTICS,
+        element: withSuspense(Analytics),
       },
       {
         path: AppNavigation.A_SKILLS,

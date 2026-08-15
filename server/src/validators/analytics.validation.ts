@@ -5,6 +5,45 @@ import {
   VALID_ANALYTICS_EVENT_TYPES,
 } from "@/lib/analytics/analytics.constants.js";
 
+const FORBIDDEN_METADATA_KEYS = new Set(
+  [
+    "name",
+    "fullName",
+    "firstName",
+    "lastName",
+    "email",
+    "phone",
+    "phoneNumber",
+    "telephone",
+    "message",
+    "msg",
+    "text",
+    "content",
+    "password",
+    "token",
+    "authorization",
+    "cookie",
+    "ssn",
+    "address",
+  ].map((key) => key.toLowerCase()),
+);
+
+function containsForbiddenMetadataKey(value: unknown): boolean {
+  if (Array.isArray(value)) {
+    return value.some((item) => containsForbiddenMetadataKey(item));
+  }
+
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  return Object.entries(value).some(([key, nestedValue]) => {
+    return (
+      FORBIDDEN_METADATA_KEYS.has(key.toLowerCase()) || containsForbiddenMetadataKey(nestedValue)
+    );
+  });
+}
+
 const metadataSchema = z
   .record(z.string(), z.any())
   .refine(
@@ -21,8 +60,7 @@ const metadataSchema = z
   .refine(
     (data) => {
       if (!data) return true;
-      const forbiddenKeys = ["name", "email", "phone", "message"];
-      return !forbiddenKeys.some((key) => key in data);
+      return !containsForbiddenMetadataKey(data);
     },
     { message: "Analytics metadata must not contain PII or contact form content" },
   );

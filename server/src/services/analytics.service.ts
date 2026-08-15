@@ -1,20 +1,29 @@
 import { Prisma } from "../../generated/prisma/client.js";
 import { RETENTION_DAYS, SESSION_TIMEOUT_MS } from "../lib/analytics/analytics.constants.js";
-import type { AnalyticsIngestRequest } from "../lib/analytics/analytics.types.js";
+import type {
+  AnalyticsEventPayload,
+  AnalyticsIngestRequest,
+} from "../lib/analytics/analytics.types.js";
 import { prisma } from "../lib/prisma.js";
 import { redis } from "../lib/utills/redis.js";
+
+const ONE_DAY_SECONDS = 24 * 60 * 60;
 
 export class AnalyticsService {
   static async processEvents(payload: AnalyticsIngestRequest): Promise<void> {
     const visitor = await AnalyticsService.getOrCreateVisitor(payload.visitorId);
-    const session = await AnalyticsService.getOrCreateSession(payload.sessionId, visitor.id, {
-      referrer: payload.referrer ?? null,
-      deviceType: payload.deviceType ?? null,
-      browser: payload.browser ?? null,
-      os: payload.os ?? null,
-      screenWidth: payload.screenWidth ?? null,
-      screenHeight: payload.screenHeight ?? null,
-    });
+    const { session, isNewSession } = await AnalyticsService.getOrCreateSession(
+      payload.sessionId,
+      visitor.id,
+      {
+        referrer: payload.referrer ?? null,
+        deviceType: payload.deviceType ?? null,
+        browser: payload.browser ?? null,
+        os: payload.os ?? null,
+        screenWidth: payload.screenWidth ?? null,
+        screenHeight: payload.screenHeight ?? null,
+      },
+    );
 
     if (payload.events.length === 0) return;
 
@@ -43,7 +52,10 @@ export class AnalyticsService {
       })),
     });
 
-    // 3. Mark live visitor in Redis (approx 5 minute sliding window for "Live Now")
+    // 3. Update durable daily aggregates used by the admin dashboard.
+    await AnalyticsService.recordAggregates(payload.events, visitor.id, isNewSession);
+
+    // 4. Mark live visitor in Redis (approx 5 minute sliding window for "Live Now")
     try {
       await redis.setex(`analytics:live:visitors:${visitor.id}`, 300, session.id);
     } catch {
@@ -84,6 +96,7 @@ export class AnalyticsService {
     let session = await prisma.session.findUnique({
       where: { id: sessionId },
     });
+    let isNewSession = false;
 
     const now = new Date();
     const validReferrers = new Set([
@@ -134,6 +147,7 @@ export class AnalyticsService {
           screenHeight: screenHeight ?? undefined,
         },
       });
+      isNewSession = true;
     } else {
       const isExpired = now.getTime() - session.lastSeenAt.getTime() > SESSION_TIMEOUT_MS;
       if (isExpired) {
@@ -158,7 +172,155 @@ export class AnalyticsService {
       });
     }
 
-    return session;
+    return { session, isNewSession };
+  }
+
+  private static getUtcDay(date: Date): Date {
+    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  }
+
+  private static async shouldCountDailyVisitor(date: Date, visitorId: string): Promise<boolean> {
+    try {
+      const dateKey = date.toISOString().slice(0, 10);
+      const result = await redis.set(
+        `analytics:daily:${dateKey}:visitor:${visitorId}`,
+        "1",
+        "EX",
+        ONE_DAY_SECONDS,
+        "NX",
+      );
+      return result === "OK";
+    } catch {
+      return false;
+    }
+  }
+
+  private static async recordAggregates(
+    events: AnalyticsEventPayload[],
+    visitorId: string,
+    isNewSession: boolean,
+  ): Promise<void> {
+    const dailyCounts = new Map<
+      string,
+      {
+        date: Date;
+        pageViews: number;
+        contactOpens: number;
+        contactSubmits: number;
+        gameStarts: number;
+        gameCompletions: number;
+      }
+    >();
+    const projectCounts = new Map<
+      string,
+      {
+        date: Date;
+        projectId: string;
+        views: number;
+        demoClicks: number;
+        githubClicks: number;
+      }
+    >();
+
+    for (const event of events) {
+      const date = AnalyticsService.getUtcDay(new Date(event.timestamp));
+      const dateKey = date.toISOString().slice(0, 10);
+      const daily = dailyCounts.get(dateKey) ?? {
+        date,
+        pageViews: 0,
+        contactOpens: 0,
+        contactSubmits: 0,
+        gameStarts: 0,
+        gameCompletions: 0,
+      };
+
+      if (event.type === "page_view") daily.pageViews += 1;
+      if (event.type === "contact_open") daily.contactOpens += 1;
+      if (event.type === "contact_submit") daily.contactSubmits += 1;
+      if (event.type === "game_start") daily.gameStarts += 1;
+      if (event.type === "game_complete") daily.gameCompletions += 1;
+
+      dailyCounts.set(dateKey, daily);
+
+      if (
+        event.type === "project_view" ||
+        event.type === "project_demo_click" ||
+        event.type === "project_github_click"
+      ) {
+        const projectId =
+          typeof event.metadata?.projectId === "string" ? event.metadata.projectId.trim() : "";
+        if (!projectId) continue;
+
+        const projectKey = `${dateKey}:${projectId}`;
+        const project = projectCounts.get(projectKey) ?? {
+          date,
+          projectId,
+          views: 0,
+          demoClicks: 0,
+          githubClicks: 0,
+        };
+
+        if (event.type === "project_view") project.views += 1;
+        if (event.type === "project_demo_click") project.demoClicks += 1;
+        if (event.type === "project_github_click") project.githubClicks += 1;
+
+        projectCounts.set(projectKey, project);
+      }
+    }
+
+    const dailyUpserts = [...dailyCounts.values()].map(async (counts) => {
+      const visitors = (await AnalyticsService.shouldCountDailyVisitor(counts.date, visitorId))
+        ? 1
+        : 0;
+
+      return prisma.analyticsDaily.upsert({
+        where: { date: counts.date },
+        create: {
+          date: counts.date,
+          visitors,
+          sessions: isNewSession ? 1 : 0,
+          pageViews: counts.pageViews,
+          contactOpens: counts.contactOpens,
+          contactSubmits: counts.contactSubmits,
+          gameStarts: counts.gameStarts,
+          gameCompletions: counts.gameCompletions,
+        },
+        update: {
+          visitors: { increment: visitors },
+          sessions: { increment: isNewSession ? 1 : 0 },
+          pageViews: { increment: counts.pageViews },
+          contactOpens: { increment: counts.contactOpens },
+          contactSubmits: { increment: counts.contactSubmits },
+          gameStarts: { increment: counts.gameStarts },
+          gameCompletions: { increment: counts.gameCompletions },
+        },
+      });
+    });
+
+    const projectUpserts = [...projectCounts.values()].map((counts) =>
+      prisma.analyticsProjectDaily.upsert({
+        where: {
+          date_projectId: {
+            date: counts.date,
+            projectId: counts.projectId,
+          },
+        },
+        create: {
+          date: counts.date,
+          projectId: counts.projectId,
+          views: counts.views,
+          demoClicks: counts.demoClicks,
+          githubClicks: counts.githubClicks,
+        },
+        update: {
+          views: { increment: counts.views },
+          demoClicks: { increment: counts.demoClicks },
+          githubClicks: { increment: counts.githubClicks },
+        },
+      }),
+    );
+
+    await Promise.all([...dailyUpserts, ...projectUpserts]);
   }
 
   static async getOverview(start: Date, end: Date) {
@@ -259,6 +421,375 @@ export class AnalyticsService {
     return {
       starts: agg._sum.gameStarts || 0,
       completions: agg._sum.gameCompletions || 0,
+    };
+  }
+
+  private static clampDateRange(start: Date, end: Date) {
+    return { gte: start, lte: end };
+  }
+
+  private static formatDurationMs(ms: number): number {
+    return Math.max(0, Math.round(ms));
+  }
+
+  static async getDashboardOverview(start: Date, end: Date) {
+    const range = AnalyticsService.clampDateRange(start, end);
+    const now = new Date();
+    const today = AnalyticsService.getUtcDay(now);
+    const weekStart = new Date(today);
+    weekStart.setUTCDate(today.getUTCDate() - 6);
+    const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+
+    const [
+      daily,
+      totalVisitors,
+      uniqueVisitors,
+      sessions,
+      pageViews,
+      bounces,
+      todayAgg,
+      weekAgg,
+      monthAgg,
+    ] = await Promise.all([
+      prisma.analyticsDaily.aggregate({
+        _sum: { visitors: true, sessions: true, pageViews: true },
+        where: { date: range },
+      }),
+      prisma.visitor.count({ where: { firstSeenAt: { lte: end } } }),
+      prisma.visitor.count({
+        where: { sessions: { some: { startedAt: range } } },
+      }),
+      prisma.session.findMany({
+        where: { startedAt: range },
+        select: { id: true, startedAt: true, lastSeenAt: true },
+      }),
+      prisma.pageView.count({ where: { startedAt: range } }),
+      prisma.session.count({
+        where: {
+          startedAt: range,
+          pageViews: { none: {} },
+          events: { none: { type: { not: "page_view" } } },
+        },
+      }),
+      prisma.analyticsDaily.aggregate({ _sum: { visitors: true }, where: { date: today } }),
+      prisma.analyticsDaily.aggregate({
+        _sum: { visitors: true },
+        where: { date: { gte: weekStart, lte: today } },
+      }),
+      prisma.analyticsDaily.aggregate({
+        _sum: { visitors: true },
+        where: { date: { gte: monthStart, lte: today } },
+      }),
+    ]);
+
+    const totalDurationMs = sessions.reduce(
+      (sum, session) =>
+        sum + Math.max(0, session.lastSeenAt.getTime() - session.startedAt.getTime()),
+      0,
+    );
+
+    return {
+      totalVisitors,
+      uniqueVisitors,
+      visitors: daily._sum.visitors || 0,
+      visitorsToday: todayAgg._sum.visitors || 0,
+      visitorsThisWeek: weekAgg._sum.visitors || 0,
+      visitorsThisMonth: monthAgg._sum.visitors || 0,
+      totalSessions: daily._sum.sessions || sessions.length,
+      averageSessionDurationMs: sessions.length
+        ? AnalyticsService.formatDurationMs(totalDurationMs / sessions.length)
+        : 0,
+      totalPageViews: daily._sum.pageViews || pageViews,
+      bounceRate: sessions.length ? bounces / sessions.length : 0,
+    };
+  }
+
+  static async getTrafficDashboard(start: Date, end: Date) {
+    const [timeseries, sources, sessionsByHour] = await Promise.all([
+      AnalyticsService.getTimeseries(start, end),
+      AnalyticsService.getSources(start, end),
+      prisma.session.findMany({
+        where: { startedAt: AnalyticsService.clampDateRange(start, end) },
+        select: { startedAt: true, visitor: { select: { visitCount: true } } },
+      }),
+    ]);
+
+    const byHour = Array.from({ length: 24 }, (_, hour) => ({ hour, sessions: 0 }));
+    let newVisitors = 0;
+    let returningVisitors = 0;
+    for (const session of sessionsByHour) {
+      byHour[session.startedAt.getUTCHours()].sessions += 1;
+      if (session.visitor.visitCount <= 1) newVisitors += 1;
+      else returningVisitors += 1;
+    }
+
+    return { timeseries, sources, byHour, newVisitors, returningVisitors, utmCampaigns: [] };
+  }
+
+  static async getContentDashboard(start: Date, end: Date) {
+    const range = AnalyticsService.clampDateRange(start, end);
+    const pages = await prisma.pageView.groupBy({
+      by: ["path"],
+      _count: { id: true, sessionId: true },
+      _avg: { durationMs: true },
+      where: { startedAt: range },
+      orderBy: { _count: { id: "desc" } },
+      take: 50,
+    });
+
+    const [entryPages, exitPages] = await Promise.all([
+      prisma.session.groupBy({
+        by: ["landingPage"],
+        _count: { id: true },
+        where: { startedAt: range, landingPage: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+        take: 20,
+      }),
+      prisma.session.groupBy({
+        by: ["exitPage"],
+        _count: { id: true },
+        where: { startedAt: range, exitPage: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+        take: 20,
+      }),
+    ]);
+
+    return {
+      pages: pages.map((p) => ({
+        path: p.path,
+        views: p._count.id,
+        uniqueVisitors: p._count.sessionId,
+        averageTimeMs: Math.round(p._avg.durationMs || 0),
+      })),
+      mostViewed: pages.slice(0, 10).map((p) => ({ path: p.path, views: p._count.id })),
+      leastViewed: [...pages]
+        .sort((a, b) => a._count.id - b._count.id)
+        .slice(0, 10)
+        .map((p) => ({ path: p.path, views: p._count.id })),
+      entryPages: entryPages.map((p) => ({
+        path: p.landingPage || "unknown",
+        sessions: p._count.id,
+      })),
+      exitPages: exitPages.map((p) => ({ path: p.exitPage || "unknown", sessions: p._count.id })),
+    };
+  }
+
+  static async getTopEvents(start: Date, end: Date) {
+    const events = await prisma.analyticsEvent.groupBy({
+      by: ["type"],
+      _count: { id: true },
+      where: { timestamp: AnalyticsService.clampDateRange(start, end) },
+      orderBy: { _count: { id: "desc" } },
+    });
+    return events.map((event) => ({ type: event.type, count: event._count.id }));
+  }
+
+  static async getTechnologyDashboard(start: Date, end: Date) {
+    const range = AnalyticsService.clampDateRange(start, end);
+    const [devices, browsers, operatingSystems, screens] = await Promise.all([
+      prisma.session.groupBy({
+        by: ["deviceType"],
+        _count: { id: true },
+        where: { startedAt: range, deviceType: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+      }),
+      prisma.session.groupBy({
+        by: ["browser"],
+        _count: { id: true },
+        where: { startedAt: range, browser: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+      }),
+      prisma.session.groupBy({
+        by: ["os"],
+        _count: { id: true },
+        where: { startedAt: range, os: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+      }),
+      prisma.session.groupBy({
+        by: ["screenWidth", "screenHeight"],
+        _count: { id: true },
+        where: { startedAt: range, screenWidth: { not: null }, screenHeight: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+        take: 20,
+      }),
+    ]);
+    return {
+      devices: devices.map((d) => ({ label: d.deviceType || "unknown", count: d._count.id })),
+      browsers: browsers.map((b) => ({ label: b.browser || "unknown", count: b._count.id })),
+      operatingSystems: operatingSystems.map((o) => ({
+        label: o.os || "unknown",
+        count: o._count.id,
+      })),
+      screens: screens.map((s) => ({
+        label: `${s.screenWidth}×${s.screenHeight}`,
+        count: s._count.id,
+      })),
+      languages: [],
+      timezones: [],
+    };
+  }
+
+  static async getGeographyDashboard(start: Date, end: Date) {
+    const range = AnalyticsService.clampDateRange(start, end);
+    const [countries, regions, cities] = await Promise.all([
+      prisma.session.groupBy({
+        by: ["country"],
+        _count: { id: true },
+        where: { startedAt: range, country: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+      }),
+      prisma.session.groupBy({
+        by: ["region"],
+        _count: { id: true },
+        where: { startedAt: range, region: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+        take: 20,
+      }),
+      prisma.session.groupBy({
+        by: ["city"],
+        _count: { id: true },
+        where: { startedAt: range, city: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+        take: 20,
+      }),
+    ]);
+    return {
+      countries: countries.map((c) => ({ label: c.country || "unknown", visitors: c._count.id })),
+      regions: regions.map((r) => ({ label: r.region || "unknown", visitors: r._count.id })),
+      cities: cities.map((c) => ({ label: c.city || "unknown", visitors: c._count.id })),
+      isPopulated: countries.length > 0 || regions.length > 0 || cities.length > 0,
+    };
+  }
+
+  static async getVisitorsDashboard(start: Date, end: Date) {
+    const visitors = await prisma.visitor.findMany({
+      where: { sessions: { some: { startedAt: AnalyticsService.clampDateRange(start, end) } } },
+      orderBy: { lastSeenAt: "desc" },
+      take: 100,
+      select: {
+        id: true,
+        anonymousId: true,
+        firstSeenAt: true,
+        lastSeenAt: true,
+        visitCount: true,
+        sessions: {
+          where: { startedAt: AnalyticsService.clampDateRange(start, end) },
+          select: {
+            id: true,
+            startedAt: true,
+            lastSeenAt: true,
+            pageViews: { select: { id: true } },
+          },
+        },
+      },
+    });
+
+    return visitors.map((visitor) => {
+      const durationMs = visitor.sessions.reduce(
+        (sum, session) =>
+          sum + Math.max(0, session.lastSeenAt.getTime() - session.startedAt.getTime()),
+        0,
+      );
+      return {
+        id: visitor.id,
+        visitorId: visitor.anonymousId,
+        firstVisit: visitor.firstSeenAt,
+        lastVisit: visitor.lastSeenAt,
+        sessions: visitor.sessions.length,
+        pages: visitor.sessions.reduce((sum, session) => sum + session.pageViews.length, 0),
+        durationMs,
+        visitorType: visitor.visitCount > 1 ? "returning" : "new",
+        lastActivity: visitor.lastSeenAt,
+      };
+    });
+  }
+
+  static async getVisitorDetail(
+    visitorId: string,
+    options: { limit?: number; offset?: number } = {},
+  ) {
+    const visitor = await prisma.visitor.findFirst({
+      where: { OR: [{ id: visitorId }, { anonymousId: visitorId }] },
+      select: {
+        id: true,
+        anonymousId: true,
+        firstSeenAt: true,
+        lastSeenAt: true,
+        visitCount: true,
+        sessions: {
+          orderBy: { startedAt: "desc" },
+          take: 20,
+          select: {
+            id: true,
+            startedAt: true,
+            lastSeenAt: true,
+            pageViews: {
+              orderBy: { startedAt: "desc" },
+              select: { id: true, path: true, startedAt: true, durationMs: true },
+            },
+            events: {
+              orderBy: { timestamp: "desc" },
+              take: 100,
+              select: { id: true, type: true, path: true, timestamp: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!visitor) return null;
+
+    const pageViews = visitor.sessions.flatMap((session) => session.pageViews);
+    const totalDurationMs = visitor.sessions.reduce(
+      (sum, session) =>
+        sum + Math.max(0, session.lastSeenAt.getTime() - session.startedAt.getTime()),
+      0,
+    );
+    const fullTimeline = visitor.sessions
+      .flatMap((session) => [
+        {
+          id: `session-${session.id}`,
+          type: "session_start",
+          path: null,
+          timestamp: session.startedAt,
+        },
+        ...session.pageViews.map((pageView) => ({
+          id: pageView.id,
+          type: "page_view",
+          path: pageView.path,
+          timestamp: pageView.startedAt,
+        })),
+        ...session.events.map((event) => ({
+          id: event.id,
+          type: event.type,
+          path: event.path,
+          timestamp: event.timestamp,
+        })),
+      ])
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 150);
+
+    const limit = Math.max(1, Math.min(100, Math.trunc(options.limit ?? 30)));
+    const offset = Math.max(0, Math.trunc(options.offset ?? 0));
+    const timeline = fullTimeline.slice(offset, offset + limit);
+
+    return {
+      id: visitor.id,
+      visitorId: visitor.anonymousId,
+      firstSeen: visitor.firstSeenAt,
+      lastSeen: visitor.lastSeenAt,
+      sessions: visitor.sessions.length,
+      pageViews: pageViews.length,
+      totalDurationMs,
+      timeline,
+      pagination: {
+        limit,
+        offset,
+        total: fullTimeline.length,
+        hasMore: offset + timeline.length < fullTimeline.length,
+        nextOffset:
+          offset + timeline.length < fullTimeline.length ? offset + timeline.length : null,
+      },
     };
   }
 
