@@ -131,6 +131,7 @@ services:
         VITE_CLOUDINARY_CLOUD_NAME: ${VITE_CLOUDINARY_CLOUD_NAME}
         VITE_CLOUDINARY_UPLOAD_PRESET: ${VITE_CLOUDINARY_UPLOAD_PRESET}
         VITE_SITE_URL: ${VITE_SITE_URL}
+        VITE_ENABLE_ANALYTICS: ${VITE_ENABLE_ANALYTICS}
     env_file:
       - ./client/.env.production
     container_name: portfolio-client
