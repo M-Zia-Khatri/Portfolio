@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { send } from "../lib/utills/send.js";
 import { AnalyticsService } from "../lib/services/analytics.service.js";
+import { send } from "../lib/utills/send.js";
 import { analyticsIngestSchema, dateFilterSchema } from "../lib/validators/analytics.validation.js";
 
 function getRange(req: Request) {
