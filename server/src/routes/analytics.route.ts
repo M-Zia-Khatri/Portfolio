@@ -1,14 +1,22 @@
 import { json, Router } from "express";
 import {
+  getContentDashboard,
   getConversions,
   getCountries,
+  getDashboardOverview,
   getDevices,
   getGame,
+  getGeographyDashboard,
   getOverview,
   getPages,
   getProjects,
   getSources,
+  getTechnologyDashboard,
   getTimeseries,
+  getTopEvents,
+  getTrafficDashboard,
+  getVisitorDetail,
+  getVisitorsDashboard,
   ingestEvents,
 } from "../controllers/analytics.controller.js";
 import { requireAdmin } from "../middlewares/auth.middleware.js";
@@ -23,6 +31,14 @@ router.post("/events", analyticsLimiter, json({ limit: "50kb" }), ingestEvents);
 router.use(requireAdmin);
 
 router.get("/overview", getOverview);
+router.get("/dashboard-overview", getDashboardOverview);
+router.get("/traffic", getTrafficDashboard);
+router.get("/content", getContentDashboard);
+router.get("/events/top", getTopEvents);
+router.get("/technology", getTechnologyDashboard);
+router.get("/geography", getGeographyDashboard);
+router.get("/visitors", getVisitorsDashboard);
+router.get("/visitors/:visitorId", getVisitorDetail);
 router.get("/timeseries", getTimeseries);
 router.get("/pages", getPages);
 router.get("/projects", getProjects);

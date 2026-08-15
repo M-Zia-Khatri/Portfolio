@@ -424,6 +424,375 @@ export class AnalyticsService {
     };
   }
 
+  private static clampDateRange(start: Date, end: Date) {
+    return { gte: start, lte: end };
+  }
+
+  private static formatDurationMs(ms: number): number {
+    return Math.max(0, Math.round(ms));
+  }
+
+  static async getDashboardOverview(start: Date, end: Date) {
+    const range = AnalyticsService.clampDateRange(start, end);
+    const now = new Date();
+    const today = AnalyticsService.getUtcDay(now);
+    const weekStart = new Date(today);
+    weekStart.setUTCDate(today.getUTCDate() - 6);
+    const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+
+    const [
+      daily,
+      totalVisitors,
+      uniqueVisitors,
+      sessions,
+      pageViews,
+      bounces,
+      todayAgg,
+      weekAgg,
+      monthAgg,
+    ] = await Promise.all([
+      prisma.analyticsDaily.aggregate({
+        _sum: { visitors: true, sessions: true, pageViews: true },
+        where: { date: range },
+      }),
+      prisma.visitor.count({ where: { firstSeenAt: { lte: end } } }),
+      prisma.visitor.count({
+        where: { sessions: { some: { startedAt: range } } },
+      }),
+      prisma.session.findMany({
+        where: { startedAt: range },
+        select: { id: true, startedAt: true, lastSeenAt: true },
+      }),
+      prisma.pageView.count({ where: { startedAt: range } }),
+      prisma.session.count({
+        where: {
+          startedAt: range,
+          pageViews: { none: {} },
+          events: { none: { type: { not: "page_view" } } },
+        },
+      }),
+      prisma.analyticsDaily.aggregate({ _sum: { visitors: true }, where: { date: today } }),
+      prisma.analyticsDaily.aggregate({
+        _sum: { visitors: true },
+        where: { date: { gte: weekStart, lte: today } },
+      }),
+      prisma.analyticsDaily.aggregate({
+        _sum: { visitors: true },
+        where: { date: { gte: monthStart, lte: today } },
+      }),
+    ]);
+
+    const totalDurationMs = sessions.reduce(
+      (sum, session) =>
+        sum + Math.max(0, session.lastSeenAt.getTime() - session.startedAt.getTime()),
+      0,
+    );
+
+    return {
+      totalVisitors,
+      uniqueVisitors,
+      visitors: daily._sum.visitors || 0,
+      visitorsToday: todayAgg._sum.visitors || 0,
+      visitorsThisWeek: weekAgg._sum.visitors || 0,
+      visitorsThisMonth: monthAgg._sum.visitors || 0,
+      totalSessions: daily._sum.sessions || sessions.length,
+      averageSessionDurationMs: sessions.length
+        ? AnalyticsService.formatDurationMs(totalDurationMs / sessions.length)
+        : 0,
+      totalPageViews: daily._sum.pageViews || pageViews,
+      bounceRate: sessions.length ? bounces / sessions.length : 0,
+    };
+  }
+
+  static async getTrafficDashboard(start: Date, end: Date) {
+    const [timeseries, sources, sessionsByHour] = await Promise.all([
+      AnalyticsService.getTimeseries(start, end),
+      AnalyticsService.getSources(start, end),
+      prisma.session.findMany({
+        where: { startedAt: AnalyticsService.clampDateRange(start, end) },
+        select: { startedAt: true, visitor: { select: { visitCount: true } } },
+      }),
+    ]);
+
+    const byHour = Array.from({ length: 24 }, (_, hour) => ({ hour, sessions: 0 }));
+    let newVisitors = 0;
+    let returningVisitors = 0;
+    for (const session of sessionsByHour) {
+      byHour[session.startedAt.getUTCHours()].sessions += 1;
+      if (session.visitor.visitCount <= 1) newVisitors += 1;
+      else returningVisitors += 1;
+    }
+
+    return { timeseries, sources, byHour, newVisitors, returningVisitors, utmCampaigns: [] };
+  }
+
+  static async getContentDashboard(start: Date, end: Date) {
+    const range = AnalyticsService.clampDateRange(start, end);
+    const pages = await prisma.pageView.groupBy({
+      by: ["path"],
+      _count: { id: true, sessionId: true },
+      _avg: { durationMs: true },
+      where: { startedAt: range },
+      orderBy: { _count: { id: "desc" } },
+      take: 50,
+    });
+
+    const [entryPages, exitPages] = await Promise.all([
+      prisma.session.groupBy({
+        by: ["landingPage"],
+        _count: { id: true },
+        where: { startedAt: range, landingPage: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+        take: 20,
+      }),
+      prisma.session.groupBy({
+        by: ["exitPage"],
+        _count: { id: true },
+        where: { startedAt: range, exitPage: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+        take: 20,
+      }),
+    ]);
+
+    return {
+      pages: pages.map((p) => ({
+        path: p.path,
+        views: p._count.id,
+        uniqueVisitors: p._count.sessionId,
+        averageTimeMs: Math.round(p._avg.durationMs || 0),
+      })),
+      mostViewed: pages.slice(0, 10).map((p) => ({ path: p.path, views: p._count.id })),
+      leastViewed: [...pages]
+        .sort((a, b) => a._count.id - b._count.id)
+        .slice(0, 10)
+        .map((p) => ({ path: p.path, views: p._count.id })),
+      entryPages: entryPages.map((p) => ({
+        path: p.landingPage || "unknown",
+        sessions: p._count.id,
+      })),
+      exitPages: exitPages.map((p) => ({ path: p.exitPage || "unknown", sessions: p._count.id })),
+    };
+  }
+
+  static async getTopEvents(start: Date, end: Date) {
+    const events = await prisma.analyticsEvent.groupBy({
+      by: ["type"],
+      _count: { id: true },
+      where: { timestamp: AnalyticsService.clampDateRange(start, end) },
+      orderBy: { _count: { id: "desc" } },
+    });
+    return events.map((event) => ({ type: event.type, count: event._count.id }));
+  }
+
+  static async getTechnologyDashboard(start: Date, end: Date) {
+    const range = AnalyticsService.clampDateRange(start, end);
+    const [devices, browsers, operatingSystems, screens] = await Promise.all([
+      prisma.session.groupBy({
+        by: ["deviceType"],
+        _count: { id: true },
+        where: { startedAt: range, deviceType: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+      }),
+      prisma.session.groupBy({
+        by: ["browser"],
+        _count: { id: true },
+        where: { startedAt: range, browser: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+      }),
+      prisma.session.groupBy({
+        by: ["os"],
+        _count: { id: true },
+        where: { startedAt: range, os: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+      }),
+      prisma.session.groupBy({
+        by: ["screenWidth", "screenHeight"],
+        _count: { id: true },
+        where: { startedAt: range, screenWidth: { not: null }, screenHeight: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+        take: 20,
+      }),
+    ]);
+    return {
+      devices: devices.map((d) => ({ label: d.deviceType || "unknown", count: d._count.id })),
+      browsers: browsers.map((b) => ({ label: b.browser || "unknown", count: b._count.id })),
+      operatingSystems: operatingSystems.map((o) => ({
+        label: o.os || "unknown",
+        count: o._count.id,
+      })),
+      screens: screens.map((s) => ({
+        label: `${s.screenWidth}×${s.screenHeight}`,
+        count: s._count.id,
+      })),
+      languages: [],
+      timezones: [],
+    };
+  }
+
+  static async getGeographyDashboard(start: Date, end: Date) {
+    const range = AnalyticsService.clampDateRange(start, end);
+    const [countries, regions, cities] = await Promise.all([
+      prisma.session.groupBy({
+        by: ["country"],
+        _count: { id: true },
+        where: { startedAt: range, country: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+      }),
+      prisma.session.groupBy({
+        by: ["region"],
+        _count: { id: true },
+        where: { startedAt: range, region: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+        take: 20,
+      }),
+      prisma.session.groupBy({
+        by: ["city"],
+        _count: { id: true },
+        where: { startedAt: range, city: { not: null } },
+        orderBy: { _count: { id: "desc" } },
+        take: 20,
+      }),
+    ]);
+    return {
+      countries: countries.map((c) => ({ label: c.country || "unknown", visitors: c._count.id })),
+      regions: regions.map((r) => ({ label: r.region || "unknown", visitors: r._count.id })),
+      cities: cities.map((c) => ({ label: c.city || "unknown", visitors: c._count.id })),
+      isPopulated: countries.length > 0 || regions.length > 0 || cities.length > 0,
+    };
+  }
+
+  static async getVisitorsDashboard(start: Date, end: Date) {
+    const visitors = await prisma.visitor.findMany({
+      where: { sessions: { some: { startedAt: AnalyticsService.clampDateRange(start, end) } } },
+      orderBy: { lastSeenAt: "desc" },
+      take: 100,
+      select: {
+        id: true,
+        anonymousId: true,
+        firstSeenAt: true,
+        lastSeenAt: true,
+        visitCount: true,
+        sessions: {
+          where: { startedAt: AnalyticsService.clampDateRange(start, end) },
+          select: {
+            id: true,
+            startedAt: true,
+            lastSeenAt: true,
+            pageViews: { select: { id: true } },
+          },
+        },
+      },
+    });
+
+    return visitors.map((visitor) => {
+      const durationMs = visitor.sessions.reduce(
+        (sum, session) =>
+          sum + Math.max(0, session.lastSeenAt.getTime() - session.startedAt.getTime()),
+        0,
+      );
+      return {
+        id: visitor.id,
+        visitorId: visitor.anonymousId,
+        firstVisit: visitor.firstSeenAt,
+        lastVisit: visitor.lastSeenAt,
+        sessions: visitor.sessions.length,
+        pages: visitor.sessions.reduce((sum, session) => sum + session.pageViews.length, 0),
+        durationMs,
+        visitorType: visitor.visitCount > 1 ? "returning" : "new",
+        lastActivity: visitor.lastSeenAt,
+      };
+    });
+  }
+
+  static async getVisitorDetail(
+    visitorId: string,
+    options: { limit?: number; offset?: number } = {},
+  ) {
+    const visitor = await prisma.visitor.findFirst({
+      where: { OR: [{ id: visitorId }, { anonymousId: visitorId }] },
+      select: {
+        id: true,
+        anonymousId: true,
+        firstSeenAt: true,
+        lastSeenAt: true,
+        visitCount: true,
+        sessions: {
+          orderBy: { startedAt: "desc" },
+          take: 20,
+          select: {
+            id: true,
+            startedAt: true,
+            lastSeenAt: true,
+            pageViews: {
+              orderBy: { startedAt: "desc" },
+              select: { id: true, path: true, startedAt: true, durationMs: true },
+            },
+            events: {
+              orderBy: { timestamp: "desc" },
+              take: 100,
+              select: { id: true, type: true, path: true, timestamp: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!visitor) return null;
+
+    const pageViews = visitor.sessions.flatMap((session) => session.pageViews);
+    const totalDurationMs = visitor.sessions.reduce(
+      (sum, session) =>
+        sum + Math.max(0, session.lastSeenAt.getTime() - session.startedAt.getTime()),
+      0,
+    );
+    const fullTimeline = visitor.sessions
+      .flatMap((session) => [
+        {
+          id: `session-${session.id}`,
+          type: "session_start",
+          path: null,
+          timestamp: session.startedAt,
+        },
+        ...session.pageViews.map((pageView) => ({
+          id: pageView.id,
+          type: "page_view",
+          path: pageView.path,
+          timestamp: pageView.startedAt,
+        })),
+        ...session.events.map((event) => ({
+          id: event.id,
+          type: event.type,
+          path: event.path,
+          timestamp: event.timestamp,
+        })),
+      ])
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 150);
+
+    const limit = Math.max(1, Math.min(100, Math.trunc(options.limit ?? 30)));
+    const offset = Math.max(0, Math.trunc(options.offset ?? 0));
+    const timeline = fullTimeline.slice(offset, offset + limit);
+
+    return {
+      id: visitor.id,
+      visitorId: visitor.anonymousId,
+      firstSeen: visitor.firstSeenAt,
+      lastSeen: visitor.lastSeenAt,
+      sessions: visitor.sessions.length,
+      pageViews: pageViews.length,
+      totalDurationMs,
+      timeline,
+      pagination: {
+        limit,
+        offset,
+        total: fullTimeline.length,
+        hasMore: offset + timeline.length < fullTimeline.length,
+        nextOffset:
+          offset + timeline.length < fullTimeline.length ? offset + timeline.length : null,
+      },
+    };
+  }
+
   static async cleanupRetention() {
     const now = new Date();
 
