@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { send } from "../lib/utills/send.js";
-import { AnalyticsService } from "../services/analytics.service.js";
-import { analyticsIngestSchema, dateFilterSchema } from "../validators/analytics.validation.js";
+import { AnalyticsService } from "../lib/services/analytics.service.js";
+import { analyticsIngestSchema, dateFilterSchema } from "../lib/validators/analytics.validation.js";
 
 function getRange(req: Request) {
   const parsed = dateFilterSchema.parse(req.query);
