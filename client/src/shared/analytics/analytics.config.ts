@@ -1,9 +1,17 @@
+const apiBaseUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
+
 export const analyticsConfig = {
-  enabled: import.meta.env.PROD || import.meta.env.VITE_ENABLE_ANALYTICS === "true",
-  endpoint: import.meta.env.VITE_ANALYTICS_ENDPOINT || "/api/analytics/events",
+  enabled:
+    import.meta.env.PROD ||
+    import.meta.env.VITE_ENABLE_ANALYTICS === "true",
+
+  endpoint:
+    import.meta.env.VITE_ANALYTICS_ENDPOINT ||
+    `${apiBaseUrl}/analytics/events`,
+
   batchSize: 10,
   flushIntervalMs: 5000,
-  sessionTimeoutMs: 30 * 60 * 1000, // 30 minutes
-  maxQueueSize: 500, // Drop events if offline for too long or if queue fills up
+  sessionTimeoutMs: 30 * 60 * 1000,
+  maxQueueSize: 500,
   maxRetries: 3,
 };
