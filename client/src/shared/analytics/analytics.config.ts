@@ -1,13 +1,9 @@
 const apiBaseUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
 
 export const analyticsConfig = {
-  enabled:
-    import.meta.env.PROD ||
-    import.meta.env.VITE_ENABLE_ANALYTICS === "true",
+  enabled: import.meta.env.PROD || import.meta.env.VITE_ENABLE_ANALYTICS === "true",
 
-  endpoint:
-    import.meta.env.VITE_ANALYTICS_ENDPOINT ||
-    `${apiBaseUrl}/analytics/events`,
+  endpoint: import.meta.env.VITE_ANALYTICS_ENDPOINT || `${apiBaseUrl}/analytics/events`,
 
   batchSize: 10,
   flushIntervalMs: 5000,
