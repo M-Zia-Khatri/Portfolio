@@ -14,9 +14,10 @@ export type NavItem = {
 
 const DEFAULT_NAV: NavItem[] = [
   { label: "Dashboard", link: AppNavigation.DASHBOARD },
-  { label: "Skills", link: "/dashboard/skills" },
-  { label: "Portfolio", link: "/dashboard/portfolio" },
-  { label: "Contact", link: "/dashboard/contact" },
+  { label: "Analytics", link: AppNavigation.A_ANALYTICS },
+  { label: "Skills", link: AppNavigation.A_SKILLS },
+  { label: "Portfolio", link: AppNavigation.A_PORTFOLIO },
+  { label: "Contact", link: AppNavigation.A_CONTACT },
 ];
 
 export default function Topbar() {

@@ -141,3 +141,86 @@ export async function getGame(req: Request, res: Response) {
     res.status(400).json({ success: false });
   }
 }
+
+export async function getDashboardOverview(req: Request, res: Response) {
+  try {
+    const { start, end } = getRange(req);
+    const data = await AnalyticsService.getDashboardOverview(start, end);
+    send(res, { success: true, status: 200, message: "Analytics dashboard overview", data });
+  } catch (e) {
+    res.status(400).json({ success: false });
+  }
+}
+
+export async function getTrafficDashboard(req: Request, res: Response) {
+  try {
+    const { start, end } = getRange(req);
+    const data = await AnalyticsService.getTrafficDashboard(start, end);
+    send(res, { success: true, status: 200, message: "Traffic analytics", data });
+  } catch (e) {
+    res.status(400).json({ success: false });
+  }
+}
+
+export async function getContentDashboard(req: Request, res: Response) {
+  try {
+    const { start, end } = getRange(req);
+    const data = await AnalyticsService.getContentDashboard(start, end);
+    send(res, { success: true, status: 200, message: "Content analytics", data });
+  } catch (e) {
+    res.status(400).json({ success: false });
+  }
+}
+
+export async function getTopEvents(req: Request, res: Response) {
+  try {
+    const { start, end } = getRange(req);
+    const data = await AnalyticsService.getTopEvents(start, end);
+    send(res, { success: true, status: 200, message: "Top analytics events", data });
+  } catch (e) {
+    res.status(400).json({ success: false });
+  }
+}
+
+export async function getTechnologyDashboard(req: Request, res: Response) {
+  try {
+    const { start, end } = getRange(req);
+    const data = await AnalyticsService.getTechnologyDashboard(start, end);
+    send(res, { success: true, status: 200, message: "Technology analytics", data });
+  } catch (e) {
+    res.status(400).json({ success: false });
+  }
+}
+
+export async function getGeographyDashboard(req: Request, res: Response) {
+  try {
+    const { start, end } = getRange(req);
+    const data = await AnalyticsService.getGeographyDashboard(start, end);
+    send(res, { success: true, status: 200, message: "Geographic analytics", data });
+  } catch (e) {
+    res.status(400).json({ success: false });
+  }
+}
+
+export async function getVisitorsDashboard(req: Request, res: Response) {
+  try {
+    const { start, end } = getRange(req);
+    const data = await AnalyticsService.getVisitorsDashboard(start, end);
+    send(res, { success: true, status: 200, message: "Visitor analytics", data });
+  } catch (e) {
+    res.status(400).json({ success: false });
+  }
+}
+
+export async function getVisitorDetail(req: Request, res: Response) {
+  try {
+    const data = await AnalyticsService.getVisitorDetail(String(req.params.visitorId));
+    if (!data) {
+      res.status(404).json({ success: false, message: "Visitor not found" });
+      return;
+    }
+    send(res, { success: true, status: 200, message: "Visitor detail", data });
+  } catch (e) {
+    res.status(400).json({ success: false });
+  }
+}
