@@ -18,9 +18,9 @@ import {
   getVisitorDetail,
   getVisitorsDashboard,
   ingestEvents,
-} from "../controllers/analytics.controller.js";
-import { requireAdmin } from "../middleware/auth.middleware.js";
-import { analyticsLimiter } from "../middleware/rate-limit/analytics.limiter.js";
+} from "./analytics.controller.js";
+import { requireAdmin } from "../../middleware/auth.middleware.js";
+import { analyticsLimiter } from "../../middleware/rate-limit/analytics.limiter.js";
 
 const router = Router();
 
