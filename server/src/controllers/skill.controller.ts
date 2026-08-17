@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { Prisma, type Skill } from "../../generated/prisma/client.js";
 import type { SkillMode } from "./../../generated/prisma/enums.js";
 import type { SkillModel } from "./../../generated/prisma/models/Skill.js";
-import { generateETag } from "../infrastructure/caching/cache.etag.js";
+import { generateETag } from "../infrastructure/caching/etag.js";
 import {
   cacheForget,
   cacheInvalidatePrefix,

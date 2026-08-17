@@ -1,6 +1,6 @@
 // cache.collections.ts
 import { cacheRememberConditional } from "./cache.js";
-import type { CacheOptions, CacheResult } from "./cache.types.js";
+import type { CacheOptions, CacheResult } from "./types.js";
 
 export interface CollectionOptions<T> extends CacheOptions<T> {
   itemKeys: string[]; // Keys of items that compose this collection

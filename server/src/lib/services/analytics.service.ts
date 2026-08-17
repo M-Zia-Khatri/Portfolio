@@ -1,8 +1,8 @@
 import { Prisma } from "../../../generated/prisma/client.js";
-import { RETENTION_DAYS, SESSION_TIMEOUT_MS } from "../analytics/analytics.constants.js";
 import { prisma } from "../../infrastructure/prisma.js";
-import type { AnalyticsEventPayload, AnalyticsIngestRequest } from "../types/analytics.types.js";
 import { redis } from "../../infrastructure/redis.js";
+import { RETENTION_DAYS, SESSION_TIMEOUT_MS } from "../analytics/analytics.constants.js";
+import type { AnalyticsEventPayload, AnalyticsIngestRequest } from "../types/analytics.types.js";
 
 const ONE_DAY_SECONDS = 24 * 60 * 60;
 

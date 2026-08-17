@@ -1,7 +1,7 @@
 // index.ts
 
-export { cacheRememberCollection } from "./cache.collections.js";
-export { generateCompositeETag, generateETag, matchETag } from "./cache.etag.js";
+export { cacheRememberCollection } from "./collections.js";
+export { generateCompositeETag, generateETag, matchETag } from "./etag.js";
 export {
   cacheForget,
   cacheInvalidatePrefix,
@@ -21,4 +21,4 @@ export type {
   CacheOptions,
   CachePayload,
   CacheResult,
-} from "./cache.types.js";
+} from "./types.js";

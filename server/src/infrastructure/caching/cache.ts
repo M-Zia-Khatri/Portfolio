@@ -1,18 +1,18 @@
 // cache.ts
 import { EventEmitter } from "node:events";
 import { redis } from "../redis.js";
-import { isCircuitOpen, recordFailure, recordSuccess } from "./cache.circuit.js";
+import { isCircuitOpen, recordFailure, recordSuccess } from "./circuit.js";
 import {
   CACHE_PREFIX,
   DEFAULT_CONFIG,
   LOCK_RETRY_DELAY,
   MAX_CALLBACK_DURATION_MS,
   SCAN_BATCH_SIZE,
-} from "./cache.constants.js";
-import { generateETag, matchETag } from "./cache.etag.js";
-import { buildKey, buildLockKey } from "./cache.keys.js";
-import { acquireLock, acquireLockWithBackoff, releaseLock, sleep } from "./cache.lock.js";
-import { deserialize, serialize } from "./cache.serializer.js";
+} from "./constants.js";
+import { generateETag, matchETag } from "./etag.js";
+import { buildKey, buildLockKey } from "./keys.js";
+import { acquireLock, acquireLockWithBackoff, releaseLock, sleep } from "./lock.js";
+import { deserialize, serialize } from "./serializer.js";
 import type {
   CacheConditionalOptions,
   CacheConfig,
@@ -20,10 +20,10 @@ import type {
   CacheOptions,
   CachePayload,
   CacheResult,
-} from "./cache.types.js";
+} from "./types.js";
 
-export { TTL } from "./cache.constants.js";
-export type { CacheConfig, CacheMetrics, CacheOptions, CacheResult } from "./cache.types.js";
+export { TTL } from "./constants.js";
+export type { CacheConfig, CacheMetrics, CacheOptions, CacheResult } from "./types.js";
 
 let config: CacheConfig = DEFAULT_CONFIG;
 let metrics: CacheMetrics | null = null;

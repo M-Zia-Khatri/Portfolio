@@ -1,5 +1,5 @@
 // cache.constants.ts
-import type { CacheConfig } from "./cache.types.js";
+import type { CacheConfig } from "./types.js";
 
 export const TTL = {
   ONE_MINUTE: 60,
