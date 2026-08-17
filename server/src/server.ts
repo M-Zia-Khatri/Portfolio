@@ -1,8 +1,8 @@
 import app from "./app.js";
 import { getConfig } from "./config/env.js";
-import { prisma } from "./lib/prisma.js";
+import { prisma } from "./infrastructure/prisma.js";
 import { AnalyticsService } from "./lib/services/analytics.service.js";
-import { redis } from "./lib/utills/redis.js";
+import { redis } from "./infrastructure/redis.js";
 
 const config = getConfig();
 const PORT = config.port || 5000;

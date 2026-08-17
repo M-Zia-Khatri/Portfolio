@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { getConfig } from "../../config/env.js";
-import { redis } from "../../lib/utills/redis.js";
+import { redis } from "../../infrastructure/redis.js";
 import { fallbackCheck } from "./rate-limit.fallback.js";
 import {
   buildRedisKey,

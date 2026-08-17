@@ -3,7 +3,7 @@
 import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
 import { getConfig } from "../config/env.js";
-import { prisma } from "../lib/prisma.js";
+import { prisma } from "../infrastructure/prisma.js";
 import {
   revokeAllRefreshTokens,
   revokeRefreshToken,
@@ -14,7 +14,7 @@ import {
 import { generateOtp, verifyOtp } from "../lib/services/otp.service.js";
 import type { AuthRequest, LoginBody, VerifyOtpBody } from "../lib/types/auth.types.js";
 import { catchError } from "../lib/utills/catch-error.js";
-import { sendOtpEmail } from "../lib/utills/mailer.js";
+import { sendOtpEmail } from "../infrastructure/mailer.js";
 import { send } from "../lib/utills/send.js";
 
 const config = getConfig();

@@ -1,7 +1,7 @@
 // prisma/seeds/admin.ts
 import bcrypt from "bcrypt";
 import { getConfig } from "../../src/config/env.js"; // Use relative path for safety
-import { prisma } from "../../src/lib/prisma.js"; // Ensure this points to your prisma instance
+import { prisma } from "../../src/infrastructure/prisma.js"; // Ensure this points to your prisma instance
 
 export async function seedAdmin() {
   const config = getConfig(); // Get fresh config

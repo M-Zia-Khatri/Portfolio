@@ -2,8 +2,6 @@ import type { Request, Response } from "express";
 import { Prisma, type Skill } from "../../generated/prisma/client.js";
 import type { SkillMode } from "./../../generated/prisma/enums.js";
 import type { SkillModel } from "./../../generated/prisma/models/Skill.js";
-import { prisma } from "../lib/prisma.js";
-import { type SkillRow, toSkillResponse } from "../lib/types/skill.types.js";
 import { generateETag } from "../infrastructure/caching/cache.etag.js";
 import {
   cacheForget,
@@ -13,6 +11,8 @@ import {
   cacheRememberConditional,
   TTL,
 } from "../infrastructure/caching/cache.js";
+import { prisma } from "../infrastructure/prisma.js";
+import { type SkillRow, toSkillResponse } from "../lib/types/skill.types.js";
 import { catchError } from "../lib/utills/catch-error.js";
 import { send } from "../lib/utills/send.js";
 import { createSkillSchema, updateSkillSchema } from "../lib/validators/skill.validation.js";

@@ -2,7 +2,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import { getConfig } from "./config/env.js";
-import "./lib/utills/redis.js";
+import "./infrastructure/redis.js";
 import router from "./routes/index.js";
 
 const app = express();

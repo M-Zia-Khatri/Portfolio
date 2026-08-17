@@ -1,5 +1,4 @@
 import type { Request, Response } from "express";
-import { prisma } from "../lib/prisma.js";
 import {
   cacheForget,
   cacheInvalidatePrefix,
@@ -7,8 +6,9 @@ import {
   cacheRememberConditional,
   TTL,
 } from "../infrastructure/caching/cache.js";
+import { prisma } from "../infrastructure/prisma.js";
 import { catchError } from "../lib/utills/catch-error.js";
-import { sendContactEmail } from "../lib/utills/mailer.js";
+import { sendContactEmail } from "../infrastructure/mailer.js";
 import { send } from "../lib/utills/send.js";
 
 const CACHE_KEYS = {

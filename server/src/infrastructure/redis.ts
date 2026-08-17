@@ -1,5 +1,5 @@
 import * as IORedis from "ioredis";
-import { getConfig } from "../../config/env.js";
+import { getConfig } from "../config/env.js";
 
 const { redis: redisConfig } = getConfig();
 
@@ -18,7 +18,7 @@ redis.on("error", (err: Error) => {
 
 export { redis };
 
-import { configureCache, setCacheMetrics } from "../../infrastructure/caching/cache.js";
+import { configureCache, setCacheMetrics } from "./caching/cache.js";
 
 // Configure global settings
 configureCache({
