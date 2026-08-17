@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { getConfig } from "../../config/env.js";
 import { prisma } from "../../infrastructure/prisma.js";
-import type { AccessTokenPayload, RefreshTokenPayload } from "../types/auth.types.js";
+import type { AccessTokenPayload, RefreshTokenPayload } from "../../lib/types/auth.types.js";
 
 const { jwt: jwtConfig } = getConfig();
 

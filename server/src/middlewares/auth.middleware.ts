@@ -1,9 +1,9 @@
 // src/middlewares/auth.middleware.ts
 
 import type { NextFunction, Response } from "express";
-import { verifyAccessToken } from "../lib/services/jwt.service.js";
+import { verifyAccessToken } from "../shared/services/jwt.service.js";
 import type { AuthRequest } from "../lib/types/auth.types.js";
-import type { ApiResponse } from "../lib/types/globle.types.js";
+import type { ApiResponse } from "../shared/types/globle.types.js";
 
 // ─── HELPER ───────────────────────────────────────────────────────────────────
 

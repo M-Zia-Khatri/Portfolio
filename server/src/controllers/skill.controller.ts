@@ -13,7 +13,7 @@ import {
 } from "../infrastructure/caching/cache.js";
 import { prisma } from "../infrastructure/prisma.js";
 import { type SkillRow, toSkillResponse } from "../lib/types/skill.types.js";
-import { catchError } from "../lib/utills/catch-error.js";
+import { catchError } from "../shared/utils/catch-error.js";
 import { send } from "../shared/utils/send.js";
 import { createSkillSchema, updateSkillSchema } from "../lib/validators/skill.validation.js";
 

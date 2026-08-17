@@ -16,8 +16,8 @@ import type {
   PortfolioItem,
   UpdatePortfolioDto,
 } from "../lib/types/portfolio.types.js";
-import { catchError } from "../lib/utills/catch-error.js";
-import { send } from "../lib/utills/send.js";
+import { catchError } from "../shared/utils/catch-error.js";
+import { send } from "../shared/utils/send.js";
 
 // ─── Cache Keys ──────────────────────────────────────────────────────────────
 

@@ -11,10 +11,10 @@ import {
   rotateRefreshToken,
   signAccessToken,
   signRefreshToken,
-} from "../lib/services/jwt.service.js";
-import { generateOtp, verifyOtp } from "../lib/services/otp.service.js";
+} from "../shared/services/jwt.service.js";
+import { generateOtp, verifyOtp } from "../shared/services/otp.service.js";
 import type { AuthRequest, LoginBody, VerifyOtpBody } from "../lib/types/auth.types.js";
-import { catchError } from "../lib/utills/catch-error.js";
+import { catchError } from "../shared/utils/catch-error.js";
 import { send } from "../shared/utils/send.js";
 
 const config = getConfig();
