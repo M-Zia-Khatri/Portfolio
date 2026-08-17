@@ -15,7 +15,7 @@ import {
 import { generateOtp, verifyOtp } from "../lib/services/otp.service.js";
 import type { AuthRequest, LoginBody, VerifyOtpBody } from "../lib/types/auth.types.js";
 import { catchError } from "../lib/utills/catch-error.js";
-import { send } from "../lib/utills/send.js";
+import { send } from "../shared/utils/send.js";
 
 const config = getConfig();
 
