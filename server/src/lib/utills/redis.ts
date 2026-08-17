@@ -18,7 +18,7 @@ redis.on("error", (err: Error) => {
 
 export { redis };
 
-import { configureCache, setCacheMetrics } from "./caching/cache.js";
+import { configureCache, setCacheMetrics } from "../../infrastructure/caching/cache.js";
 
 // Configure global settings
 configureCache({

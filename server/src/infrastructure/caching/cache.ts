@@ -1,6 +1,6 @@
 // cache.ts
 import { EventEmitter } from "node:events";
-import { redis } from "../redis.js";
+import { redis } from "../../lib/utills/redis.js";
 import { isCircuitOpen, recordFailure, recordSuccess } from "./cache.circuit.js";
 import {
   CACHE_PREFIX,

@@ -1,5 +1,5 @@
 // cache.lock.ts
-import { redis } from "../redis.js";
+import { redis } from "../../lib/utills/redis.js";
 import { LOCK_RETRY_DELAY, LOCK_TTL_SECONDS, MAX_LOCK_RETRIES } from "./cache.constants.js";
 
 export async function acquireLock(lockKey: string): Promise<boolean> {
