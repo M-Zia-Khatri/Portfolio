@@ -3,7 +3,7 @@ import skillRouter from "../routes/skill.route.js";
 import analyticsRouter from "../modules/analytics/analytics.route.js";
 import authRouter from "../modules/auth/auth.route.js";
 import contactRouter from "../modules/contact/contact.route.js";
-import portfolioRouter from "./portfolio.route.js";
+import portfolioRouter from "../modules/portfolio/portfolio.route.js";
 
 const router = Router();
 

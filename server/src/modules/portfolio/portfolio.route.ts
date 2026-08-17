@@ -5,9 +5,9 @@ import {
   getAllPortfolioItems,
   getPortfolioItemById,
   updatePortfolioItem,
-} from "../controllers/portfolio.controller.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
-import { rateLimit } from "../middlewares/rate-limit/rate-limit.middleware.js";
+} from "./portfolio.controller.js";
+import { requireAdmin } from "../../middleware/auth.middleware.js";
+import { rateLimit } from "../../middleware/rate-limit/rate-limit.middleware.js";
 
 const portfolioRouter = Router();
 
