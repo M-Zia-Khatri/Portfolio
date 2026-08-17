@@ -6,3 +6,12 @@ export interface ApiResponse<T = unknown> {
   error?: unknown;
   meta?: Record<string, unknown>;
 }
+
+import type { Request } from "express";
+
+export interface AuthRequest extends Request {
+  admin?: {
+    id: string;
+    email: string;
+  };
+}
