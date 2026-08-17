@@ -5,7 +5,7 @@ export const analyticsConfig = {
 
   endpoint: import.meta.env.VITE_ANALYTICS_ENDPOINT || `${apiBaseUrl}/analytics/events`,
 
-  batchSize: 10,
+  batchSize: 4,
   flushIntervalMs: 5000,
   sessionTimeoutMs: 30 * 60 * 1000,
   maxQueueSize: 500,
