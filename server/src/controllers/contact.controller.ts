@@ -9,7 +9,7 @@ import {
 import { sendContactEmail } from "../infrastructure/mailer.js";
 import { prisma } from "../infrastructure/prisma.js";
 import { catchError } from "../lib/utills/catch-error.js";
-import { send } from "../lib/utills/send.js";
+import { sendResponse } from "../shared/utils/send-response.js";
 
 const CACHE_KEYS = {
   list: (page: number, pageSize: number) => `contacts:list:${page}:${pageSize}`,
@@ -36,7 +36,7 @@ export async function submitContact(req: Request, res: Response): Promise<void> 
       console.error("[Mailer] Failed to send contact email:", err),
     );
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 201,
       message: "Message sent successfully",
@@ -82,7 +82,7 @@ export async function getContacts(req: Request, res: Response): Promise<void> {
 
     const total = result.data?.total ?? 0;
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Data retrieved successfully",
@@ -115,7 +115,7 @@ export async function deleteContact(req: Request, res: Response): Promise<void> 
     });
 
     if (!cached) {
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 404,
         message: "Message not found",
@@ -126,7 +126,7 @@ export async function deleteContact(req: Request, res: Response): Promise<void> 
 
     await Promise.all([cacheForget(`contact:${id}`), cacheInvalidatePrefix(CACHE_KEYS.prefix)]);
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Deleted successfully",

@@ -14,7 +14,7 @@ import {
 import { prisma } from "../infrastructure/prisma.js";
 import { type SkillRow, toSkillResponse } from "../lib/types/skill.types.js";
 import { catchError } from "../shared/utils/catch-error.js";
-import { send } from "../shared/utils/send.js";
+import { sendResponse } from "../shared/utils/send-response.js";
 import { createSkillSchema, updateSkillSchema } from "../lib/validators/skill.validation.js";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ export async function getAll(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Skills retrieved successfully",
@@ -116,10 +116,10 @@ export async function getOne(req: Request, res: Response): Promise<void> {
     }
 
     if (!result.data) {
-      return send(res, { success: false, status: 404, message: "Skill not found" });
+      return sendResponse(res, { success: false, status: 404, message: "Skill not found" });
     }
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Skill retrieved successfully",
@@ -137,7 +137,7 @@ export async function create(req: Request, res: Response): Promise<void> {
 
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      send(res, {
+      sendResponse(res, {
         success: false,
         status: 400,
         message: "Validation error",
@@ -156,7 +156,7 @@ export async function create(req: Request, res: Response): Promise<void> {
     });
 
     if (isSkillAllreadyExists) {
-      send(res, {
+      sendResponse(res, {
         success: false,
         status: 409,
         message: "A skill with this name already exists",
@@ -187,7 +187,7 @@ export async function create(req: Request, res: Response): Promise<void> {
     await cacheInvalidatePrefix(CACHE_KEYS.prefix);
 
     res.setHeader("ETag", generateETag(row));
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 201,
       message: "Skill created successfully",
@@ -195,7 +195,7 @@ export async function create(req: Request, res: Response): Promise<void> {
     });
   } catch (err) {
     if (isLangTaken(err)) {
-      send(res, {
+      sendResponse(res, {
         success: false,
         status: 409,
         message: "A skill with this language already exists",
@@ -213,7 +213,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     const clientETag = req.headers["if-match"] as string | undefined;
 
     if (!clientETag) {
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 428,
         message: "If-Match header required for optimistic locking",
@@ -228,7 +228,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
 
     if (cached.status === 412) {
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 412,
         message: "Resource modified by another request",
@@ -237,13 +237,13 @@ export async function update(req: Request, res: Response): Promise<void> {
     }
 
     if (!cached.data) {
-      return send(res, { success: false, status: 404, message: "Skill not found" });
+      return sendResponse(res, { success: false, status: 404, message: "Skill not found" });
     }
 
     const parsed = updateSkillSchema.safeParse(req.body);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 400,
         message: "Validation error",
@@ -278,7 +278,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     await cacheInvalidatePrefix(CACHE_KEYS.prefix);
 
     res.setHeader("ETag", generateETag(row)); // Send new ETag
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Skill updated successfully",
@@ -286,7 +286,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
   } catch (err) {
     if (isLangTaken(err)) {
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 409,
         message: "A skill with this language already exists",
@@ -307,14 +307,14 @@ export async function remove(req: Request, res: Response): Promise<void> {
       callback: () => prisma.skill.findUnique({ where: { id }, select: { id: true } }),
     });
     if (!existing) {
-      return send(res, { success: false, status: 404, message: "Skill not found" });
+      return sendResponse(res, { success: false, status: 404, message: "Skill not found" });
     }
 
     await prisma.skill.delete({ where: { id } });
 
     await Promise.all([cacheForget(CACHE_KEYS.one(id)), cacheInvalidatePrefix(CACHE_KEYS.prefix)]);
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Skill deleted successfully",

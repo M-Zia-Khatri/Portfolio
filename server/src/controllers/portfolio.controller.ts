@@ -17,7 +17,7 @@ import type {
   UpdatePortfolioDto,
 } from "../lib/types/portfolio.types.js";
 import { catchError } from "../shared/utils/catch-error.js";
-import { send } from "../shared/utils/send.js";
+import { send } from "../shared/utils/send-response.js";
 
 // ─── Cache Keys ──────────────────────────────────────────────────────────────
 
@@ -127,7 +127,7 @@ export async function getAllPortfolioItems(req: Request, res: Response): Promise
       return;
     }
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Portfolio items retrieved successfully",
@@ -163,7 +163,7 @@ export async function getPortfolioItemById(req: Request, res: Response): Promise
     }
 
     if (!result.data) {
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 404,
         message: "Portfolio item not found",
@@ -171,7 +171,7 @@ export async function getPortfolioItemById(req: Request, res: Response): Promise
       });
     }
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Portfolio item retrieved successfully",
@@ -191,7 +191,7 @@ export async function createPortfolioItem(req: Request, res: Response): Promise<
     const validationError = validateCreate(body);
     if (validationError) {
       await deleteFromCloudinary(req.body.site_image_url).catch(() => undefined);
-      send(res, {
+      sendResponse(res, {
         success: false,
         status: 400,
         message: "Validation error",
@@ -221,7 +221,7 @@ export async function createPortfolioItem(req: Request, res: Response): Promise<
     await cachePut(CACHE_KEYS.one(newItem.id), newItem, TTL.ONE_DAY);
 
     res.setHeader("ETag", generateETag(newItem));
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 201,
       message: "Portfolio item created successfully",
@@ -250,7 +250,7 @@ export async function updatePortfolioItem(req: Request, res: Response): Promise<
     if (!clientETag) {
       if (newImage) await deleteFromCloudinary(newImage);
 
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 428,
         message: "If-Match header required for optimistic locking",
@@ -269,7 +269,7 @@ export async function updatePortfolioItem(req: Request, res: Response): Promise<
     if (!existing) {
       if (newImage) await deleteFromCloudinary(newImage);
 
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 404,
         message: "Portfolio item not found",
@@ -283,7 +283,7 @@ export async function updatePortfolioItem(req: Request, res: Response): Promise<
         await deleteFromCloudinary(newImage);
       }
 
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 412,
         message: "Resource modified by another request",
@@ -298,7 +298,7 @@ export async function updatePortfolioItem(req: Request, res: Response): Promise<
         await deleteFromCloudinary(newImage);
       }
 
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 400,
         message: "Validation error",
@@ -339,7 +339,7 @@ export async function updatePortfolioItem(req: Request, res: Response): Promise<
     // ─── Response ─────────────────────────────────────────────────────────────
     res.setHeader("ETag", generateETag(updatedItem));
 
-    return send(res, {
+    return sendResponse(res, {
       success: true,
       status: 200,
       message: "Portfolio item updated successfully",
@@ -373,7 +373,7 @@ export async function deletePortfolioItem(req: Request, res: Response): Promise<
     });
 
     if (!cached) {
-      return send(res, {
+      return sendResponse(res, {
         success: false,
         status: 404,
         message: "Portfolio item not found",
@@ -389,7 +389,7 @@ export async function deletePortfolioItem(req: Request, res: Response): Promise<
 
     await Promise.all([cacheForget(CACHE_KEYS.one(id)), cacheInvalidatePrefix(CACHE_KEYS.prefix)]);
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Portfolio item deleted successfully",

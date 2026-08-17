@@ -2,8 +2,8 @@
 
 import { Router } from "express";
 import * as skill from "../controllers/skill.controller.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
-import { rateLimit } from "../middlewares/rate-limit/rate-limit.middleware.js";
+import { requireAdmin } from "../middleware/auth.middleware.js";
+import { rateLimit } from "../middleware/rate-limit/rate-limit.middleware.js";
 
 const router = Router();
 

@@ -15,7 +15,7 @@ import {
 import { generateOtp, verifyOtp } from "../shared/services/otp.service.js";
 import type { AuthRequest, LoginBody, VerifyOtpBody } from "../lib/types/auth.types.js";
 import { catchError } from "../shared/utils/catch-error.js";
-import { send } from "../shared/utils/send.js";
+import { sendResponse } from "../shared/utils/send-response.js";
 
 const config = getConfig();
 
@@ -56,7 +56,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     const { email, password } = (req.body ?? {}) as LoginBody;
 
     if (!email || !password) {
-      send(res, {
+      sendResponse(res, {
         success: false,
         status: 400,
         message: "Validation error",
@@ -82,7 +82,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     const passwordMatch = await bcrypt.compare(password, hashToCompare);
 
     if (!admin || !passwordMatch || !admin.isActive) {
-      send(res, {
+      sendResponse(res, {
         success: false,
         status: 401,
         message: "Invalid credentials",
@@ -93,7 +93,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     const otpCode = await generateOtp(admin.id);
     await sendOtpEmail(admin.email, admin.fullName, otpCode);
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "OTP sent to your registered email",
@@ -114,7 +114,7 @@ export async function verifyOtpHandler(req: Request, res: Response): Promise<voi
     const { email, otp } = req.body as VerifyOtpBody;
 
     if (!email || !otp) {
-      send(res, {
+      sendResponse(res, {
         success: false,
         status: 400,
         message: "Validation error",
@@ -129,14 +129,14 @@ export async function verifyOtpHandler(req: Request, res: Response): Promise<voi
     });
 
     if (!admin?.isActive) {
-      send(res, { success: false, status: 401, message: "Invalid request" });
+      sendResponse(res, { success: false, status: 401, message: "Invalid request" });
       return;
     }
 
     const isValid = await verifyOtp(admin.id, otp.trim());
 
     if (!isValid) {
-      send(res, {
+      sendResponse(res, {
         success: false,
         status: 401,
         message: "Invalid or expired OTP",
@@ -150,7 +150,7 @@ export async function verifyOtpHandler(req: Request, res: Response): Promise<voi
     // refreshToken goes into an HttpOnly cookie — never into the response body
     setRefreshCookie(res, refreshToken);
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Login successful",
@@ -173,7 +173,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
     const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE];
 
     if (!refreshToken) {
-      send(res, { success: false, status: 401, message: "No refresh token" });
+      sendResponse(res, { success: false, status: 401, message: "No refresh token" });
       return;
     }
 
@@ -181,7 +181,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
 
     if (!tokens) {
       clearRefreshCookie(res);
-      send(res, {
+      sendResponse(res, {
         success: false,
         status: 401,
         message: "Invalid or expired refresh token",
@@ -192,7 +192,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
     // Rotate: old cookie out, new cookie in
     setRefreshCookie(res, tokens.refreshToken);
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Token refreshed",
@@ -219,7 +219,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
     }
 
     clearRefreshCookie(res);
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Logged out successfully",
@@ -235,14 +235,14 @@ export async function logout(req: Request, res: Response): Promise<void> {
 export async function logoutAll(req: AuthRequest, res: Response): Promise<void> {
   try {
     if (!req.admin?.id) {
-      send(res, { success: false, status: 400, message: "Admin id is required" });
+      sendResponse(res, { success: false, status: 400, message: "Admin id is required" });
       return;
     }
 
     await revokeAllRefreshTokens(req.admin.id);
     clearRefreshCookie(res);
 
-    send(res, { success: true, status: 200, message: "All sessions revoked" });
+    sendResponse(res, { success: true, status: 200, message: "All sessions revoked" });
   } catch (err) {
     catchError(res, err);
   }
@@ -267,11 +267,11 @@ export async function me(req: AuthRequest, res: Response): Promise<void> {
     });
 
     if (!admin) {
-      send(res, { success: false, status: 404, message: "Admin not found" });
+      sendResponse(res, { success: false, status: 404, message: "Admin not found" });
       return;
     }
 
-    send(res, {
+    sendResponse(res, {
       success: true,
       status: 200,
       message: "Data retrieved successfully",
