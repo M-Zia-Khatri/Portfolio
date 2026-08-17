@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import { getConfig } from "./config/env.js";
 import "./infrastructure/redis.js";
-import router from "./routes/index.js";
+import router from "./modules/routes.js";
 
 const app = express();
 app.set("trust proxy", 1);
