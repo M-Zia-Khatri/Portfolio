@@ -45,3 +45,4 @@
 client/public/robots.txt
 client/public/sitemap.xml
 !**/.env.example
+file_line_report.py
