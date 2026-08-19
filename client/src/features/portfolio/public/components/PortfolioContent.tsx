@@ -45,7 +45,12 @@ export function PortfolioContent({
         />
       </motion.div>
 
-      <motion.div custom={1} variants={backItemVariants} animate={flipped ? "visible" : "hidden"} className="flex-1">
+      <motion.div
+        custom={1}
+        variants={backItemVariants}
+        animate={flipped ? "visible" : "hidden"}
+        className="flex-1"
+      >
         <Text size={TEXT.sm.size} className="leading-relaxed text-white/60" as="p">
           {item.description}
         </Text>

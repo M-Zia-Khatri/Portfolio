@@ -65,7 +65,10 @@ export default function CustomLevelDialog({ open, onOpenChange }: Props) {
 
   return (
     <Dialog.Root open={open} onOpenChange={handleClose}>
-      <Dialog.Content maxWidth="480px" style={{ background: "var(--gray-2)", border: "1px solid var(--gray-5)" }}>
+      <Dialog.Content
+        maxWidth="480px"
+        style={{ background: "var(--gray-2)", border: "1px solid var(--gray-5)" }}
+      >
         <Dialog.Title style={{ color: "var(--gray-12)" }}>Custom Difficulty Levels</Dialog.Title>
         <Dialog.Description size="2" style={{ color: "var(--gray-10)" }}>
           Create your own difficulty presets. They'll appear in the level selector.
@@ -82,7 +85,12 @@ export default function CustomLevelDialog({ open, onOpenChange }: Props) {
           }}
         />
 
-        <CustomLevelForm editingId={editingId} form={form} errors={errors} onFieldChange={setField} />
+        <CustomLevelForm
+          editingId={editingId}
+          form={form}
+          errors={errors}
+          onFieldChange={setField}
+        />
 
         <CustomLevelActions
           editingId={editingId}

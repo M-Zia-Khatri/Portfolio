@@ -36,7 +36,12 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
       initial="idle"
       whileHover="hovered"
       whileTap={{ scale: 0.975, transition: { type: "spring", stiffness: 400, damping: 20 } }}
-      style={{ rotateX: card.tiltX, rotateY: card.tiltY, transformStyle: "preserve-3d", willChange: "transform" }}
+      style={{
+        rotateX: card.tiltX,
+        rotateY: card.tiltY,
+        transformStyle: "preserve-3d",
+        willChange: "transform",
+      }}
       variants={{
         idle: { y: 0 },
         hovered: { y: -7, transition: { type: "spring", stiffness: 280, damping: 22 } },
@@ -46,7 +51,11 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
         <div className="relative h-full w-full transform-3d">
           <motion.div
             className={cn(portfolioFaceBaseClass)}
-            style={{ transform: card.frontTransform, opacity: card.frontOpacity, willChange: "transform, opacity" }}
+            style={{
+              transform: card.frontTransform,
+              opacity: card.frontOpacity,
+              willChange: "transform, opacity",
+            }}
           >
             <PortfolioImage
               item={item}
@@ -61,7 +70,11 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
 
           <motion.div
             className={cn(portfolioFaceBaseClass, "bg-(--gray-2)")}
-            style={{ transform: card.backTransform, opacity: card.backOpacity, willChange: "transform, opacity" }}
+            style={{
+              transform: card.backTransform,
+              opacity: card.backOpacity,
+              willChange: "transform, opacity",
+            }}
           >
             <PortfolioActions
               gridBaseRef={card.gridBaseRef}
@@ -79,7 +92,11 @@ export function PortfolioItemCard({ item }: PortfolioItemCardProps) {
                   card.onGithubClick();
                 }}
               />
-              <PortfolioTags useTech={item.useTech} flipped={card.flipped} backItemVariants={backItemVariants} />
+              <PortfolioTags
+                useTech={item.useTech}
+                flipped={card.flipped}
+                backItemVariants={backItemVariants}
+              />
             </div>
           </motion.div>
         </div>

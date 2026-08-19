@@ -13,7 +13,9 @@ export function toMappedSkill(s: ApiSkill): MappedSkill {
   return { ...s, iconComponent } as MappedSkill;
 }
 
-export function normalizeTerminalCommands(commands: SkillFormValues["commands"]): TerminalCommand[] {
+export function normalizeTerminalCommands(
+  commands: SkillFormValues["commands"],
+): TerminalCommand[] {
   if (!commands) return [];
 
   return commands.flatMap<TerminalCommand>((cmd) => {

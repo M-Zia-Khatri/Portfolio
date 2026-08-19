@@ -64,11 +64,23 @@ export function CustomLevelPreview({
 
               <Flex gap="1" align="center">
                 {isBeingEdited ? (
-                  <IconButton size="1" variant="ghost" color="gray" onClick={onCancelEdit} title="Cancel edit">
+                  <IconButton
+                    size="1"
+                    variant="ghost"
+                    color="gray"
+                    onClick={onCancelEdit}
+                    title="Cancel edit"
+                  >
                     <Cross2Icon />
                   </IconButton>
                 ) : (
-                  <IconButton size="1" variant="ghost" color="blue" onClick={() => onEdit(lvl)} title="Edit level">
+                  <IconButton
+                    size="1"
+                    variant="ghost"
+                    color="blue"
+                    onClick={() => onEdit(lvl)}
+                    title="Edit level"
+                  >
                     <Pencil1Icon />
                   </IconButton>
                 )}

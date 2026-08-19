@@ -8,7 +8,12 @@ interface CustomLevelActionsProps {
   onSave: () => void;
 }
 
-export function CustomLevelActions({ editingId, onCancelEdit, onClose, onSave }: CustomLevelActionsProps) {
+export function CustomLevelActions({
+  editingId,
+  onCancelEdit,
+  onClose,
+  onSave,
+}: CustomLevelActionsProps) {
   return (
     <Flex gap="3" justify="between" mt="5">
       {editingId ? (

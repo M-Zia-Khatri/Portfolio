@@ -19,7 +19,10 @@ export function usePortfolioActions() {
         id: `optimistic-${Date.now()}`,
         ...newItem,
       };
-      queryClient.setQueryData<PortfolioItem[]>(PORTFOLIO_QUERY_KEY, (old = []) => [optimistic, ...old]);
+      queryClient.setQueryData<PortfolioItem[]>(PORTFOLIO_QUERY_KEY, (old = []) => [
+        optimistic,
+        ...old,
+      ]);
       return { previous };
     },
     onError: (_err, _vars, ctx) => {

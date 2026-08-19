@@ -1,4 +1,15 @@
-import { Badge, Box, Button, Card, Flex, Grid, Heading, Separator, Spinner, Text } from "@radix-ui/themes";
+import {
+  Badge,
+  Box,
+  Button,
+  Card,
+  Flex,
+  Grid,
+  Heading,
+  Separator,
+  Spinner,
+  Text,
+} from "@radix-ui/themes";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { fetchVisitorDetail } from "../analytics.admin.api";

@@ -15,12 +15,14 @@ import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import { ICON_OPTIONS } from "../iconMap";
 import type { SkillFormValues } from "../skills.schema";
 
-export function SkillFormFields({
-  form,
-}: {
-  form: UseFormReturn<SkillFormValues>;
-}) {
-  const { register, watch, setValue, control, formState: { errors } } = form;
+export function SkillFormFields({ form }: { form: UseFormReturn<SkillFormValues> }) {
+  const {
+    register,
+    watch,
+    setValue,
+    control,
+    formState: { errors },
+  } = form;
   const { fields, append, remove } = useFieldArray({ control, name: "commands" });
   const mode = watch("mode");
 
@@ -90,7 +92,11 @@ export function SkillFormFields({
         </Text>
 
         {mode === "code" ? (
-          <TextArea placeholder="Enter code lines (one per line)..." rows={8} {...register("content")} />
+          <TextArea
+            placeholder="Enter code lines (one per line)..."
+            rows={8}
+            {...register("content")}
+          />
         ) : (
           <Flex direction="column" gap="2">
             <Box className="max-h-75 overflow-y-auto pr-2">
@@ -147,7 +153,11 @@ export function SkillFormFields({
               ))}
             </Box>
 
-            <Button type="button" variant="outline" onClick={() => append({ kind: "command", text: "" })}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => append({ kind: "command", text: "" })}
+            >
               <PlusIcon /> Add Command
             </Button>
           </Flex>

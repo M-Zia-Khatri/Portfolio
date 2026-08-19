@@ -4,7 +4,12 @@ import { useGsapTypingEffect } from "@/shared/hooks/useGsapAnimations";
 import type { TerminalLine as TLine } from "../../types";
 import { TerminalActiveOutput, TerminalDoneBlocks } from "./TerminalOutput";
 import { TerminalPrompt } from "./TerminalPrompt";
-import { buildBlocks, normalizeTerminalCursor, type TerminalBlock, type TerminalOutputLine } from "./terminal.utils";
+import {
+  buildBlocks,
+  normalizeTerminalCursor,
+  type TerminalBlock,
+  type TerminalOutputLine,
+} from "./terminal.utils";
 
 interface TerminalViewProps {
   skillName: string;

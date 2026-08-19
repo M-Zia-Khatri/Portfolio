@@ -60,14 +60,8 @@ export default function Analytics() {
             maxEvents={maxEvents}
           />
           <Grid columns={{ initial: "1", xl: "2" }} gap="5">
-            <AnalyticsTable
-              visitors={visitors.data ?? []}
-              onSelectVisitor={setSelectedVisitor}
-            />
-            <AnalyticsPagination
-              key={selectedVisitor?.id ?? "empty"}
-              visitor={selectedVisitor}
-            />
+            <AnalyticsTable visitors={visitors.data ?? []} onSelectVisitor={setSelectedVisitor} />
+            <AnalyticsPagination key={selectedVisitor?.id ?? "empty"} visitor={selectedVisitor} />
           </Grid>
         </Flex>
       )}

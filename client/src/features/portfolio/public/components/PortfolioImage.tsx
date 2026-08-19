@@ -54,7 +54,10 @@ export function PortfolioImage({ item, imgX, imgY, onDemoClick }: PortfolioImage
         <Heading as="h3" size={HEADING.h3.size} className="ml-2 leading-tight font-bold text-white">
           {item.siteName}
         </Heading>
-        <Badge size="3" className="mt-2 inline-block rounded-full text-[10px] font-semibold uppercase">
+        <Badge
+          size="3"
+          className="mt-2 inline-block rounded-full text-[10px] font-semibold uppercase"
+        >
           {item.siteRole}
         </Badge>
       </motion.div>

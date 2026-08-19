@@ -1,5 +1,8 @@
 import { Flex, Text, TextField } from "@radix-ui/themes";
-import type { CustomLevelFormErrors, CustomLevelFormState } from "../validation/customLevel.validation";
+import type {
+  CustomLevelFormErrors,
+  CustomLevelFormState,
+} from "../validation/customLevel.validation";
 
 export function CustomLevelFieldRow({
   label,
