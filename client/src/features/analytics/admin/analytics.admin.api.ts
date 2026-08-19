@@ -9,7 +9,7 @@ import type {
   TrafficAnalytics,
   VisitorDetail,
   VisitorSummary,
-} from "./types";
+} from "./analytics.admin.types";
 
 type ApiEnvelope<T> = { data: T } | T;
 
