@@ -11,8 +11,8 @@ const ContactPage = lazy(() => import("@/features/contact/admin/ContactPage"));
 const Dashboard = lazy(() => import("@/features/dashboard/Dashboard"));
 const DashboardLayout = lazy(() => import("@/features/dashboard/layout/DashboardLayout"));
 const Analytics = lazy(() => import("@/features/analytics/admin/Analytics"));
-const Portfolio = lazy(() => import("@/features/dashboard/pages/portfolio/Portfolio"));
-const Skills = lazy(() => import("@/features/dashboard/pages/skills/Skills"));
+const Portfolio = lazy(() => import("@/features/portfolio/admin/Portfolio"));
+const Skills = lazy(() => import("@/features/skills/admin/Skills"));
 
 const RouteLoader = () => (
   <div id="initial-loader">
