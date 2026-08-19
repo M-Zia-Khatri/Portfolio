@@ -1,164 +1,44 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircledIcon, EnvelopeClosedIcon, PaperPlaneIcon } from "@radix-ui/react-icons";
-import {
-  Button,
-  Callout,
-  Card,
-  Flex,
-  Heading,
-  Separator,
-  Spinner,
-  Text,
-  TextArea,
-  TextField,
-} from "@radix-ui/themes";
-import { type UseMutationResult, useMutation } from "@tanstack/react-query";
+import { Card, Flex, Heading, Separator, Text } from "@radix-ui/themes";
 import type { AxiosError } from "axios";
-import type React from "react";
-import { memo, useEffect, useOptimistic, useRef, useTransition } from "react";
-import { type UseFormRegisterReturn, useForm } from "react-hook-form";
-
-import { submitContactForm } from "@/features/contact/api";
-import { useSectionActive } from "@/features/home/hooks/useSectionActive";
+import { memo, useRef } from "react";
+import { useForm } from "react-hook-form";
 import { analytics } from "@/shared/analytics";
 import { HEADING, TEXT } from "@/shared/constants/style.constants";
-import { type ContactFormData, contactSchema } from "../schema/contact.schema";
-import type { Contact } from "../types";
+import { type ContactFormData, contactSchema } from "./contact.schema";
+import { ContactErrorState } from "./components/ContactErrorState";
+import { ContactFields } from "./components/ContactFields";
+import { ContactMessageField } from "./components/ContactMessageField";
+import { ContactPromise, ContactSubmitButton } from "./components/ContactSubmitButton";
+import { ContactSuccessState } from "./components/ContactSuccessState";
+import { useContactForm } from "./hooks/useContactForm";
 
-// --- 1. Atomic Memoized Components ---
-
-const FormLabel = memo(({ children }: { children: React.ReactNode }) => (
-  <Text as="label" size={TEXT.base.size} weight="medium">
-    {children}
-  </Text>
-));
-
-const FormErrorMessage = memo(({ message }: { message?: string }) => {
-  if (!message) return null;
+function FormCardHeader() {
   return (
-    <Text size={TEXT.sm.size} color="red">
-      {message}
-    </Text>
+    <div className="space-y-2">
+      <Heading as="h3" size={HEADING.h3.size} weight="bold" className="text-white text-center">
+        Contact Form
+      </Heading>
+      <Text size={TEXT.sm.size} weight="medium">
+        Please contact me directly at{" "}
+        <Text size={TEXT.sm.size} className="font-extrabold text-(--blue-a11)" as="span">
+          muhammadziakhatri@gmail.com
+        </Text>{" "}
+        or drop your info here.
+      </Text>
+    </div>
   );
-});
-
-const ignoreRegisterRefChange = (
-  prevProps: { registration: UseFormRegisterReturn },
-  nextProps: { registration: UseFormRegisterReturn },
-) => {
-  const prev = prevProps.registration;
-  const next = nextProps.registration;
-  return prev.name === next.name && prev.disabled === next.disabled;
-};
-
-const FormInput = memo(
-  ({
-    label,
-    error,
-    registration,
-    icon: Icon,
-    ...props
-  }: {
-    label: string;
-    error?: string;
-    registration: UseFormRegisterReturn;
-    icon?: React.ElementType;
-  } & React.ComponentPropsWithoutRef<typeof TextField.Root>) => (
-    <Flex direction="column" gap="1" flexGrow="1">
-      <FormLabel>{label}</FormLabel>
-      <TextField.Root
-        {...props}
-        {...registration}
-        color={error ? "red" : props.color}
-        aria-invalid={!!error}
-      >
-        {Icon && (
-          <TextField.Slot>
-            <Icon width={14} height={14} />
-          </TextField.Slot>
-        )}
-      </TextField.Root>
-      <FormErrorMessage message={error} />
-    </Flex>
-  ),
-  ignoreRegisterRefChange,
-);
-
-const FormTextAreaField = memo(
-  ({
-    label,
-    error,
-    registration,
-    ...props
-  }: {
-    label: string;
-    error?: string;
-    registration: UseFormRegisterReturn;
-  } & React.ComponentPropsWithoutRef<typeof TextArea>) => (
-    <Flex direction="column" gap="1">
-      <FormLabel>{label}</FormLabel>
-      <TextArea
-        {...props}
-        {...registration}
-        color={error ? "red" : props.color}
-        aria-invalid={!!error}
-      />
-      <FormErrorMessage message={error} />
-    </Flex>
-  ),
-  ignoreRegisterRefChange,
-);
-
-const FormCardHeader = memo(() => (
-  <div className="space-y-2">
-    <Heading as="h3" size={HEADING.h3.size} weight="bold" className="text-white text-center">
-      Contact Form
-    </Heading>
-    <Text size={TEXT.sm.size} weight="medium">
-      Please contact me directly at{" "}
-      <Text size={TEXT.sm.size} className="font-extrabold text-(--blue-a11)" as="span">
-        muhammadziakhatri@gmail.com
-      </Text>{" "}
-      or drop your info here.
-    </Text>
-  </div>
-));
-
-const FormCardPromise = memo(() => (
-  <Text size="1" color="blue" weight="medium">
-    I&apos;ll never share your data with anyone else. Pinky promise!
-  </Text>
-));
-
-const FormCardButton = memo(({ isLoading }: { isLoading: boolean }) => (
-  <Button
-    type="submit"
-    size="3"
-    variant="solid"
-    disabled={isLoading}
-    className="w-full cursor-pointer"
-  >
-    {isLoading ? (
-      <Flex align="center" gap="2">
-        <Spinner size="2" /> Sending…
-      </Flex>
-    ) : (
-      <Flex align="center" gap="2">
-        Send Message <PaperPlaneIcon width={15} height={15} />
-      </Flex>
-    )}
-  </Button>
-));
-
-// --- 2. Memoized Inner Form Logic ---
-
-interface InnerFormProps {
-  onSubmit: (data: ContactFormData) => void;
-  isLoading: boolean;
-  mutation: UseMutationResult<Contact, AxiosError, ContactFormData, unknown>;
 }
 
-const ContactFormInner = memo(({ onSubmit, isLoading, mutation }: InnerFormProps) => {
+function ContactFormInner({
+  onSubmit,
+  isLoading,
+  mutation,
+}: ReturnType<typeof useContactForm> extends infer T
+  ? T extends { onSubmit: infer S; isLoading: infer L; mutation: infer M }
+    ? { onSubmit: S; isLoading: L; mutation: M }
+    : never
+  : never) {
   const {
     register,
     handleSubmit,
@@ -196,121 +76,29 @@ const ContactFormInner = memo(({ onSubmit, isLoading, mutation }: InnerFormProps
       noValidate
     >
       <Flex direction="column" gap="4">
-        <Flex direction={{ initial: "column", sm: "row" }} gap="4">
-          <FormInput
-            label="Full name"
-            placeholder="Your Name"
-            registration={register("fullName")}
-            error={errors.fullName?.message}
-            disabled={isLoading}
-          />
-          <FormInput
-            label="Email Address"
-            type="email"
-            placeholder="you@example.com"
-            registration={register("email")}
-            error={errors.email?.message}
-            disabled={isLoading}
-            icon={EnvelopeClosedIcon}
-          />
-        </Flex>
-
-        <FormTextAreaField
-          label="Your Message"
-          rows={5}
-          placeholder="Tell me about your project,"
+        <ContactFields register={register} errors={errors} isLoading={isLoading} />
+        <ContactMessageField
           registration={register("message")}
           error={errors.message?.message}
-          disabled={isLoading}
+          isLoading={isLoading}
         />
-
-        {mutation.isError && (
-          <Callout.Root color="red" variant="surface" size="1">
-            <Callout.Text>{errorMessage}</Callout.Text>
-          </Callout.Root>
-        )}
-
-        <FormCardPromise />
-        <FormCardButton isLoading={isLoading} />
+        {mutation.isError && <ContactErrorState message={errorMessage} />}
+        <ContactPromise />
+        <ContactSubmitButton isLoading={isLoading} />
       </Flex>
     </form>
   );
-});
-
-// --- 3. Main Component (The Card Wrapper) ---
+}
 
 function ContactFormCard() {
-  const [isPendingTransition, startTransition] = useTransition();
-  const isContactOpen = useSectionActive("contact");
-  const contactOpenedRef = useRef(false);
-
-  const mutation = useMutation<Contact, AxiosError, ContactFormData, unknown>({
-    mutationFn: submitContactForm,
-  });
-
-  useEffect(() => {
-    if (!isContactOpen || contactOpenedRef.current) return;
-    contactOpenedRef.current = true;
-
-    if (typeof window === "undefined") return;
-    try {
-      if (window.sessionStorage.getItem("analytics-contact-open") === "1") return;
-      window.sessionStorage.setItem("analytics-contact-open", "1");
-      analytics.track("contact_open", {});
-    } catch {
-      // analytics should fail silently
-    }
-  }, [isContactOpen]);
-
-  const [optimisticSuccess, setOptimisticSuccess] = useOptimistic(
-    false,
-    (_, newState: boolean) => newState,
-  );
-
-  const onSubmit = (data: ContactFormData) => {
-    analytics.track("contact_submit", {});
-
-    startTransition(async () => {
-      try {
-        setOptimisticSuccess(true);
-        await mutation.mutateAsync(data);
-      } catch {
-        // Handled by mutation error state
-      }
-    });
-  };
-
-  const handleResetForm = () => {
-    mutation.reset();
-  };
-
-  const isLoading = mutation.isPending || isPendingTransition;
-  const showSuccess = (optimisticSuccess && !mutation.isError) || mutation.isSuccess;
-  const successTrackedRef = useRef(false);
-
-  useEffect(() => {
-    if (!mutation.isSuccess || successTrackedRef.current) return;
-    successTrackedRef.current = true;
-    analytics.track("contact_success", {});
-  }, [mutation.isSuccess]);
+  const { isLoading, mutation, onSubmit, resetForm, showSuccess } = useContactForm();
 
   return (
     <Card size="3">
       <FormCardHeader />
       <Separator my="4" size="4" />
-
       {showSuccess ? (
-        <div key="success" className="animate-in fade-in zoom-in-95 duration-300">
-          <Callout.Root color="green" variant="surface" size="2">
-            <Callout.Icon>
-              <CheckCircledIcon width={18} height={18} />
-            </Callout.Icon>
-            <Callout.Text>Your message was sent! I&apos;ll get back to you soon.</Callout.Text>
-          </Callout.Root>
-          <Button mt="4" variant="ghost" size="2" onClick={handleResetForm}>
-            Send another message
-          </Button>
-        </div>
+        <ContactSuccessState onReset={resetForm} />
       ) : (
         <ContactFormInner onSubmit={onSubmit} isLoading={isLoading} mutation={mutation} />
       )}
