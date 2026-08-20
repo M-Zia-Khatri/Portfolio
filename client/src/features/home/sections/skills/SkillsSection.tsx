@@ -21,18 +21,63 @@ function SkillsSection() {
   const section = useSkillsSection();
   return (
     <SecComponent>
-      <Box ref={sectionRef} className="mx-auto flex w-full max-w-xs flex-col items-center gap-8 sm:max-w-xl md:gap-12">
+      <Box
+        ref={sectionRef}
+        className="mx-auto flex w-full max-w-xs flex-col items-center gap-8 sm:max-w-xl md:gap-12"
+      >
         <SkillsHeader />
-        <SkillsGrid cardsRef={cardsRef} skills={section.mappedSkills} activeName={section.resolvedSkill?.name} handlers={section.chipHandlers} />
+        <SkillsGrid
+          cardsRef={cardsRef}
+          skills={section.mappedSkills}
+          activeName={section.resolvedSkill?.name}
+          handlers={section.chipHandlers}
+        />
         <div className="relative w-full" style={PERSPECTIVE_STYLE}>
           {section.isLoading ? (
-            <Flex align="center" justify="center" className="min-h-[300px] rounded-xl border border-white/10"><Spinner size="3" /></Flex>
+            <Flex
+              align="center"
+              justify="center"
+              className="min-h-[300px] rounded-xl border border-white/10"
+            >
+              <Spinner size="3" />
+            </Flex>
           ) : section.isError ? (
-            <Flex direction="column" align="center" justify="center" className="min-h-[300px] rounded-xl border border-white/10 p-4"><CodeEmptyState /><Text size="2" color="red" className="text-center">Couldn&apos;t load skills right now.</Text></Flex>
+            <Flex
+              direction="column"
+              align="center"
+              justify="center"
+              className="min-h-[300px] rounded-xl border border-white/10 p-4"
+            >
+              <CodeEmptyState />
+              <Text size="2" color="red" className="text-center">
+                Couldn&apos;t load skills right now.
+              </Text>
+            </Flex>
           ) : !section.resolvedSkill ? (
-            <Flex direction="column" align="center" justify="center" className="min-h-[300px] rounded-xl border border-white/10 p-4"><CodeEmptyState /><Text size="2" color="gray" className="text-center">No skills available yet.</Text></Flex>
+            <Flex
+              direction="column"
+              align="center"
+              justify="center"
+              className="min-h-[300px] rounded-xl border border-white/10 p-4"
+            >
+              <CodeEmptyState />
+              <Text size="2" color="gray" className="text-center">
+                No skills available yet.
+              </Text>
+            </Flex>
           ) : (
-            <CodeCard isActive={section.isSectionActive} skill={section.resolvedSkill} openTabs={section.openTabs} onTabClick={section.handleTabClick} onTabClose={section.handleTabClose} codeProgress={section.codeProgress} terminalProgress={section.terminalProgress} onCodeProgressChange={section.handleCodeProgressChange} onTerminalProgressChange={section.handleTerminalProgressChange} codeContainerRef={codeRef} />
+            <CodeCard
+              isActive={section.isSectionActive}
+              skill={section.resolvedSkill}
+              openTabs={section.openTabs}
+              onTabClick={section.handleTabClick}
+              onTabClose={section.handleTabClose}
+              codeProgress={section.codeProgress}
+              terminalProgress={section.terminalProgress}
+              onCodeProgressChange={section.handleCodeProgressChange}
+              onTerminalProgressChange={section.handleTerminalProgressChange}
+              codeContainerRef={codeRef}
+            />
           )}
         </div>
       </Box>

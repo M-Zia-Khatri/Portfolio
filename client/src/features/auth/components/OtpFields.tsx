@@ -54,7 +54,9 @@ export function OtpFields({
             "0 0 0 3px var(--blue-a4), inset 0 1px 3px rgba(0,0,0,0.25)";
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = errors.code ? "var(--red-8, #b91c1c)" : "var(--gray-6)";
+          e.currentTarget.style.borderColor = errors.code
+            ? "var(--red-8, #b91c1c)"
+            : "var(--gray-6)";
           e.currentTarget.style.boxShadow = "inset 0 1px 3px rgba(0,0,0,0.25)";
         }}
         onChange={(e) => {

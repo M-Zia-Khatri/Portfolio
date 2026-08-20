@@ -1,6 +1,14 @@
 import { cn } from "@/shared/utils/cn";
 
-export function OtpResendButton({ ready, time, onResend }: { ready: boolean; time: number; onResend: () => void }) {
+export function OtpResendButton({
+  ready,
+  time,
+  onResend,
+}: {
+  ready: boolean;
+  time: number;
+  onResend: () => void;
+}) {
   return (
     <p className={cn("text-center text-xs")} style={{ color: "var(--gray-10)" }}>
       Didn't receive the code?{" "}

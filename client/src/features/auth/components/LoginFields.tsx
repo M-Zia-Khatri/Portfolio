@@ -106,7 +106,10 @@ export function LoginFields({
             tabIndex={-1}
             onClick={onTogglePassword}
             aria-label={showPassword ? "Hide password" : "Show password"}
-            className={cn("absolute right-3 top-1/2 -translate-y-1/2", "transition-colors duration-150")}
+            className={cn(
+              "absolute right-3 top-1/2 -translate-y-1/2",
+              "transition-colors duration-150",
+            )}
             style={{ color: "var(--gray-9)" }}
           >
             {showPassword ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}

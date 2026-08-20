@@ -1,4 +1,4 @@
-import { ICON_MAP } from "@/features/dashboard/pages/skills/iconMap";
+import { ICON_MAP } from "@/features/skills/admin/iconMap";
 import type { ApiSkill, Skill } from "@/features/skills/types";
 
 export function toRuntimeSkill(apiSkill: ApiSkill): Skill {

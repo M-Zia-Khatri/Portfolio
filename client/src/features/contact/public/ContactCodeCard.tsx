@@ -1,5 +1,5 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSkillsCodeData } from "@/features/dashboard/pages/skills/useSkillActions";
+import { useSkillsCodeData } from "@/features/skills/admin/hooks/useSkillActions";
 import type { Skill } from "@/features/skills/types";
 import { analytics } from "@/shared/analytics";
 import type { CodeCardHandle } from "@/shared/components/CodeCard";
