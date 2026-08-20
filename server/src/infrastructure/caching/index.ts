@@ -1,7 +1,5 @@
 // index.ts
 
-export { cacheRememberCollection } from "./collections.js";
-export { generateCompositeETag, generateETag, matchETag } from "./etag.js";
 export {
   cacheForget,
   cacheInvalidatePrefix,
@@ -13,6 +11,8 @@ export {
   setCacheMetrics,
   TTL,
 } from "./cache.js";
+export { cacheRememberCollection } from "./collections.js";
+export { generateCompositeETag, generateETag, matchETag } from "./etag.js";
 
 export type {
   CacheConditionalOptions,

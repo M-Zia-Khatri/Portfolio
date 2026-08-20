@@ -9,10 +9,10 @@ import { useApiError } from "../hooks/useApiError";
 import { useAutoFocus } from "../hooks/useAutoFocus";
 import { useCooldown } from "../hooks/useCooldown";
 import { DialogShell } from "./DialogShell";
-import { ApiErrorBanner } from "./ui/ApiErrorBanner";
 import { OtpActions } from "./OtpActions";
 import { OtpFields } from "./OtpFields";
 import { OtpResendButton } from "./OtpResendButton";
+import { ApiErrorBanner } from "./ui/ApiErrorBanner";
 
 interface OtpFormProps {
   open: boolean;

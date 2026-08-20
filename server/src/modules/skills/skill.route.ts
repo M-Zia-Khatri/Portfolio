@@ -1,9 +1,9 @@
 // server/src/routes/skill.route.ts
 
 import { Router } from "express";
-import * as skill from "./skill.controller.js";
 import { requireAdmin } from "../../middleware/auth.middleware.js";
 import { rateLimit } from "../../middleware/rate-limit/rate-limit.middleware.js";
+import * as skill from "./skill.controller.js";
 
 const router = Router();
 

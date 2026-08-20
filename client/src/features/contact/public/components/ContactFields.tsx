@@ -1,7 +1,7 @@
 import { EnvelopeClosedIcon } from "@radix-ui/react-icons";
 import { Flex, Text, TextField } from "@radix-ui/themes";
-import { memo } from "react";
 import type React from "react";
+import { memo } from "react";
 import type { UseFormRegisterReturn } from "react-hook-form";
 import { TEXT } from "@/shared/constants/style.constants";
 

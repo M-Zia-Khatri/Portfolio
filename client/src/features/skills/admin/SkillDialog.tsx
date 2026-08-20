@@ -2,8 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog } from "@radix-ui/themes";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { ICON_OPTIONS } from "./iconMap";
 import { SkillDialogActions, SkillFormFields } from "./components/SkillFormFields";
+import { ICON_OPTIONS } from "./iconMap";
 import { type SkillFormValues, skillSchema } from "./skills.schema";
 
 interface SkillDialogProps {

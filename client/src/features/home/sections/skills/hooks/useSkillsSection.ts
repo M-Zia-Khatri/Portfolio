@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ICON_MAP } from "@/features/skills/admin/iconMap";
+import { useSectionActive } from "@/features/home/hooks/useSectionActive";
 import { useSkillsData } from "@/features/skills/admin/hooks/useSkillActions";
+import { ICON_MAP } from "@/features/skills/admin/iconMap";
 import {
+  type CodeTypingProgress,
   DEFAULT_SKILLS_SECTION_PROGRESS,
   patchSkillsSectionProgress,
   readSkillsSectionProgress,
-  type CodeTypingProgress,
   type SkillsSectionProgress,
   type TerminalTypingProgress,
 } from "@/features/skills/skillsProgress.storage";
 import type { ApiSkill, Skill } from "@/features/skills/types";
-import { useSectionActive } from "@/features/home/hooks/useSectionActive";
 
 export function useSkillsSection() {
   const isSectionActive = useSectionActive("skills");

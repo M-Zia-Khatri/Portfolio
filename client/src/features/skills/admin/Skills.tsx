@@ -4,15 +4,15 @@ import type { ApiSkill } from "@/features/skills/types";
 import { SkillsEmptyState } from "./components/SkillsEmptyState";
 import { SkillsHeader } from "./components/SkillsHeader";
 import { SkillsTable, SkillsTablePreview } from "./components/SkillsTable";
-import SkillDialog from "./SkillDialog";
-import type { SkillFormValues } from "./skills.schema";
-import { normalizeTerminalCommands, toMappedSkill } from "./skills.utils";
 import {
   useCreateSkill,
   useDeleteSkill,
   useSkillsData,
   useUpdateSkill,
 } from "./hooks/useSkillActions";
+import SkillDialog from "./SkillDialog";
+import type { SkillFormValues } from "./skills.schema";
+import { normalizeTerminalCommands, toMappedSkill } from "./skills.utils";
 
 export default function Skills() {
   const { data: apiSkills, isLoading, isError } = useSkillsData();

@@ -1,8 +1,8 @@
 import { Dialog } from "@radix-ui/themes";
 import { cn } from "@/shared/utils/cn";
-import type { PortfolioItem } from "./portfolio.types";
 import { PortfolioForm } from "./components/PortfolioForm";
 import { usePortfolioForm } from "./hooks/usePortfolioForm";
+import type { PortfolioItem } from "./portfolio.types";
 
 interface PortfolioDialogProps {
   open: boolean;

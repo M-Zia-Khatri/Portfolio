@@ -5,12 +5,12 @@ import { memo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { analytics } from "@/shared/analytics";
 import { HEADING, TEXT } from "@/shared/constants/style.constants";
-import { type ContactFormData, contactSchema } from "./contact.schema";
 import { ContactErrorState } from "./components/ContactErrorState";
 import { ContactFields } from "./components/ContactFields";
 import { ContactMessageField } from "./components/ContactMessageField";
 import { ContactPromise, ContactSubmitButton } from "./components/ContactSubmitButton";
 import { ContactSuccessState } from "./components/ContactSuccessState";
+import { type ContactFormData, contactSchema } from "./contact.schema";
 import { useContactForm } from "./hooks/useContactForm";
 
 function FormCardHeader() {

@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { catchError } from "@/shared/utils/catch-error.js";
 import {
   cacheForget,
   cacheInvalidatePrefix,
@@ -9,7 +10,6 @@ import {
 import { sendContactEmail } from "../../infrastructure/mailer.js";
 import { prisma } from "../../infrastructure/prisma.js";
 import { sendResponse } from "../../shared/utils/send-response.js";
-import { catchError } from "@/shared/utils/catch-error.js";
 
 const CACHE_KEYS = {
   list: (page: number, pageSize: number) => `contacts:list:${page}:${pageSize}`,

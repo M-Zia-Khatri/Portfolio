@@ -11,7 +11,7 @@ import {
   TextArea,
   TextField,
 } from "@radix-ui/themes";
-import { useFieldArray, type UseFormReturn } from "react-hook-form";
+import { type UseFormReturn, useFieldArray } from "react-hook-form";
 import { ICON_OPTIONS } from "../iconMap";
 import type { SkillFormValues } from "../skills.schema";
 

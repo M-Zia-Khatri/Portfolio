@@ -4,10 +4,10 @@ import type { Skill } from "@/features/skills/types";
 import { analytics } from "@/shared/analytics";
 import type { CodeCardHandle } from "@/shared/components/CodeCard";
 import { useGsapReveal } from "@/shared/hooks/useGsapAnimations";
+import { markSessionOnce, toRuntimeSkill } from "./components/ContactCodeActions";
 import { ContactCodeFooter } from "./components/ContactCodeFooter";
 import { ContactCodeHeader, type ContactCodeStatus } from "./components/ContactCodeHeader";
 import { ContactCodeLine } from "./components/ContactCodeLine";
-import { markSessionOnce, toRuntimeSkill } from "./components/ContactCodeActions";
 
 const CONTACT_OPEN_SESSION_KEY = "analytics-contact-open";
 

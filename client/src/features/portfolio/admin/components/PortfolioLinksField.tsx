@@ -1,8 +1,8 @@
 import { TextField } from "@radix-ui/themes";
+import type { UseFormRegister } from "react-hook-form";
 import { cn } from "@/shared/utils/cn";
 import type { PortfolioFormValues } from "../portfolio.types";
 import { PortfolioFormField } from "./PortfolioFormFields";
-import type { UseFormRegister } from "react-hook-form";
 
 interface PortfolioLinksFieldProps {
   error?: string;

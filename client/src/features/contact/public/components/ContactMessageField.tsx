@@ -1,6 +1,6 @@
 import { Flex, TextArea } from "@radix-ui/themes";
-import { memo } from "react";
 import type React from "react";
+import { memo } from "react";
 import type { UseFormRegisterReturn } from "react-hook-form";
 import { FormErrorMessage, FormLabel, ignoreRegisterRefChange } from "./ContactFields";
 
