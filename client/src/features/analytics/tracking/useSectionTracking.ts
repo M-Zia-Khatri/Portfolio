@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { analytics } from "@/shared/analytics";
+import { analytics } from "@/features/analytics/tracking";
 
 // Sections that should never fire analytics (e.g. "home" maps to hero which is always visible)
 const TRACKED_SECTIONS = new Set([

@@ -1,5 +1,5 @@
 import type { Dispatch, MutableRefObject } from "react";
-import { analytics } from "@/shared/analytics";
+import { analytics } from "@/features/analytics/tracking";
 import type { GuessResultType } from "../types/guessNumContextTypes";
 import type { GuessNumActionsContextType } from "./game.types";
 import type { GameAction } from "./gameReducer";

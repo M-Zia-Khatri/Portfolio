@@ -3,7 +3,7 @@ import { Card, Flex, Heading, Separator, Text } from "@radix-ui/themes";
 import type { AxiosError } from "axios";
 import { memo, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { analytics } from "@/shared/analytics";
+import { analytics } from "@/features/analytics/tracking";
 import { HEADING, TEXT } from "@/shared/constants/style.constants";
 import { ContactErrorState } from "./components/ContactErrorState";
 import { ContactFields } from "./components/ContactFields";

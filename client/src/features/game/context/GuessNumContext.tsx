@@ -8,7 +8,7 @@ import React, {
   useRef,
   useTransition,
 } from "react";
-import { analytics } from "@/shared/analytics";
+import { analytics } from "@/features/analytics/tracking";
 import useGameTimer from "../hooks/useGameTimer";
 import { generateId } from "../services/idGenerator";
 import useGameSet, { type ScoreRecord } from "../store/GameSetStore";

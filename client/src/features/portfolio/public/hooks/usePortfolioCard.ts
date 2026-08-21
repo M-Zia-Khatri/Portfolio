@@ -2,7 +2,7 @@ import gsap from "gsap";
 import { animate, useMotionValue, useTransform } from "motion/react";
 import type { MouseEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { analytics } from "@/shared/analytics";
+import { analytics } from "@/features/analytics/tracking";
 import type { PortfolioItem } from "../../types";
 import { getPortfolioProjectId } from "../portfolio.utils";
 

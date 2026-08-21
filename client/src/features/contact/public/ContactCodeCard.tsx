@@ -1,7 +1,7 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { analytics } from "@/features/analytics/tracking";
 import { useSkillsCodeData } from "@/features/skills/admin/hooks/useSkillActions";
 import type { Skill } from "@/features/skills/types";
-import { analytics } from "@/shared/analytics";
 import type { CodeCardHandle } from "@/shared/components/CodeCard";
 import { useGsapReveal } from "@/shared/hooks/useGsapAnimations";
 import { markSessionOnce, toRuntimeSkill } from "./components/ContactCodeActions";

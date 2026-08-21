@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { useEffect, useOptimistic, useRef, useTransition } from "react";
+import { analytics } from "@/features/analytics/tracking";
 import { submitContactForm } from "@/features/contact/api";
 import { useSectionActive } from "@/features/home/hooks/useSectionActive";
-import { analytics } from "@/shared/analytics";
 import type { Contact } from "../../types";
 import type { ContactFormData } from "../contact.schema";
 

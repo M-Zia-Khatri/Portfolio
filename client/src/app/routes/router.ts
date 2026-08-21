@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router";
-import { analytics } from "@/shared/analytics";
+import { analytics } from "@/features/analytics/tracking";
 import AppRoutes from "./AppRoutes";
 
 export const AppRouter = createBrowserRouter(AppRoutes);

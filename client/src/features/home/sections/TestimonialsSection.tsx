@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useSectionTracking } from "@/shared/analytics/useSectionTracking";
+import { useSectionTracking } from "@/features/analytics/tracking/useSectionTracking";
 
 export default function TestimonialsSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
