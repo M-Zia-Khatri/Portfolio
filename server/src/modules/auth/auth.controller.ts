@@ -1,14 +1,10 @@
 // src/controllers/auth.controller.ts
 
-import { getConfig } from "@/config/env.js";
 import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
-import { LoginBody, VerifyOtpBody } from "./auth.types.js";
-import { sendResponse } from "@/shared/utils/send-response.js";
-import { prisma } from "@/infrastructure/prisma.js";
-import { generateOtp, verifyOtp } from "@/shared/services/otp.service.js";
+import { getConfig } from "@/config/env.js";
 import { sendOtpEmail } from "@/infrastructure/mailer.js";
-import { catchError } from "@/shared/utils/catch-error.js";
+import { prisma } from "@/infrastructure/prisma.js";
 import {
   revokeAllRefreshTokens,
   revokeRefreshToken,
@@ -16,7 +12,11 @@ import {
   signAccessToken,
   signRefreshToken,
 } from "@/shared/services/jwt/jwt.service.js";
-import { AuthRequest } from "@/shared/types/globle.types.js";
+import { generateOtp, verifyOtp } from "@/shared/services/otp.service.js";
+import type { AuthRequest } from "@/shared/types/globle.types.js";
+import { catchError } from "@/shared/utils/catch-error.js";
+import { sendResponse } from "@/shared/utils/send-response.js";
+import type { LoginBody, VerifyOtpBody } from "./auth.types.js";
 
 const config = getConfig();
 

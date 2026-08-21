@@ -14,7 +14,7 @@ const AboutSection = lazy(() => import("./sections/AboutSection"));
 const ContactSection = lazy(() => import("./sections/ContactSection"));
 const GameSection = lazy(() => import("./sections/GameSection"));
 const PortfolioSection = lazy(() => import("./sections/PortfolioSection"));
-const SkillsSection = lazy(() => import("./sections/SkillsSection"));
+const SkillsSection = lazy(() => import("./sections/skills"));
 
 export type SectionConfig = {
   id: string;

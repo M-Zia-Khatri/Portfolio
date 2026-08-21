@@ -1,6 +1,6 @@
 import { Spinner } from "@radix-ui/themes";
 import { type ReactNode, Suspense, useEffect, useRef, useState } from "react";
-import { useSectionTracking } from "@/shared/analytics/useSectionTracking";
+import { useSectionTracking } from "@/features/analytics/tracking/useSectionTracking";
 import SEO from "@/shared/components/SEO";
 import { cn } from "@/shared/utils/cn";
 import { sectionClassName, sections } from "./Home.config";

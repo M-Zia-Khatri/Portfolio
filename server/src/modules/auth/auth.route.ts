@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { login, logout, logoutAll, me, refresh, verifyOtpHandler } from "./auth.controller.js";
-import { rateLimit } from "@/middleware/rate-limit/rate-limit.middleware.js";
 import { requireAdmin } from "@/middleware/auth.middleware.js";
+import { rateLimit } from "@/middleware/rate-limit/rate-limit.middleware.js";
+import { login, logout, logoutAll, me, refresh, verifyOtpHandler } from "./auth.controller.js";
 
 const authRouter = Router();
 

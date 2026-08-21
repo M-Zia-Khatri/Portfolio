@@ -4,9 +4,9 @@ import { generateId } from "../services/idGenerator";
 import useGameSet from "../store/GameSetStore";
 import { customLevelFormFromPreset, customLevelPayloadFromForm } from "../utils/customLevel.utils";
 import {
-  EMPTY_CUSTOM_LEVEL_FORM,
   type CustomLevelFormErrors,
   type CustomLevelFormState,
+  EMPTY_CUSTOM_LEVEL_FORM,
   validateCustomLevelForm,
 } from "../validation/customLevel.validation";
 import { CustomLevelActions } from "./CustomLevelActions";

@@ -6,6 +6,7 @@ import type { AnalyticsEventPayload, AnalyticsIngestRequest } from "./analytics.
 
 const ONE_DAY_SECONDS = 24 * 60 * 60;
 
+// biome-ignore lint/complexity/noStaticOnlyClass: static namespace design pattern
 export class AnalyticsService {
   static async processEvents(payload: AnalyticsIngestRequest): Promise<void> {
     const visitor = await AnalyticsService.getOrCreateVisitor(payload.visitorId);
@@ -45,7 +46,7 @@ export class AnalyticsService {
         type: e.type,
         path: e.path,
         timestamp: new Date(e.timestamp),
-        metadata: e.metadata || Prisma.JsonNull,
+        metadata: e.metadata ? (e.metadata as Prisma.InputJsonValue) : Prisma.JsonNull,
       })),
     });
 

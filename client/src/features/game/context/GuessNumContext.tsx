@@ -8,13 +8,12 @@ import React, {
   useRef,
   useTransition,
 } from "react";
-import { analytics } from "@/shared/analytics";
+import { analytics } from "@/features/analytics/tracking";
 import useGameTimer from "../hooks/useGameTimer";
 import { generateId } from "../services/idGenerator";
 import useGameSet, { type ScoreRecord } from "../store/GameSetStore";
 import { createGuessNumActions } from "./game.actions";
 import { initialGameState } from "./game.initial-state";
-import { gameReducer } from "./gameReducer";
 import { calculateGameScore } from "./game.scoring";
 import type {
   GuessNumActionsContextType,
@@ -22,6 +21,7 @@ import type {
   GuessNumStatusContextType,
   GuessNumTimerContextType,
 } from "./game.types";
+import { gameReducer } from "./gameReducer";
 
 const GuessNumStatusContext = createContext<GuessNumStatusContextType | undefined>(undefined);
 const GuessNumProgressContext = createContext<GuessNumProgressContextType | undefined>(undefined);

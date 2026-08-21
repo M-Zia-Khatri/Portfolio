@@ -1,6 +1,6 @@
 import { Flex, Select } from "@radix-ui/themes";
 import { useCallback, useMemo, useState } from "react";
-import { analytics } from "@/shared/analytics";
+import { analytics } from "@/features/analytics/tracking";
 import useGameSet from "../store/GameSetStore";
 import CustomLevelDialog from "./CustomLevelDialog";
 

@@ -66,7 +66,7 @@ const GuessHistoryItem = memo(function GuessHistoryItem({
   guess,
   message,
 }: GuessHistoryItemProps) {
-  const color = feedbackColor(message) as any;
+  const color = feedbackColor(message);
   return (
     <Card
       size={"1"}

@@ -1,25 +1,27 @@
 import { Box, Container, Flex, Grid, Spinner, Text } from "@radix-ui/themes";
+import axios from "axios";
 import { useState } from "react";
 import type { ApiSkill } from "@/features/skills/types";
 import { SkillsEmptyState } from "./components/SkillsEmptyState";
 import { SkillsHeader } from "./components/SkillsHeader";
 import { SkillsTable, SkillsTablePreview } from "./components/SkillsTable";
-import SkillDialog from "./SkillDialog";
-import type { SkillFormValues } from "./skills.schema";
-import { normalizeTerminalCommands, toMappedSkill } from "./skills.utils";
 import {
   useCreateSkill,
   useDeleteSkill,
   useSkillsData,
   useUpdateSkill,
 } from "./hooks/useSkillActions";
+import SkillDialog from "./SkillDialog";
+import type { SkillFormValues } from "./skills.schema";
+import { normalizeTerminalCommands, toMappedSkill } from "./skills.utils";
 
 export default function Skills() {
   const { data: apiSkills, isLoading, isError } = useSkillsData();
 
   const onMutationError = (err: unknown) => {
-    const message =
-      (err as any)?.response?.data?.message ?? "Something went wrong. Please try again.";
+    const message = axios.isAxiosError(err)
+      ? (err.response?.data?.message ?? "Something went wrong. Please try again.")
+      : "Something went wrong. Please try again.";
     console.error("[Skills mutation]", message);
   };
 

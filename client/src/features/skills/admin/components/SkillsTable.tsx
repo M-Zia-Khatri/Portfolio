@@ -1,8 +1,8 @@
 import { Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
 import { AlertDialog, Button, Card, Flex, IconButton, Text } from "@radix-ui/themes";
 import SkillChip from "@/features/skills/components/SkillChip";
-import CodeCard from "@/shared/components/CodeCard";
 import type { ApiSkill } from "@/features/skills/types";
+import CodeCard from "@/shared/components/CodeCard";
 import type { MappedSkill } from "../skills.utils";
 
 interface SkillsTableProps {

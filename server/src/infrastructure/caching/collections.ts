@@ -12,11 +12,19 @@ export async function cacheRememberCollection<T>(
 ): Promise<CacheResult<T>> {
   const { itemKeys, ...cacheOptions } = options;
 
+  type CollectionCacheValue = {
+    data: T;
+    _metadata: {
+      itemKeys: string[];
+      timestamp: number;
+    };
+  };
+
   // For conditional requests, we need to check if any item changed
   // This is a simplified version; production might use a tag index
-  const result = await cacheRememberConditional(listKey, {
+  const result = (await cacheRememberConditional(listKey, {
     ...cacheOptions,
-    callback: async () => {
+    callback: async (): Promise<CollectionCacheValue> => {
       const data = await cacheOptions.callback();
       return {
         data,
@@ -26,14 +34,14 @@ export async function cacheRememberCollection<T>(
         },
       };
     },
-  });
+  })) as CacheResult<CollectionCacheValue>;
 
-  if (result.data && "_metadata" in result.data) {
-    const { data, _metadata } = result.data as any;
+  if (result.data && typeof result.data === "object" && "_metadata" in result.data) {
+    const cached = result.data as CollectionCacheValue;
     return {
       ...result,
-      data,
-    };
+      data: cached.data,
+    } as CacheResult<T>;
   }
 
   return result as CacheResult<T>;

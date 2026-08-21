@@ -1,10 +1,21 @@
 import { z } from "zod";
 
-const terminalLineSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("command"), text: z.string().min(1, "Command required") }),
-  z.object({ kind: z.literal("output"), text: z.string().min(1, "Output required") }),
-  z.object({ kind: z.literal("comment"), text: z.string().min(1, "Comment required") }),
-  z.object({ kind: z.literal("blank") }),
+export const terminalLineSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("command"),
+    text: z.string().min(1, "Command required"),
+  }),
+  z.object({
+    kind: z.literal("output"),
+    text: z.string().min(1, "Output required"),
+  }),
+  z.object({
+    kind: z.literal("comment"),
+    text: z.string().min(1, "Comment required"),
+  }),
+  z.object({
+    kind: z.literal("blank"),
+  }),
 ]);
 
 export const skillSchema = z.object({
@@ -19,3 +30,9 @@ export const skillSchema = z.object({
 });
 
 export type SkillFormValues = z.infer<typeof skillSchema>;
+
+export type TerminalLine = z.infer<typeof terminalLineSchema>;
+
+export type SkillMode = SkillFormValues["mode"];
+
+export type CommandKind = TerminalLine["kind"];

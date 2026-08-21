@@ -2,15 +2,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog } from "@radix-ui/themes";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { ICON_OPTIONS } from "./iconMap";
+import type { ApiSkill } from "../types";
 import { SkillDialogActions, SkillFormFields } from "./components/SkillFormFields";
+import { ICON_OPTIONS } from "./iconMap";
 import { type SkillFormValues, skillSchema } from "./skills.schema";
 
 interface SkillDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: SkillFormValues) => void;
-  initialData?: any;
+  initialData?: ApiSkill | null;
   isPending: boolean;
 }
 
@@ -33,8 +34,8 @@ export default function SkillDialog({
       reset({
         ...initialData,
         icon: initialData.icon ?? ICON_OPTIONS[0],
-        content: initialData.mode === "code" ? initialData.code.join("\n") : "",
-        commands: initialData.mode === "terminal" ? initialData.commands : [],
+        content: initialData.mode === "code" ? (initialData.code?.join("\n") ?? "") : "",
+        commands: initialData.mode === "terminal" ? (initialData.commands ?? []) : [],
       });
     } else {
       reset({
