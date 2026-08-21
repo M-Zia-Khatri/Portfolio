@@ -30,4 +30,4 @@ jobs:
         run: pnpm lint
 
       - name: Check biometrics formatting
-        run: pnpm format:check
+        run: pnpm biome format .
