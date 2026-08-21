@@ -26,8 +26,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run ESLint
+      - name: Run biometrics lint
         run: pnpm lint
 
-      - name: Check Prettier
-        run: pnpm prettier --check .
+      - name: Check biometrics formatting
+        run: pnpm format:check
