@@ -37,8 +37,13 @@ async function fetchFreshETag(url: string): Promise<string | null> {
         "Add  exposedHeaders: ['ETag']  to your server CORS config.",
     );
     return null;
-  } catch (err: any) {
-    if (err.response?.status === 404) {
+  } catch (err: unknown) {
+    if (
+      err &&
+      typeof err === "object" &&
+      "response" in err &&
+      (err as { response?: { status?: number } }).response?.status === 404
+    ) {
       console.warn(`[fetchFreshETag] 404 – item not found: ${url}`);
       return null;
     }

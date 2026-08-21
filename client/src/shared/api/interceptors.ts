@@ -15,8 +15,11 @@ let failedQueue: Array<{
 
 function processQueue(error: unknown, token: string | null): void {
   failedQueue.forEach((p) => {
-    if (error) p.reject(error);
-    else p.resolve(token!);
+    if (error || !token) {
+      p.reject(error ?? new Error("Authentication failed"));
+    } else {
+      p.resolve(token);
+    }
   });
   failedQueue = [];
 }

@@ -34,7 +34,9 @@ export default function useTimer({ initialTime, isActive, onExpire }: UseTimerOp
       setTimeLeft((t) => {
         if (t <= 1) {
           // time’s up
-          clearInterval(intervalRef.current!);
+          if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+          }
           intervalRef.current = null;
           onExpireRef.current?.();
           return 0;

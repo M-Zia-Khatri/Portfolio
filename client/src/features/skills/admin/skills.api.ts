@@ -1,3 +1,4 @@
+import axios from "axios";
 import type { ApiSkill, ModeENUM } from "@/features/skills/types";
 import { api } from "@/shared/api/axios";
 import { getETag } from "@/shared/api/etag-store";
@@ -21,8 +22,8 @@ async function fetchSkillETag(id: string): Promise<string | null> {
         "Add  exposedHeaders: ['ETag']  to your server CORS config.",
     );
     return null;
-  } catch (err: any) {
-    if (err.response?.status === 404) return null;
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) return null;
     throw err;
   }
 }

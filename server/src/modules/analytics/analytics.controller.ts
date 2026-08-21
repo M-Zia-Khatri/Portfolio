@@ -47,7 +47,7 @@ export async function ingestEvents(req: Request, res: Response): Promise<void> {
       console.error("[Analytics Service Error]", e);
     }
     res.status(202).json({ success: true, message: "Accepted" });
-  } catch (err) {
+  } catch (_err) {
     res.status(202).json({ success: false });
   }
 }
@@ -57,7 +57,7 @@ export async function getOverview(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getOverview(start, end);
     sendResponse(res, { success: true, status: 200, message: "Metrics", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -67,7 +67,7 @@ export async function getTimeseries(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getTimeseries(start, end);
     sendResponse(res, { success: true, status: 200, message: "Timeseries", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -77,7 +77,7 @@ export async function getPages(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getPages(start, end);
     sendResponse(res, { success: true, status: 200, message: "Pages", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -87,7 +87,7 @@ export async function getProjects(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getProjects(start, end);
     sendResponse(res, { success: true, status: 200, message: "Projects", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -97,7 +97,7 @@ export async function getSources(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getSources(start, end);
     sendResponse(res, { success: true, status: 200, message: "Sources", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -107,7 +107,7 @@ export async function getDevices(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getDevices(start, end);
     sendResponse(res, { success: true, status: 200, message: "Devices", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -117,7 +117,7 @@ export async function getCountries(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getCountries(start, end);
     sendResponse(res, { success: true, status: 200, message: "Countries", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -127,7 +127,7 @@ export async function getConversions(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getConversions(start, end);
     sendResponse(res, { success: true, status: 200, message: "Conversions", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -137,7 +137,7 @@ export async function getGame(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getGame(start, end);
     sendResponse(res, { success: true, status: 200, message: "Game", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -152,7 +152,7 @@ export async function getDashboardOverview(req: Request, res: Response) {
       message: "Analytics dashboard overview",
       data,
     });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -162,7 +162,7 @@ export async function getTrafficDashboard(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getTrafficDashboard(start, end);
     sendResponse(res, { success: true, status: 200, message: "Traffic analytics", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -172,7 +172,7 @@ export async function getContentDashboard(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getContentDashboard(start, end);
     sendResponse(res, { success: true, status: 200, message: "Content analytics", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -182,7 +182,7 @@ export async function getTopEvents(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getTopEvents(start, end);
     sendResponse(res, { success: true, status: 200, message: "Top analytics events", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -192,7 +192,7 @@ export async function getTechnologyDashboard(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getTechnologyDashboard(start, end);
     sendResponse(res, { success: true, status: 200, message: "Technology analytics", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -202,7 +202,7 @@ export async function getGeographyDashboard(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getGeographyDashboard(start, end);
     sendResponse(res, { success: true, status: 200, message: "Geographic analytics", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -212,7 +212,7 @@ export async function getVisitorsDashboard(req: Request, res: Response) {
     const { start, end } = getRange(req);
     const data = await AnalyticsService.getVisitorsDashboard(start, end);
     sendResponse(res, { success: true, status: 200, message: "Visitor analytics", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }
@@ -230,7 +230,7 @@ export async function getVisitorDetail(req: Request, res: Response) {
       return;
     }
     sendResponse(res, { success: true, status: 200, message: "Visitor detail", data });
-  } catch (e) {
+  } catch (_e) {
     res.status(400).json({ success: false });
   }
 }

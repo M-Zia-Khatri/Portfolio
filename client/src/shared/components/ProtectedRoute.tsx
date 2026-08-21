@@ -2,6 +2,12 @@ import { motion } from "motion/react";
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuthStore } from "../store/useAuthStore";
 
+interface ProtectedRouteProps {
+  allowedRoles?: string[];
+  redirectTo?: string;
+  children: React.ReactNode;
+}
+
 const AuthLoadingScreen = () => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-(--color-background)">
     <motion.span
@@ -12,7 +18,11 @@ const AuthLoadingScreen = () => (
   </div>
 );
 
-export const ProtectedRoute = ({ allowedRoles, redirectTo = "/", children }: any) => {
+export const ProtectedRoute = ({
+  allowedRoles,
+  redirectTo = "/",
+  children,
+}: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, hasRole } = useAuthStore();
   const location = useLocation();
 

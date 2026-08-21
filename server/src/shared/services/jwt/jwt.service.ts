@@ -6,8 +6,11 @@ import type { AccessTokenPayload, RefreshTokenPayload } from "./jwt.types.js";
 
 const { jwt: jwtConfig } = getConfig();
 
-const ACCESS_SECRET = jwtConfig.accessSecret!;
-const REFRESH_SECRET = jwtConfig.refreshSecret!;
+if (!jwtConfig.accessSecret || !jwtConfig.refreshSecret) {
+  throw new Error("JWT secrets are missing from application config.");
+}
+const ACCESS_SECRET = jwtConfig.accessSecret;
+const REFRESH_SECRET = jwtConfig.refreshSecret;
 const ACCESS_EXPIRY = "15m";
 const REFRESH_EXPIRY_SEC = 7 * 24 * 60 * 60; // 7 days in seconds
 const REFRESH_EXPIRY_MS = REFRESH_EXPIRY_SEC * 1000;

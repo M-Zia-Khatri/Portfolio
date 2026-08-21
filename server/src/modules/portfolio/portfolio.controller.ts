@@ -302,7 +302,7 @@ export async function updatePortfolioItem(req: Request, res: Response): Promise<
       });
     }
 
-    const { site_name, site_role, site_url, site_image_url, use_tech, description } = body;
+    const { site_image_url } = body;
 
     const isNewImage =
       site_image_url && existing.site_image_url && site_image_url !== existing.site_image_url;

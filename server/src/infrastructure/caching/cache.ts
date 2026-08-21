@@ -357,7 +357,7 @@ export async function cacheInvalidatePrefix(prefix: string): Promise<number> {
       if (keys.length > 0) {
         // Stream deletes in batches to avoid memory buildup
         const pipeline = redis.pipeline();
-        keys.forEach((k: any) => {
+        keys.forEach((k: string) => {
           pipeline.del(k);
         });
         await pipeline.exec();

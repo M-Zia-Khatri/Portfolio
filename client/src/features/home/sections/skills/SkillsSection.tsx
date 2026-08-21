@@ -3,7 +3,6 @@ import { memo, useRef } from "react";
 import CodeEmptyState from "@/features/skills/components/CodeEmptyState";
 import CodeCard from "@/shared/components/CodeCard";
 import SecComponent from "@/shared/components/SecContainer";
-import { TEXT } from "@/shared/constants/style.constants";
 import { useGsapReveal } from "@/shared/hooks/gsap/useGsapReveal";
 import { useGsapStagger } from "@/shared/hooks/gsap/useGsapStagger";
 import { SkillsGrid } from "./components/SkillsGrid";

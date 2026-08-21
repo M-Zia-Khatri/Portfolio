@@ -1,6 +1,6 @@
 import type { Response } from "express";
 import { getConfig } from "../../config/env.js";
-import { send } from "./send-response.js";
+import { sendResponse } from "./send-response.js";
 
 const config = getConfig();
 

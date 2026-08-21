@@ -20,7 +20,7 @@ export interface AnalyticsEventPayload {
   type: AnalyticsEventType;
   path?: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AnalyticsIngestRequest {

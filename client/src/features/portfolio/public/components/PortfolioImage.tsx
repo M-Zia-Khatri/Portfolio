@@ -1,5 +1,5 @@
 import { Badge, Heading } from "@radix-ui/themes";
-import { motion } from "motion/react";
+import { type MotionValue, motion } from "motion/react";
 import type { MouseEvent } from "react";
 import { BorderTrail } from "@/shared/components/motion-primitives/border-trail";
 import { HEADING } from "@/shared/constants/style.constants";
@@ -9,8 +9,8 @@ import { PortfolioLinks } from "./PortfolioLinks";
 
 interface PortfolioImageProps {
   item: PortfolioItem;
-  imgX: any;
-  imgY: any;
+  imgX: MotionValue<number>;
+  imgY: MotionValue<number>;
   onDemoClick: (e: MouseEvent<HTMLAnchorElement>) => void;
 }
 

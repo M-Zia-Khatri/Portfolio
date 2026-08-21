@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { type Resolver, useForm } from "react-hook-form";
 import { uploadToCloudinary } from "../portfolio.admin.api";
 import { createPortfolioSchema, editPortfolioSchema } from "../portfolio.schema";
 import type { PortfolioFormValues, PortfolioItem } from "../portfolio.types";
@@ -19,7 +19,9 @@ export function usePortfolioForm({ editItem, onSubmit, onOpenChange }: UsePortfo
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const form = useForm<PortfolioFormValues>({
-    resolver: zodResolver(isEdit ? editPortfolioSchema : createPortfolioSchema) as any,
+    resolver: zodResolver(
+      isEdit ? editPortfolioSchema : createPortfolioSchema,
+    ) as Resolver<PortfolioFormValues>,
     defaultValues: {
       site_name: "",
       site_role: "",
@@ -90,8 +92,12 @@ export function usePortfolioForm({ editItem, onSubmit, onOpenChange }: UsePortfo
       );
 
       onOpenChange(false);
-    } catch (err: any) {
-      setApiError(err?.message ?? "Something went wrong. Please try again.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setApiError(err.message);
+      } else {
+        setApiError("An unknown error occurred");
+      }
     } finally {
       setSubmitting(false);
     }
